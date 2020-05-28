@@ -1,0 +1,256 @@
+---
+title: "COVID ICS & DURT: Assign Patients to Batches"
+author: "Malisa Smith"
+date: "May 22, 2020"
+output:
+  rmdformats::html_clean:
+    highlight: kate
+  toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=F}
+library(readxl)
+library(tidyverse)
+library(ggpubr)
+```
+
+```{r}
+save_output <- FALSE
+set.seed(20200522)
+```
+
+# Read in data
+
+```{r read in data}
+# Read in the patient manifest
+data_chu <- readxl::read_excel(here::here("data/Seshadri manifest 22May2020.xlsx"), range = "A6:T80") %>% 
+  dplyr::rename("Comments" = `...20`)
+unique(data_chu$Cohort)
+```
+
+# Check if matched by age, sex, ethnicity, and date of symptom onset
+
+```{r}
+# First explore missing data
+data_chu %>% 
+  dplyr::filter(Sex == "N/A" | Race == "N/A" | `Days symptom onset to visit 1` == "N|A" | Age == "N/A") %>% 
+  dplyr::select(`Record ID`, Cohort, Age, Sex, Race, `Days symptom onset to visit 1`) %>% 
+  knitr::kable()
+```
+  
+8 hospitalized patients have Sex=N/A and Race=N/A  
+No Race information for Healthy Controls  
+No "Days symptom onset to visit 1" information for 2 hopitalized patients (not relevant for healthy controls)    
+
+```{r, fig.width=5.5, fig.height=4}
+# Age
+data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  ggboxplot(x="Cohort", y="Age", color="Cohort", add="jitter") +
+  theme_grey(base_size=18) +
+  stat_compare_means() +
+  theme(legend.position = "none")
+
+# Sex
+data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  dplyr::filter(Sex != "N/A") %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  ggplot(aes(x=Cohort, fill=Sex)) +
+  theme_grey(base_size=18) +
+  geom_bar(position="fill", stat="count")
+sex_table <- data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  dplyr::filter(Sex != "N/A") %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>%
+  dplyr::select(Cohort, Sex) %>% table()
+sex_table
+fisher.test(sex_table)
+
+data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  ggplot(aes(x=Cohort, fill=Sex)) +
+  theme_grey(base_size=18) +
+  geom_bar(position="fill", stat="count")
+```
+
+```{r, fig.width=8.5, fig.height=4}
+# Ethnicity
+data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  dplyr::filter(Race != "N/A") %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  mutate(Race_v2 = dplyr::recode(Race,
+                                 "White,Prefer not to say"="White",
+                                 "American Indian or Alaska Native,White"="American Indian or Alaska Native",
+                                 "white"="White",
+                                 "americanIndianOrAlaskaNative"="American Indian or Alaska Native",
+                                 "other|other"="Other")) %>% 
+  ggplot(aes(x=Cohort, fill=Race_v2)) +
+  theme_grey(base_size=18) +
+  geom_bar(position="fill", stat="count")
+race_table <- data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  dplyr::filter(Race != "N/A") %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  mutate(Race_v2 = dplyr::recode(Race,
+                                 "White,Prefer not to say"="White",
+                                 "American Indian or Alaska Native,White"="American Indian or Alaska Native",
+                                 "white"="White",
+                                 "americanIndianOrAlaskaNative"="American Indian or Alaska Native",
+                                 "other|other"="Other")) %>% 
+  dplyr::select(Cohort, Race_v2) %>% 
+  table()
+race_table
+fisher.test(race_table)
+
+data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  mutate(Race_v2 = dplyr::recode(Race,
+                                 "White,Prefer not to say"="White",
+                                 "American Indian or Alaska Native,White"="American Indian or Alaska Native",
+                                 "white"="White",
+                                 "americanIndianOrAlaskaNative"="American Indian or Alaska Native",
+                                 "other|other"="Other")) %>% 
+  ggplot(aes(x=Cohort, fill=Race_v2)) +
+  theme_grey(base_size=18) +
+  geom_bar(position="fill", stat="count")
+```
+
+```{r, fig.width=5.5, fig.height=4}
+# Days from symptom onset to collection
+data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  dplyr::filter(`Days symptom onset to visit 1` != "N/A") %>% 
+  mutate(`Days symptom onset to visit 1` = as.numeric(`Days symptom onset to visit 1`)) %>% 
+  ggboxplot(x="Cohort", y="`Days symptom onset to visit 1`", color="Cohort", add="jitter") +
+  theme_grey(base_size=18) +
+  stat_compare_means() +
+  theme(legend.position = "none")
+```
+
+```{r, fig.width=5.5, fig.height=4}
+data_chu %>% dplyr::filter(`Record ID` == "1C") %>% dplyr::select(`Record ID`, `Days symptom onset to visit 1`)
+data_chu %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  dplyr::filter(`Days symptom onset to visit 1` != "N/A") %>% 
+  mutate(`Days symptom onset to visit 1` = as.numeric(`Days symptom onset to visit 1`)) %>% 
+  mutate(`Days symptom onset to visit 1` = ifelse(`Record ID` == "1C", 60, `Days symptom onset to visit 1`)) %>% 
+  ggboxplot(x="Cohort", y="`Days symptom onset to visit 1`", color="Cohort", add="jitter") +
+  theme_grey(base_size=18) +
+  stat_compare_means() +
+  theme(legend.position = "none") + 
+  labs(caption="Replacing 1C Day 30 with Day 60")
+```
+                                 
+# Sample and assign patients to batch
+
+Samples to be run:  
+(1) Convalescent donors that were previously hospitalized (n=20)  
+(2) Convalescent donors that were never hospitalized (n=40)  
+(3) Healthy controls from Chu lab (n=4) and TRIMAS (n=4, 3 from Seshadri and 1 from Kiel)  
+Seshadri TRIMAS: BWT22, BWT23, BWT20  
+  
+Split into 3 batches (1 batch of 22 and 2 batches of 23):  
+Batch 1 (n=22): ConvHosp=6, ConvNotHosp=14, Healthy=1, TRIMA=1  
+Batch 2 (n=23): ConvHosp=7, ConvNotHosp=13, Healthy=1, TRIMA=2  
+Batch 3 (n=23): ConvHosp=7, ConvNotHosp=13, Healthy=2, TRIMA=1  
+
+## First prepare data for sampling
+
+```{r}
+# Add TRIMA rows, prepare data for sampling, and add PTID_CODE for blinded processing.
+all_data <- data_chu %>% 
+  dplyr::filter(Cohort != "influenza 2018-2019") %>% 
+  bind_rows(data.frame(`Record ID` = c("BWT20", "BWT22", "BWT23", "ChuLab_TRIMA_1"),
+                       Cohort = "TRIMA",
+                       check.names = F)) %>% 
+  mutate(Classification = dplyr::recode(Cohort,
+                                   "Non-hospitalized" = "ConvNotHosp",
+                                   "Hospitalized" = "ConvHosp",
+                                   "Healthy control 2017-2018" = "Healthy",
+                                   "Healthy control" = "Healthy")) %>% 
+  mutate(Classification = factor(Classification, levels = c("ConvHosp", "ConvNotHosp", "Healthy", "TRIMA"))) %>% 
+  mutate(PTID_CODE = paste0("PC", sample.int(nrow(.))))
+
+length(unique(all_data$`Record ID`)) == nrow(all_data) # Confirm each Record ID is unique
+length(unique(all_data$PTID_CODE)) == length(unique(all_data$`Record ID`))
+
+knitr::kable(head(all_data))
+```
+
+## Use nesting and sampling to sample each batch (help from [here](https://jennybc.github.io/purrr-tutorial/ls12_different-sized-samples.html):
+
+```{r}
+set.seed(20200522)
+
+# Sample for Batch 1
+batch1 <- all_data %>%
+  group_by(Classification) %>% # prep for work by group
+  nest() %>% # one row per group           
+  ungroup() %>% 
+  arrange(Classification) %>% 
+  mutate(n = c(6, 14, 1, 1)) %>% # add sample sizes
+  mutate(samp = map2(data, n, sample_n)) %>% 
+  select(-data, -n) %>%
+  unnest(samp) %>%
+  arrange(Classification, `Record ID`)
+
+cat("Batch 1 Patients:")
+knitr::kable(batch1 %>% 
+               dplyr::select(Classification, `Record ID`, PTID_CODE, Comments))
+
+# Sample for Batch 2
+batch2 <- all_data %>% 
+  anti_join(batch1, by="PTID_CODE") %>% 
+  group_by(Classification) %>% # prep for work by group
+  nest() %>% # one row per group           
+  ungroup() %>% 
+  arrange(Classification) %>% 
+  mutate(n = c(7, 13, 1, 2)) %>% # add sample sizes
+  mutate(samp = map2(data, n, sample_n)) %>% 
+  select(-data, -n) %>%
+  unnest(samp) %>%
+  arrange(Classification, `Record ID`)
+
+cat("Batch 2 Patients:")
+knitr::kable(batch2 %>% 
+               dplyr::select(Classification, `Record ID`, PTID_CODE, Comments))
+
+# Batch 3
+batch3 <- all_data %>% 
+  anti_join(batch1, by="PTID_CODE") %>% 
+  anti_join(batch2, by="PTID_CODE") %>% 
+  arrange(Classification, `Record ID`)
+
+cat("Batch 3 Patients:")
+knitr::kable(batch3 %>% 
+               dplyr::select(Classification, `Record ID`, PTID_CODE, Comments))
+```
+
+```{r}
+# Confirm that there are correct numbers of each group in each batch
+batch1 %>% group_by(Classification) %>% summarize(PTIDs_in_group = n_distinct(`Record ID`)) %>% knitr::kable()
+batch2 %>% group_by(Classification) %>% summarize(PTIDs_in_group = n_distinct(`Record ID`)) %>% knitr::kable()
+batch3 %>% group_by(Classification) %>% summarize(PTIDs_in_group = n_distinct(`Record ID`)) %>% knitr::kable()
+
+intersect(batch1$`Record ID`, batch2$`Record ID`) # And none of them overlap
+intersect(batch1$`Record ID`, batch3$`Record ID`)
+intersect(batch2$`Record ID`, batch3$`Record ID`)
+
+if(save_output) {
+  write.csv(batch1, here::here("processed_data/20200522_COVID_ICS_DURT_Batch_1.csv"), row.names = FALSE)
+  write.csv(batch2, here::here("processed_data/20200522_COVID_ICS_DURT_Batch_2.csv"), row.names = FALSE)
+  write.csv(batch3, here::here("processed_data/20200522_COVID_ICS_DURT_Batch_3.csv"), row.names = FALSE)
+}
+
+```
