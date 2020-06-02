@@ -255,3 +255,140 @@ for(currentGates in list(cd4_mem_gates, notcd4_mem_gates)) {
     dev.off()
   }
 }
+
+###########################################################
+
+# 20200601
+# 1) Visualize activation gates on CD3-CD19+
+# 2) Check that CD4 gate is capturing appropriate events. Co-receptor channels are currently not being biexponentially transformed.
+
+library(openCyto) # 1.24.0
+library(CytoML) # 1.12.0
+library(flowCore) # required for description()
+library(flowWorkspace) # required for gh_pop_get_data()
+library(ggcyto) # devtools::install_github("RGLab/ggcyto", ref="ggplot3.3") for update_theme()
+library(here)
+library(tidyverse)
+
+gs_b1 <- load_gs(here::here("out/GatingSets/20200529_HAARVI_ICS_GatingSet_B1"))
+pData(gs_b1)$STIM <- factor(pData(gs_b1)$STIM, levels = c("DMSO", "VEMP", "Spike 1", "Spike 2", "NCAP", "SEB"))
+
+# Check that CD4 gate is capturing appropriate events.
+currentGates <- "/Time/LD-3+/1419-3+/S/Lymph/4+"
+ptids <- unique(pData(gs_b1)$`SAMPLE ID`)
+ptids_per_plot <- 5
+num_plots <- ceiling(length(ptids)/ptids_per_plot)
+for(plot_num in seq_along(1:num_plots)) { 
+  current_ptids <- ptids[((plot_num-1)*ptids_per_plot + 1):min(((plot_num-1)*ptids_per_plot + ptids_per_plot), length(ptids))]
+  png(filename = file.path(here::here("out/QC/FACS_Plots"),
+                           sprintf("B1_%s_v2_pt%s_%s.png",
+                                   sub(".*\\/([^\\/]+$)", "\\1", currentGates[[1]]), plot_num,
+                                   format(Sys.time(), "%Y-%m-%d_%H-%M-%S"))),
+      width = 1920, height = 210+174*length(current_ptids), units = "px")
+  
+  myGS <- subset(gs_b1, `SAMPLE ID` %in% current_ptids)
+  myGates <- currentGates
+  
+  firstGate <- myGates[[1]]
+  currentGateBoundaries <- attributes(gh_pop_get_gate(myGS[[1]], firstGate))$boundaries
+  currentXaxis <- colnames(currentGateBoundaries)[[1]]
+  currentYaxis <- colnames(currentGateBoundaries)[[2]]
+  parentGate <- sub("\\/[^\\/]+$", "", firstGate)
+  
+  print(ggcyto(myGS,
+         aes(!!currentXaxis, !!currentYaxis),
+         subset = if(parentGate == "") "root" else parentGate,
+         filter = marginalFilter) +
+    geom_hex(bins=128) +
+    geom_gate(myGates) +
+    # axis_x_inverse_trans() + axis_y_inverse_trans() +
+    ggcyto_par_set(limits = "instrument") +
+    facet_grid(`SAMPLE ID` ~ STIM, switch = "y") +
+    theme(#plot.title = element_blank(),
+      legend.position = "none",
+      strip.text.x = element_text(size = 14, margin = margin(0,0,0,0, "cm")),
+      panel.grid.major = ggplot2::element_blank()) +
+    theme_bw(base_size=28) +
+    geom_stats(size=8, alpha=0.4) +
+    labs(title=myGates[[1]], caption = "Batch 1") +
+    coord_cartesian(xlim=c(-1500,3000), ylim=c(0,3000)))
+
+  dev.off()
+}
+
+# Activation gates on CD3-CD19+
+
+# Since a CD3-CD19+ gate does not exist, looks like I will have to make one
+# First copy singlet gate under Time
+S_gate <- gs_pop_get_gate(gs_b1, "/Time/LD-3+/1419-3+/S")
+gs_pop_add(gs_b1, S_gate, parent = "/Time")
+# Error in gs_pop_add(gs_b1, S_gate, parent = "/Time") : 
+#   nodeID are not identical across samples!
+
+# So, some samples have different gating trees
+
+pop_lists <- lapply(gs_b1, gh_get_pop_paths)
+unique(pop_lists)
+which(sapply(pop_lists, function(p) { "/Time/LD-3-" %in% p}))
+# Sample "112580.fcs_414334"  has the gate "/Time/LD-3-"
+LD_Neg_CD3_Neg_gate <- gh_pop_get_gate(gs_b1[["112580.fcs_414334"]], "/Time/LD-3-")
+gs_pop_remove(gs_b1["112580.fcs_414334"], "/Time/LD-3-")
+unique(lapply(gs_b1, gh_get_pop_paths))
+
+# Now try adding the singlet gate again, and then the LD-3- gate
+gs_pop_add(gs_b1, S_gate, parent = "/Time")
+gs_pop_add(gs_b1, LD_Neg_CD3_Neg_gate, parent = "/Time/S")
+
+plot(gs_b1, bool=T, fontsize=15)
+
+recompute(gs_b1, y="/Time/S")
+
+# <V610-A>      CD38 BV605   <U395-A>    HLADR BUV395
+ggcyto(gs_b1[1], aes("<V610-A>", "<U395-A>"),
+       subset = "/Time/S/LD-3-",
+       filter = marginalFilter) +
+  geom_hex(bins=128) +
+  geom_gate(c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"))
+
+currentGates <- c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+")
+ptids <- unique(pData(gs_b1)$`SAMPLE ID`)
+ptids_per_plot <- 5
+num_plots <- ceiling(length(ptids)/ptids_per_plot)
+parentGate <- "/Time/S/LD-3-"
+for(plot_num in seq_along(1:num_plots)) { 
+  current_ptids <- ptids[((plot_num-1)*ptids_per_plot + 1):min(((plot_num-1)*ptids_per_plot + ptids_per_plot), length(ptids))]
+  png(filename = file.path(here::here("out/QC/FACS_Plots"),
+                           sprintf("B1_%s%s_pt%s_%s.png",
+                                   paste0("LD-3-", "_"),
+                                   sub(".*\\/([^\\/]+$)", "\\1", currentGates[[1]]), plot_num,
+                                   format(Sys.time(), "%Y-%m-%d_%H-%M-%S"))),
+      width = 1920, height = 210+174*length(current_ptids), units = "px")
+  
+  myGS <- subset(gs_b1, `SAMPLE ID` %in% current_ptids)
+  myGates <- currentGates
+  
+  firstGate <- myGates[[1]]
+  currentGateBoundaries <- attributes(gh_pop_get_gate(myGS[[1]], firstGate))$boundaries
+  currentXaxis <- colnames(currentGateBoundaries)[[1]]
+  currentYaxis <- colnames(currentGateBoundaries)[[2]]
+  
+  print(ggcyto(myGS,
+         aes(!!currentXaxis, !!currentYaxis),
+         subset = "/Time/S/LD-3-",
+         filter = marginalFilter) +
+    geom_hex(bins=128) +
+    geom_gate(myGates) +
+    axis_x_inverse_trans() + axis_y_inverse_trans() +
+    ggcyto_par_set(limits = "instrument") +
+    facet_grid(`SAMPLE ID` ~ STIM, switch = "y") +
+    theme(#plot.title = element_blank(),
+      legend.position = "none",
+      strip.text.x = element_text(size = 14, margin = margin(0,0,0,0, "cm")),
+      panel.grid.major = ggplot2::element_blank(),
+      plot.title = element_text(size=18)) +
+    theme_bw(base_size=28) +
+    # geom_stats(size=8, alpha=0.4) +
+    labs(title=paste0(myGates[[1]], " on /Time/S/LD-3-"), caption = "Batch 1"))
+
+  dev.off()
+}
