@@ -20,15 +20,13 @@ library(ggpubr)
 
 ```{r}
 save_output <- FALSE
-set.seed(20200522)
 ```
 
 # Read in data
 
 ```{r read in data}
 # Read in the patient manifest
-data_chu <- readxl::read_excel(here::here("data/Seshadri manifest 22May2020.xlsx"), range = "A6:T80") %>% 
-  dplyr::rename("Comments" = `...20`)
+data_chu <- readxl::read_excel(here::here("data/Chu_Seshadri_HAARVI_Collab_PBMC_manifest_10June2020.xlsx"))
 unique(data_chu$Cohort)
 ```
 
@@ -137,21 +135,6 @@ data_chu %>%
   theme(legend.position = "none")
 ```
 
-```{r, fig.width=5.5, fig.height=4}
-data_chu %>% dplyr::filter(`Record ID` == "1C") %>% dplyr::select(`Record ID`, `Days symptom onset to visit 1`)
-data_chu %>% 
-  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
-  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
-  dplyr::filter(`Days symptom onset to visit 1` != "N/A") %>% 
-  mutate(`Days symptom onset to visit 1` = as.numeric(`Days symptom onset to visit 1`)) %>% 
-  mutate(`Days symptom onset to visit 1` = ifelse(`Record ID` == "1C", 60, `Days symptom onset to visit 1`)) %>% 
-  ggboxplot(x="Cohort", y="`Days symptom onset to visit 1`", color="Cohort", add="jitter") +
-  theme_grey(base_size=18) +
-  stat_compare_means() +
-  theme(legend.position = "none") + 
-  labs(caption="Replacing 1C Day 30 with Day 60")
-```
-                                 
 # Sample and assign patients to batch
 
 Samples to be run:  
@@ -168,7 +151,7 @@ Batch 3 (n=23): ConvHosp=7, ConvNotHosp=13, Healthy=2, TRIMA=1
 ## First prepare data for sampling
 
 ```{r}
-# Add TRIMA rows, prepare data for sampling, and add PTID_CODE for blinded processing.
+# Add TRIMA rows and prepare data for sampling
 all_data <- data_chu %>% 
   dplyr::filter(Cohort != "influenza 2018-2019") %>% 
   bind_rows(data.frame(`Record ID` = c("BWT20", "BWT22", "BWT23", "ChuLab_TRIMA_1"),
@@ -179,11 +162,9 @@ all_data <- data_chu %>%
                                    "Hospitalized" = "ConvHosp",
                                    "Healthy control 2017-2018" = "Healthy",
                                    "Healthy control" = "Healthy")) %>% 
-  mutate(Classification = factor(Classification, levels = c("ConvHosp", "ConvNotHosp", "Healthy", "TRIMA"))) %>% 
-  mutate(PTID_CODE = paste0("PC", sample.int(nrow(.))))
+  mutate(Classification = factor(Classification, levels = c("ConvHosp", "ConvNotHosp", "Healthy", "TRIMA")))
 
 length(unique(all_data$`Record ID`)) == nrow(all_data) # Confirm each Record ID is unique
-length(unique(all_data$PTID_CODE)) == length(unique(all_data$`Record ID`))
 
 knitr::kable(head(all_data))
 ```
@@ -207,11 +188,11 @@ batch1 <- all_data %>%
 
 cat("Batch 1 Patients:")
 knitr::kable(batch1 %>% 
-               dplyr::select(Classification, `Record ID`, PTID_CODE, Comments))
+               dplyr::select(Classification, `Record ID`))
 
 # Sample for Batch 2
 batch2 <- all_data %>% 
-  anti_join(batch1, by="PTID_CODE") %>% 
+  anti_join(batch1, by="Record ID") %>% 
   group_by(Classification) %>% # prep for work by group
   nest() %>% # one row per group           
   ungroup() %>% 
@@ -224,17 +205,17 @@ batch2 <- all_data %>%
 
 cat("Batch 2 Patients:")
 knitr::kable(batch2 %>% 
-               dplyr::select(Classification, `Record ID`, PTID_CODE, Comments))
+               dplyr::select(Classification, `Record ID`))
 
 # Batch 3
 batch3 <- all_data %>% 
-  anti_join(batch1, by="PTID_CODE") %>% 
-  anti_join(batch2, by="PTID_CODE") %>% 
+  anti_join(batch1, by="Record ID") %>% 
+  anti_join(batch2, by="Record ID") %>% 
   arrange(Classification, `Record ID`)
 
 cat("Batch 3 Patients:")
 knitr::kable(batch3 %>% 
-               dplyr::select(Classification, `Record ID`, PTID_CODE, Comments))
+               dplyr::select(Classification, `Record ID`))
 ```
 
 ```{r}

@@ -11,7 +11,7 @@ library(readxl)
 
 date <- 20200603
 
-xml_path_b1 <- here::here("data/20200528_COVID_ICS-B1_CS2.xml")
+xml_path_b1 <- here::here("data/20200528_COVID_…S-B1_CS2_KY.xml")
 fcs_subfolder_b1 <- here::here("data/20200528_COVID_ICS-B1/")
 
 ws_b1 <- open_flowjo_xml(xml_path_b1)
@@ -52,13 +52,12 @@ pData(gs_b1)$`SAMPLE ID` == pData(gs_b1)$`PATIENT ID`
 # So, just use the SAMPLE ID moving forward
 
 # Read in the patient manifest
-manifest <- readxl::read_excel(here::here("data/Seshadri manifest 22May2020.xlsx"), range = "A6:T80") %>% 
-  dplyr::rename("Comments" = `...20`)
+manifest <- readxl::read_excel(here::here("data/Chu_Seshadri_HAARVI_Collab_PBMC_manifest_10June2020.xlsx"))
 # Add metadata to pData
 pData_tmp <- pData(gs_b1) %>% 
   mutate(`SAMPLE ID` = toupper(`SAMPLE ID`)) %>% 
   left_join(manifest %>%
-              dplyr::select(`Record ID`, `Sample ID`, Cohort, Age, Sex, Race, `Hispanic?`, `Days symptom onset to visit 1`, `Pair ID`, Comments),
+              dplyr::select(`Record ID`, `Sample ID`, Cohort, Age, Sex, Race, `Hispanic?`, `Days symptom onset to visit 1`, `Pair ID`),
             by = c("SAMPLE ID" = "Record ID")) %>% 
   mutate(Batch = 1)
 rownames(pData_tmp) <- rownames(pData(gs_b1))
@@ -202,7 +201,7 @@ for(currentGates in gates2draw) {
   for(plot_num in seq_along(1:num_plots)) { 
     current_ptids <- ptids[((plot_num-1)*ptids_per_plot + 1):min(((plot_num-1)*ptids_per_plot + ptids_per_plot), length(ptids))]
     png(filename = file.path(here::here("out/QC/FACS_Plots"),
-                             sprintf("B1_%s%s_pt%s_%s.png",
+                             sprintf("%s%s_B1_pt%s_%s.png",
                                      if(parentGate %in% c("NOT4+", "4+")) {paste0(parentGate, "_")} else {""},
                                      sub(".*\\/([^\\/]+$)", "\\1", currentGates[[1]]), plot_num,
                                      format(Sys.time(), "%Y-%m-%d_%H-%M-%S"))),
@@ -255,7 +254,7 @@ for(currentGates in list(cd4_mem_gates, notcd4_mem_gates)) {
   for(plot_num in seq_along(1:num_plots)) { 
     current_ptids <- ptids[((plot_num-1)*ptids_per_plot + 1):min(((plot_num-1)*ptids_per_plot + ptids_per_plot), length(ptids))]
     png(filename = file.path(here::here("out/QC/FACS_Plots"),
-                             sprintf("B1_%s%s_pt%s_%s.png",
+                             sprintf("%s%s_B1_pt%s_%s.png",
                                      if(parentGate %in% c("NOT4+", "4+")) {paste0(parentGate, "_")} else {""},
                                      sub(".*\\/([^\\/]+$)", "\\1", currentGates[[1]]), plot_num,
                                      format(Sys.time(), "%Y-%m-%d_%H-%M-%S"))),
@@ -270,7 +269,6 @@ for(currentGates in list(cd4_mem_gates, notcd4_mem_gates)) {
 ###########################################################
 
 # 1) Visualize activation gates on CD3-CD19+
-# 2) Check that CD4 gate is capturing appropriate events. Co-receptor channels are currently not being biexponentially transformed.
 
 library(openCyto) # 1.24.0
 library(CytoML) # 1.12.0
@@ -313,7 +311,7 @@ parentGate <- "/Time/S/LD-3-"
 for(plot_num in seq_along(1:num_plots)) { 
   current_ptids <- ptids[((plot_num-1)*ptids_per_plot + 1):min(((plot_num-1)*ptids_per_plot + ptids_per_plot), length(ptids))]
   png(filename = file.path(here::here("out/QC/FACS_Plots"),
-                           sprintf("B1_%s%s_pt%s_%s.png",
+                           sprintf("%s%s_B1_pt%s_%s.png",
                                    paste0("LD-3-", "_"),
                                    sub(".*\\/([^\\/]+$)", "\\1", currentGates[[1]]), plot_num,
                                    format(Sys.time(), "%Y-%m-%d_%H-%M-%S"))),
