@@ -35,6 +35,7 @@ gs2 <- subset(gs, !(`SAMPLE ID` %in% c("37C", "BWT23", "116C", "BWT22")) &
 mapMarkers <- list("IL2 PE", "IL4/5/13 APC", "IFNg V450", "TNFa FITC", "IL17a Ax700", "CD154 PE-Cy5", "CD107a PE-Cy7")
 # TODO: change markernames to shortened cytokine version
 
+future::supportsMulticore() # Run in terminal to get TRUE
 # If you run this script in RStudio, the next line throws the following warning:
 # "Warning message:
 # [ONE-TIME WARNING] Forked processing ('multicore') is disabled in future (>= 1.13.0) when running R from RStudio,
@@ -42,7 +43,6 @@ mapMarkers <- list("IL2 PE", "IL4/5/13 APC", "IFNg V450", "TNFa FITC", "IL17a Ax
 # and plan("multiprocess") will fall back to plan("multisession") - not plan("multicore") as in the past.
 # For more details, how to control forked processing or not, and how to silence this warning in future R sessions,
 # see ?future::supportsMulticore "
-future::supportsMulticore() # Run in terminal to get TRUE
 future::plan(multiprocess(workers = max(1, availableCores() - 2)))
 
 out <- furrr::future_pmap(.l = list(stims_for_compass_runs_rep,
@@ -50,7 +50,6 @@ out <- furrr::future_pmap(.l = list(stims_for_compass_runs_rep,
                               seeds_for_compass_runs),
                     .f = function(currentStim, parent, currentSeed) {
                       
-                      #future({
                         o <- tryCatch( {
                           gsSub <- subset(gs2, STIM %in% c("DMSO", currentStim))
                           currentNodeMarkerMap <- mapMarkers
@@ -77,7 +76,6 @@ out <- furrr::future_pmap(.l = list(stims_for_compass_runs_rep,
                           gc()
                         }, error = function(e) { print(e) })
                         o
-                      #})
                     },
                     # Progress bar reflects how many COMPASS runs have completed
                     .progress = T)

@@ -196,9 +196,11 @@ runCompassOnce <- function(gs,
 # cr is the COMPASSResult object
 make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current_ylim=NULL, add_legend=FALSE, legend_position=c(0.16, 0),
                                          save_test_results=TRUE, p_text_size=5, include_0_line=FALSE, zeroed_BgCorr = FALSE, plot_width=7, plot_height=6,
-                                         dichotomize_by_cytokine=NA, group_by_colname="Status", group_by_order=c("Persistent_Neg", "Qfn_Pos"),
-                                         group_by_colors=c("Persistent_Neg" = "#373db8", "Qfn_Pos" = "#28c914"), return_output=FALSE, parentSubset="CD4+",
-                                         point_size=0.3) {
+                                         dichotomize_by_cytokine=NA, group_by_colname="Cohort", group_by_order=c("Non-hospitalized", "Hospitalized"),
+                                         group_by_colors=c("Non-hospitalized" = "#80cdc1", "Hospitalized" = "#dfc27d"), return_output=FALSE, parentSubset="CD4+",
+                                         point_size=0.3, cytokine_order_for_annotation=NULL) {
+  
+  library(cowplot) # among others
   
   mean_gamma <- cr$fit$mean_gamma
   cats <- as.data.frame(cr$fit$categories[, -ncol(cr$fit$categories),drop=FALSE]) # drop the "Counts" column
@@ -212,11 +214,14 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
   compassSubsetsFiltered <- compassSubsetsFiltered[lengths(regmatches(compassSubsetsFiltered, gregexpr("!", compassSubsetsFiltered))) != numMarkers]
   
   # Subset the cats rows to compassSubsetsFiltered, and put the columns in the order of cytokine_order_for_annotation
-  cats <- cats[compassSubsetsFiltered, cytokine_order_for_annotation]
+  cats <- cats[compassSubsetsFiltered,]
+  if(!is.null(cytokine_order_for_annotation)) {
+    cats <- cats[, cytokine_order_for_annotation]
+  }
   
   stim_counts <- as.data.frame(cr$data$n_s) %>%
     mutate(Individual = rownames(cr$data$n_s)) %>%
-    dplyr::select(c("Individual", compassSubsetsFiltered)) %>% 
+    dplyr::select(c("Individual", all_of(compassSubsetsFiltered))) %>% 
     dplyr::left_join(cr$data$counts_s %>%
                        stack() %>%
                        rename("ParentCount" = "values", "Individual" = "ind"),
@@ -225,9 +230,10 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
                        dplyr::select(!!as.symbol(cr$data$individual_id), !!as.symbol(group_by_colname)),
                      by = c("Individual"=cr$data$individual_id)) %>% 
     mutate(Stim = "Dummy_Stim_Name")
+  
   bg_counts <- as.data.frame(cr$data$n_u) %>%
     mutate(Individual = rownames(cr$data$n_u)) %>%
-    dplyr::select(c("Individual", compassSubsetsFiltered)) %>% 
+    dplyr::select(c("Individual", all_of(compassSubsetsFiltered))) %>% 
     dplyr::left_join(cr$data$counts_u %>%
                        stack() %>%
                        rename("ParentCount" = "values", "Individual" = "ind"),
@@ -236,6 +242,7 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
                        dplyr::select(!!as.symbol(cr$data$individual_id), !!as.symbol(group_by_colname)),
                      by = c("Individual"=cr$data$individual_id)) %>% 
     mutate(Stim = "DMSO")
+  
   dat_bgCorr_long <- bind_rows(bg_counts, stim_counts) %>% 
     mutate_at(.vars = compassSubsetsFiltered, `/`, quote(ParentCount)) %>%  # convert counts to proportions
     dplyr::select(-ParentCount) %>% 
@@ -248,6 +255,7 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
     drop_na() %>% # Filter out rows with NA
     mutate(BgCorr = if(zeroed_BgCorr) {pmax(0, Dummy_Stim_Name - DMSO)} else {Dummy_Stim_Name - DMSO}) %>% 
     dplyr::select(-c(DMSO, Dummy_Stim_Name))
+  
   dat_bgCorr_wide <- dat_bgCorr_long %>% 
     tidyr::pivot_wider(id_cols = c("Individual", !!as.symbol(group_by_colname)),
                        names_from = BooleanSubset,
