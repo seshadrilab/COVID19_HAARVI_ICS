@@ -66,7 +66,7 @@ distributeEvents <- function(totalEvents, subGroupSizes) {
 }
 
 # A function to sample n events from a GatingHierarchy containing a single sample
-sampleGatingHierarchy <- function(gh, parentGate, n, otherGates = NULL) {
+sampleGatingHierarchy <- function(gh, parentGate, n = NULL, otherGates = NULL) {
   library(openCyto)
   library(CytoML) # 1.12.0
   library(flowCore) # required for description()
@@ -78,19 +78,30 @@ sampleGatingHierarchy <- function(gh, parentGate, n, otherGates = NULL) {
     stop ("all marker names (even FSC-A and Time) must be assigned and be unique")
   # May want to loosen above requirement, using channel names where marker names are unavailable.
   
-  # First take length n sample from all events in parentGate
-  availableEvents <- gh_pop_get_count(gh, parentGate)
-  nSampled <- sample.int(availableEvents, size = n)
-  
+  if(!is.null(n)) {
+    # First take length n sample from all events in parentGate
+    availableEvents <- gh_pop_get_count(gh, parentGate)
+    nSampled <- sample.int(availableEvents, size = n)
+  }
+
   # Then extract boolean gate data and mfi data, and cbind them.
   # For now, in the interest of saving memory, the data is subset to the sampled events as soon as possible.
   parentGateIndices <- gh_pop_get_indices(gh, parentGate) # relative to all data in gh, i.e. root node. a TRUE/FALSE vector. Used for subsetting boolean data
   gates2Extract <- unique(c(parentGate, if(is.null(otherGates)) {gh_get_pop_paths(gh)} else {otherGates}))
-  perCellGateMembership <- data.frame(lapply(gates2Extract, function(currentGate) {
-    as.integer(gh_pop_get_indices_mat(gh, currentGate)[parentGateIndices,][nSampled]) }))
+  if(!is.null(n)) {
+    perCellGateMembership <- data.frame(lapply(gates2Extract, function(currentGate) {
+      as.integer(gh_pop_get_indices_mat(gh, currentGate)[parentGateIndices,][nSampled]) }))
+  } else {
+    perCellGateMembership <- data.frame(lapply(gates2Extract, function(currentGate) {
+      as.integer(gh_pop_get_indices_mat(gh, currentGate)[parentGateIndices,]) }))
+  }
   colnames(perCellGateMembership) <- gates2Extract
   
-  perCellMFIData <- exprs(gh_pop_get_data(gh, parentGate))[nSampled,]
+  if(!is.null(n)) {
+    perCellMFIData <- exprs(gh_pop_get_data(gh, parentGate))[nSampled,]
+  } else {
+    perCellMFIData <- exprs(gh_pop_get_data(gh, parentGate))
+  }
   colnames(perCellMFIData) <- allMarkerNames[match(colnames(perCellMFIData), allMarkerNames[,1]), 2]
   
   # Combine Gate membership data with MFI expression data

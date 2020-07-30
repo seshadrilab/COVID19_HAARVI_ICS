@@ -52,8 +52,8 @@ source(here::here("scripts/20200604_Helper_Functions.R")) # for distributeEvents
 
 ```{r}
 date <- 20200617
-save_output <- TRUE
-rerun_tsne <- TRUE
+save_output <- FALSE
+rerun_tsne <- FALSE
 
 gs <- load_gs(here::here("out/GatingSets/20200611_HAARVI_ICS_GatingSet_AllBatches"))
 dput(gh_get_pop_paths(gs))
@@ -125,7 +125,10 @@ sub_group_size_calculations %>%
   
 Above: If we allow unequal patient representation, we can have up to 1495 events per group.  
 Let's settle for 1000x*3x4 = 12000 events total in the t-SNE run. So, 1000 events per group.  
+  
+Reproducibility is important  
 ```{r}
+set.seed(date)
 cd4_cytokinepos_sampleSizes <- pop_counts %>%
   dplyr::filter(Cohort != "Healthy control" & !is.na(Cohort) & !(STIM %in% c("DMSO", "SEB"))) %>% 
   group_by(Batch, Cohort, STIM) %>% 
@@ -169,10 +172,7 @@ ggplot(cd4_cytokinepos_sampleSizes_4plot,
   theme(axis.title.x = element_blank())
 ```
 
-Reproducibility is important  
 ```{r}
-set.seed(date)
-
 call_sampleGatingHierarchy_for_cd4 <- function(currentSampleName, currentSampleSize) {
   # print(sprintf("Sampling data from %s", currentSampleName))
   sampleGatingHierarchy(gs[[currentSampleName]], cd4_cytokine_pos_parentGate, currentSampleSize, cd4_gates_for_tsne)
@@ -213,29 +213,39 @@ The cytokine imbalance doesn't look too bad.
 ## Run t-SNE
 
 ```{r}
+cols_4_tsne <- c("CD3 ECD", "CD8b BB700", "CD4 APC-H7",
+                  "TNFa FITC", "CD107a PE-Cy7", 
+                  "CD154 PE-Cy5", "IL2 PE", "IL17a Ax700", 
+                  "IL4/5/13 APC", "IFNg V450", 
+                  "CCR7 BV711", "CD45RA BUV737",
+                  "CD38 BV605", "HLADR BUV395")
+cd4.scaled_tsne_input <- cd4_cytokinepos_data4tsne %>% 
+  dplyr::select(all_of(cols_4_tsne)) %>% 
+  as.matrix() %>% 
+  scale() %>% 
+  as.data.frame() %>% 
+  rename_at(vars(all_of(cols_4_tsne)),function(x) paste0(x,".scaled"))
+
+cd4_cytokinepos_data4tsne <- cbind(cd4_cytokinepos_data4tsne, cd4.scaled_tsne_input)
+
 # t-SNE can take a long time, so there is a rerun_tsne switch
 if(rerun_tsne) {
   print("Running t-SNE")
   print(Sys.time())
   cd4_cytokinepos_tsne_out <- cd4_cytokinepos_data4tsne %>% 
     # Run CD3, co-receptor, cytokine, memory, and activation markers through t-SNE
-    dplyr::select("CD3 ECD", "CD8b BB700", "CD4 APC-H7",
-                  "TNFa FITC", "CD107a PE-Cy7", 
-                  "CD154 PE-Cy5", "IL2 PE", "IL17a Ax700", 
-                  "IL4/5/13 APC", "IFNg V450", 
-                  "CCR7 BV711", "CD45RA BUV737",
-                  "CD38 BV605", "HLADR BUV395") %>% 
+    dplyr::select(all_of(paste0(cols_4_tsne, ".scaled"))) %>% 
     Rtsne::Rtsne(check_duplicates = FALSE)
   print(Sys.time())
   cd4_cytokinepos_dat <- cbind(as.data.frame(cd4_cytokinepos_tsne_out$Y) %>% 
     dplyr::rename(x = V1, y = V2),
     cd4_cytokinepos_data4tsne)
   if(save_output) {
-    print("Loading saved t-SNE run")
     saveRDS(cd4_cytokinepos_dat, here::here(sprintf("out/tSNE/%s_ICS_CD4_CytokinePos_tSNE.rds", date)))
   }
 } else {
   # Assuming t-SNE results are already saved
+  print("Loading saved t-SNE run")
   cd4_cytokinepos_dat <- readRDS(here::here(sprintf("out/tSNE/%s_ICS_CD4_CytokinePos_tSNE.rds", date)))
 }
 ```
@@ -358,8 +368,8 @@ ggplot(cd4_cytokinepos_dat, aes(x=x, y=y, colour=!!as.name(currentColumn))) +
 - In terms of cytokine subpopulations which are more prevalent in a particular stim or hospitalization status, it is easier to identify them using COMPASS. But we can interpret the t-SNE results anyway, and we can see that the t-SNE results reflect our COMPASS findings:
     - VEMP looks different from all the rest of the stims, with a large CD107a subpopulation.
     - TNF, IL2, and CD154 are often co-expressed in the S1, S2, and NCAP panels, sometimes with IFNg. You can see that these events are enriched in the convalescent hospitalized patients (the dotplots from the COMPASS follow-up plots make this point more directly).
-    - It is helpful to see that IL4/5/13 and IL17 each seem to form their own clusters (away from the TNF/IL2/CD154 clusters) and are seen across all the stims: however, a lot of these events are likely not above background (i.e. also present in the DMSO condition and potentially noise), as evident from the background-corrected dotplots and FACs plots.
-Memory:
+    - It is helpful to see that IL4/5/13 and IL17 each seem to form their own clusters (away from the TNF/IL2/CD154 clusters) and are seen across all the stims: however, a lot of these events are likely not above background (i.e. also present in the DMSO condition and potentially noise), as evident from the background-corrected dotplots and FACs plots.  
+- Memory:  
     - Almost all cytokine positive events are CCR7+ (so, TCM or Naive)
     - Most of the TNF, IL2, and CD154 events look CD45RA- (so, likely TCM). In contrast, the CD107a, IL4/5/13, and IL17 clusters seem to be a mix of CD45RA+ (so, probably Naive) and CD45RA-.
 - Activation:
@@ -428,7 +438,7 @@ sub_group_size_calculations %>%
   knitr::kable()
 ```
   
-Above: Based on the n_x_min_NotCD4_CytokinePos column, if we maintained equal representation of the patients within each group (by batch, cohort, and stim) there would be 273 events per group, leading to a total of only 377x3x4 = 4524 events.  
+Above: Based on the n_x_min_NotCD4_CytokinePos column, if we maintained equal representation of the patients within each group (by batch, cohort, and stim) there would be 377 events per group, leading to a total of only 377x3x4 = 4524 events.  
 The limiting group is: B2, Non-hospitalized, Spike 2  
 ```{r}
 sub_group_size_calculations %>% 
@@ -439,7 +449,10 @@ sub_group_size_calculations %>%
   
 Above: If we allow unequal patient representation, we can have up to 694 events per group.  
 Let's settle for 694x3x4 = 8328 events total in the t-SNE run.   
+  
+Reproducibility is important    
 ```{r}
+set.seed(date+1)
 notcd4_cytokinepos_sampleSizes <- pop_counts %>%
   dplyr::filter(Cohort != "Healthy control" & !is.na(Cohort) & !(STIM %in% c("DMSO", "SEB"))) %>% 
   group_by(Batch, Cohort, STIM) %>% 
@@ -483,10 +496,7 @@ ggplot(notcd4_cytokinepos_sampleSizes_4plot,
   theme(axis.title.x = element_blank())
 ```
 
-Reproducibility is important  
 ```{r}
-set.seed(date+1)
-
 call_sampleGatingHierarchy_for_cd4 <- function(currentSampleName, currentSampleSize) {
   # print(sprintf("Sampling data from %s", currentSampleName))
   sampleGatingHierarchy(gs[[currentSampleName]], notcd4_cytokine_pos_parentGate, currentSampleSize, notcd4_gates_for_tsne)
@@ -527,29 +537,39 @@ IL17 seems to be dominating Batch 1. We know that there is high IL17 DMSO backgr
 ## Run t-SNE
 
 ```{r}
+cols_4_tsne <- c("CD3 ECD", "CD8b BB700", "CD4 APC-H7",
+                  "TNFa FITC", "CD107a PE-Cy7", 
+                  "CD154 PE-Cy5", "IL2 PE", "IL17a Ax700", 
+                  "IL4/5/13 APC", "IFNg V450", 
+                  "CCR7 BV711", "CD45RA BUV737",
+                  "CD38 BV605", "HLADR BUV395")
+notcd4.scaled_tsne_input <- notcd4_cytokinepos_data4tsne %>% 
+  dplyr::select(all_of(cols_4_tsne)) %>% 
+  as.matrix() %>% 
+  scale() %>% 
+  as.data.frame() %>% 
+  rename_at(vars(all_of(cols_4_tsne)),function(x) paste0(x,".scaled"))
+
+notcd4_cytokinepos_data4tsne <- cbind(notcd4_cytokinepos_data4tsne, notcd4.scaled_tsne_input)
+
 # t-SNE can take a long time, so there is a rerun_tsne switch
 if(rerun_tsne) {
   print("Running t-SNE")
   print(Sys.time())
   notcd4_cytokinepos_tsne_out <- notcd4_cytokinepos_data4tsne %>% 
     # Run CD3, co-receptor, cytokine, memory, and activation markers through t-SNE
-    dplyr::select("CD3 ECD", "CD8b BB700", "CD4 APC-H7",
-                  "TNFa FITC", "CD107a PE-Cy7", 
-                  "CD154 PE-Cy5", "IL2 PE", "IL17a Ax700", 
-                  "IL4/5/13 APC", "IFNg V450", 
-                  "CCR7 BV711", "CD45RA BUV737",
-                  "CD38 BV605", "HLADR BUV395") %>% 
+    dplyr::select(all_of(paste0(cols_4_tsne, ".scaled"))) %>% 
     Rtsne::Rtsne(check_duplicates = FALSE)
   print(Sys.time())
   notcd4_cytokinepos_dat <- cbind(as.data.frame(notcd4_cytokinepos_tsne_out$Y) %>% 
     dplyr::rename(x = V1, y = V2),
     notcd4_cytokinepos_data4tsne)
   if(save_output) {
-    print("Loading saved t-SNE run")
     saveRDS(notcd4_cytokinepos_dat, here::here(sprintf("out/tSNE/%s_ICS_NotCD4_CytokinePos_tSNE.rds", date)))
   }
 } else {
   # Assuming t-SNE results are already saved
+  print("Loading saved t-SNE run")
   notcd4_cytokinepos_dat <- readRDS(here::here(sprintf("out/tSNE/%s_ICS_NotCD4_CytokinePos_tSNE.rds", date)))
 }
 ```
@@ -667,30 +687,34 @@ ggplot(notcd4_cytokinepos_dat, aes(x=x, y=y, colour=!!as.name(currentColumn))) +
   sc
 ```
 
-### Color t-SNE plots by CD4 and CD8 mfi
+### Color t-SNE plots by CD4 and CD8 scaled mfi
 
-Since the Not-CD4 gate contains both CD4-high, CD4-low, CD8-high, and CD8-low events.  
+Since the Not-CD4 gate contains both CD4-high, CD4-low, CD8-high, and CD8-low events, show which events fall in which co-receptor subset.  
 
 ```{r, fig.width=10, fig.height=5}
 notcd4_cytokinepos_dat %>%
-  ggplot(aes(x=`CD4 APC-H7`, color=factor(Batch), fill=factor(Batch))) +
-  geom_histogram(alpha=0.2, position="identity") +
-  geom_vline(xintercept = -1000) +
-  geom_vline(xintercept = 2500)
+  ggplot(aes(x=`CD4 APC-H7.scaled`, color=factor(Batch), fill=factor(Batch))) +
+  geom_histogram(alpha=0.2, position="identity", bins=60) +
+  geom_vline(xintercept = -3) +
+  geom_vline(xintercept = 3) +
+  coord_cartesian(xlim = c(-5, 5))
 
 notcd4_cytokinepos_dat %>%
-  ggplot(aes(x=`CD8b BB700`, color=factor(Batch), fill=factor(Batch))) +
-  geom_histogram(alpha=0.2, position="identity") +
-  geom_vline(xintercept = -3000) +
-  geom_vline(xintercept = 7000)
+  ggplot(aes(x=`CD8b BB700.scaled`, color=factor(Batch), fill=factor(Batch))) +
+  geom_histogram(alpha=0.2, position="identity", bins=720) +
+  geom_vline(xintercept = -1.1) +
+  geom_vline(xintercept = 1.1) +
+  coord_cartesian(xlim = c(-2, 2))
 ```
 
 ```{r, fig.width=10, fig.height=8}
-map2(.x = c("CD4 APC-H7", "CD8b BB700"),
-     .y = list(c(-1000, 2500), c(-2500, 6500)),
+myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+
+map2(.x = c("CD4 APC-H7.scaled", "CD8b BB700.scaled"),
+     .y = list(c(-3, 3), c(-1.1, 1.1)),
      .f = function(currentColumn, currentLimits) {
         pointSize <- 0.4
-        print(ggplot(notcd4_cytokinepos_dat, aes(x=x, y=y, colour=!!as.name(currentColumn))) +
+        ggplot(notcd4_cytokinepos_dat, aes(x=x, y=y, colour=!!as.name(currentColumn))) +
           geom_point(shape=20, alpha=0.8, size=pointSize) +
           facet_grid(Cohort ~ STIM, switch="y",
                      labeller = labeller(Cohort = cohort_labs, STIM = stim_labs)) +
@@ -705,13 +729,14 @@ map2(.x = c("CD4 APC-H7", "CD8b BB700"),
                 strip.text=element_text(face="bold", size=22),
                 panel.grid.major = element_blank(),
                 legend.title=element_text(face="bold", size=15),
-                legend.text = element_text(size=6),
+                legend.text = element_text(size=11),
                 strip.text.x = element_text(margin = margin(0.15,0,0.15,0, "cm")),
                 legend.position = "bottom") +
           # values lower or higher than the limits get converted to min(limits) and max(limits), respectively
-          scale_colour_gradient(low = "red", high = "green", oob=squish, limits=currentLimits))
+          scale_colour_gradientn(colours = myPalette(100), oob=squish, limits=currentLimits)
      })
 ```
+
 
 ## Not-CD4 Observations:  
   
@@ -727,5 +752,5 @@ map2(.x = c("CD4 APC-H7", "CD8b BB700"),
     - Unlike in CD4s where CCR7 was expressed by a majority events, CCR7 is probably expressed in ~50% of Not-CD4 events.  
     - CD45RA looks like it's expressed by ~40-50% of events, a little higher than with CD4s, but less localized.  
 - Activation
-    - Smattering of CD38  
+    - Smattering of CD38. Small CD38+ population in NCAP which also expresses TNF and IFNG?  
     - Only a tiny bit of HLA-DR (looks like it might be CD107a or IL2 positive)
