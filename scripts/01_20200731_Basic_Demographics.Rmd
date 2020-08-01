@@ -1,0 +1,102 @@
+---
+title: "HAARVI COVID-19: Basic Demographics Analysis"
+author: "Malisa Smith"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+date: "version `r format(Sys.time(), '%B %d, %Y')`"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=F}
+library(tidyverse)
+library(ggpubr)
+```
+
+```{r}
+save_output <- FALSE
+```
+
+Check if basic demographics are balanced between the hospitalized and non-hospitalized groups
+
+# Read in data
+
+```{r read in data}
+# Read in the patient manifest
+data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
+unique(data_manifest$Cohort)
+```
+
+# Check if matched by age, sex, ethnicity, and date of symptom onset
+
+```{r}
+# First explore missing data
+data_manifest %>% 
+  dplyr::filter(Sex == "N/A" | Race == "N/A" | `Days symptom onset to visit 1` == "N|A" | Age == "N/A") %>% 
+  dplyr::select(`Record ID`, Cohort, Age, Sex, Race, `Days symptom onset to visit 1`) %>% 
+  knitr::kable()
+```
+  
+Only healthy controls missing data. COVID samples are complete.
+
+```{r, fig.width=5.5, fig.height=4}
+# Age
+data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  ggboxplot(x="Cohort", y="Age", color="Cohort", add="jitter") +
+  theme_grey(base_size=18) +
+  stat_compare_means() +
+  theme(legend.position = "none")
+
+# Sex
+data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  ggplot(aes(x=Cohort, fill=Sex)) +
+  theme_grey(base_size=18) +
+  geom_bar(position="fill", stat="count")
+sex_table <- data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>%
+  dplyr::select(Cohort, Sex) %>% table()
+sex_table
+fisher.test(sex_table)
+```
+
+```{r, fig.width=8.5, fig.height=4}
+# Ethnicity
+data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  ggplot(aes(x=Cohort, fill=Race_v2)) +
+  theme_grey(base_size=18) +
+  geom_bar(position="fill", stat="count")
+race_table <- data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  dplyr::select(Cohort, Race_v2) %>% 
+  table()
+race_table
+fisher.test(race_table)
+```
+
+```{r, fig.width=5.5, fig.height=4}
+# Days from symptom onset to collection
+data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  mutate(`Days symptom onset to visit 1` = as.numeric(`Days symptom onset to visit 1`)) %>% 
+  ggboxplot(x="Cohort", y="`Days symptom onset to visit 1`", color="Cohort", add="jitter") +
+  theme_grey(base_size=18) +
+  stat_compare_means() +
+  theme(legend.position = "none")
+```
