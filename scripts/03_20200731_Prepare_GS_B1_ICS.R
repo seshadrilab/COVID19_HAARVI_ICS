@@ -9,7 +9,7 @@ library(readxl)
 
 # Read in Batch 1 workspace and prepare GatingSet.
 
-date <- 20200731
+date <- 20200803
 
 xml_path_b1 <- here::here("data/20200528_COVID_…S-B1_CS2_KY.xml")
 fcs_subfolder_b1 <- here::here("data/20200528_COVID_ICS-B1/")
@@ -22,7 +22,7 @@ keywords2import <- c("EXPERIMENT NAME", "$DATE", "SAMPLE ID", "PATIENT ID", "STI
 
 sampleGroup <- "Samples"
 gs_b1 <- flowjo_to_gatingset(ws_b1, name=sampleGroup, keywords=keywords2import,
-                             path=fcs_subfolder_b1)
+                             path=fcs_subfolder_b1, extend_val=-10000)
 # Warning messages:
 #   1: In eval_tidy(args[[j]], mask) :
 #   keyword not found in 112563.fcs_265525: ‘PATIENT ID’
@@ -120,7 +120,7 @@ png(here::here(sprintf("out/QC/B1_GatingTree_%s.png", date)), width = 7, height 
 (plot(gs_b1, fontsize=15, bool=T))
 dev.off()
 
-save_gs(gs_b1, here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B1"))
+save_gs(gs_b1, here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B1"))
 
 # 6 samples for each patient
 table(pData(gs_b1)$`SAMPLE ID`)
@@ -129,7 +129,7 @@ length(unique(pData(gs_b1)$`SAMPLE ID`))
 
 #####################################################################
 
-# gs_b1 <- load_gs(here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B1"))
+# gs_b1 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B1"))
 
 dput(gh_get_pop_paths(gs_b1))
 
@@ -146,7 +146,7 @@ cd3_cd4_cd8_counts_b1 <- pData(gs_b1) %>%
                      CD8 = !!cd8_path,
                      NOT4 = !!not4_path),
             by = c("rowname" = "name")) %>% 
-  dplyr::select("SAMPLE ID", "Cohort", "Age", "Sex", "Race", "Days symptom onset to visit 1", "Batch", "CD3", "CD4", "CD8", "NOT4")
+  dplyr::select("SAMPLE ID", "Cohort", "Age", "Sex", "Race", "Days symptom onset to visit 1", "Batch", "STIM", "CD3", "CD4", "CD8", "NOT4")
 
 png(here::here(sprintf("out/QC/Counts/B1_CD3_Counts_%s.png", date)),
     width = 10, height = 6, units="in", res=300)
@@ -196,6 +196,18 @@ ggplot(cd3_cd4_cd8_counts_b1 %>%
   scale_color_identity() +
   ggtitle("Batch 1 NOT4 Counts")
 dev.off()
+
+# CD3, CD4, and NOT4 counts look good.
+# CD8 counts: low for some wells for 15548 and BWT20
+
+# Investigate the low count wells
+cd3_cd4_cd8_counts_b1 %>% 
+  dplyr::filter(CD3 < 10000 | CD4 < 3000 | CD8 < 3000 | NOT4 < 3000)
+#   SAMPLE ID       Cohort Age  Sex  Race Days symptom onset to visit 1 Batch    STIM    CD3   CD4  CD8  NOT4
+# 1     BWT20         <NA>  NA <NA>  <NA>                          <NA>     1 Spike 2  50666 41291 2392  9375
+# 2     BWT20         <NA>  NA <NA>  <NA>                          <NA>     1    NCAP  58138 48076 2294 10062
+# 3     15548 Hospitalized  58    F White                            46     1 Spike 2  81761 44827 1644 36934
+# 4     15548 Hospitalized  58    F White                            46     1    NCAP 139966 97264 2381 42702
 
 ###################################################################
 
@@ -339,16 +351,16 @@ for(currentGates in list(cd4_mem_gates, notcd4_mem_gates, cd8_mem_gates)) {
 
 # 1) Visualize activation gates on CD3-CD19+
 
-library(openCyto) # 1.24.0
-library(CytoML) # 1.12.0
-library(flowCore) # required for description()
-library(flowWorkspace) # required for gh_pop_get_data()
-library(ggcyto) # devtools::install_github("RGLab/ggcyto", ref="ggplot3.3") for update_theme()
-library(here)
-library(tidyverse)
-
-gs_b1 <- load_gs(here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B1"))
-pData(gs_b1)$STIM <- factor(pData(gs_b1)$STIM, levels = c("DMSO", "VEMP", "Spike 1", "Spike 2", "NCAP", "SEB"))
+# library(openCyto) # 1.24.0
+# library(CytoML) # 1.12.0
+# library(flowCore) # required for description()
+# library(flowWorkspace) # required for gh_pop_get_data()
+# library(ggcyto) # devtools::install_github("RGLab/ggcyto", ref="ggplot3.3") for update_theme()
+# library(here)
+# library(tidyverse)
+# 
+# gs_b1 <- load_gs(here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B1"))
+# pData(gs_b1)$STIM <- factor(pData(gs_b1)$STIM, levels = c("DMSO", "VEMP", "Spike 1", "Spike 2", "NCAP", "SEB"))
 
 # Activation gates on CD3-CD19+
 
@@ -366,10 +378,10 @@ plot(gs_b1, bool=T, fontsize=15)
 recompute(gs_b1, y="/Time/S")
 
 # <V610-A>      CD38 BV605   <U395-A>    HLADR BUV395
-ggcyto(gs_b1[1], aes("<V610-A>", "<U395-A>"),
-       subset = "/Time/S/LD-3-") +
-  geom_hex(bins=256) +
-  geom_gate(c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"))
+# ggcyto(gs_b1[1], aes("<V610-A>", "<U395-A>"),
+#        subset = "/Time/S/LD-3-") +
+#   geom_hex(bins=256) +
+#   geom_gate(c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"))
 
 currentGates <- c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+")
 ptids <- unique(pData(gs_b1)$`SAMPLE ID`)

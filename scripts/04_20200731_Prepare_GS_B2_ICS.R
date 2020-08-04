@@ -9,7 +9,7 @@ library(readxl)
 
 # Read in Batch 2 workspace and prepare GatingSet.
 
-date <- 20200731
+date <- 20200803
 
 xml_path_b2 <- here::here("data/20200607_COVID_ICS-B2_KY2.xml")
 fcs_subfolder_b2 <- here::here("data/20200603_COVID_ICS-B2/")
@@ -22,7 +22,7 @@ keywords2import <- c("EXPERIMENT NAME", "$DATE", "SAMPLE ID", "PATIENT ID", "STI
 
 sampleGroup <- "Samples"
 gs_b2 <- flowjo_to_gatingset(ws_b2, name=sampleGroup, keywords=keywords2import,
-                             path=fcs_subfolder_b2)
+                             path=fcs_subfolder_b2, extend_val=-10000)
 
 # There is only one unique gating tree
 pop_lists <- lapply(gs_b2, gh_get_pop_paths)
@@ -105,7 +105,7 @@ png(here::here(sprintf("out/QC/B2_GatingTree_%s.png", date)), width = 7, height 
 (plot(gs_b2, fontsize=15, bool=T))
 dev.off()
 
-save_gs(gs_b2, here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B2"))
+save_gs(gs_b2, here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B2"))
 
 # 6 samples for each patient
 table(pData(gs_b2)$`SAMPLE ID`)
@@ -114,7 +114,7 @@ length(unique(pData(gs_b2)$`SAMPLE ID`))
 
 #####################################################################
 
-# gs_b2 <- load_gs(here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B2"))
+# gs_b2 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B2"))
 
 dput(gh_get_pop_paths(gs_b2))
 
@@ -182,24 +182,24 @@ ggplot(cd3_cd4_cd8_counts_b2 %>%
   ggtitle("Batch 2 NOT4 Counts")
 dev.off()
 
-# Investigate the low-CD3 and CD4 wells
+# Investigate the low count wells
 cd3_cd4_cd8_counts_b2 %>% 
   dplyr::filter(CD3 < 10000 | CD4 < 3000 | CD8 < 3000 | NOT4 < 3000)
 #    SAMPLE ID                    Cohort Age  Sex  Race Days symptom onset to visit 1 Batch    STIM   CD3  CD4  CD8  NOT4
-# 1     551432 Healthy control 2017-2018  26    F   N/A                           N/A     2 Spike 2  9918 5607 1649  4311
-# 2      15530              Hospitalized  68    M White                            56     2 Spike 2 14310 7511 2886  6799
-# 3        37C          Non-hospitalized  57    F White                            38     2    DMSO 12508 1460 3476 11048
-# 4        37C          Non-hospitalized  57    F White                            38     2     SEB 11058 1391 2559  9667
-# 5        37C          Non-hospitalized  57    F White                            38     2    VEMP  7611 1424 2105  6187
-# 6        37C          Non-hospitalized  57    F White                            38     2 Spike 1 10723 2162 3196  8561
-# 7        37C          Non-hospitalized  57    F White                            38     2 Spike 2  4338  849 1528  3489
-# 8        37C          Non-hospitalized  57    F White                            38     2    NCAP  8434 1285 2219  7149
-# 9      BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2    DMSO  4618 3522  487  1096
-# 10     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2     SEB  4436 3350  473  1086
-# 11     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2    VEMP  3572 2728  330   844
-# 12     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2 Spike 1  3935 2951  363   984
-# 13     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2 Spike 2  3032 2368  218   664
-# 14     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2    NCAP  3027 2306  206   721
+# 1     551432 Healthy control 2017-2018  26    F   N/A                           N/A     2 Spike 2  9879 5589 1642  4290
+# 2      15530              Hospitalized  68    M White                            56     2 Spike 2 14230 7464 2862  6766
+# 3        37C          Non-hospitalized  57    F White                            38     2    DMSO 12476 1442 3470 11034
+# 4        37C          Non-hospitalized  57    F White                            38     2     SEB 10993 1377 2544  9616
+# 5        37C          Non-hospitalized  57    F White                            38     2    VEMP  7565 1408 2098  6157
+# 6        37C          Non-hospitalized  57    F White                            38     2 Spike 1 10671 2139 3190  8532
+# 7        37C          Non-hospitalized  57    F White                            38     2 Spike 2  4287  839 1526  3448
+# 8        37C          Non-hospitalized  57    F White                            38     2    NCAP  8383 1275 2213  7108
+# 9      BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2    DMSO  4575 3514  487  1061
+# 10     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2     SEB  4394 3332  470  1062
+# 11     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2    VEMP  3529 2722  327   807
+# 12     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2 Spike 1  3907 2938  360   969
+# 13     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2 Spike 2  2989 2368  217   621
+# 14     BWT23                      <NA>  NA <NA>  <NA>                          <NA>     2    NCAP  2959 2299  206   660
 
 # 07B/551432 Spike 2: this well has 13% of events in Live CD3+ gate, which is much lower than ~40-50% for the other stims for this patient.
 # Aside from that, the cell populations look ok on the flow plots and CD4 count is ok. Decision: drop this well.
@@ -349,16 +349,16 @@ for(currentGates in list(cd4_mem_gates, notcd4_mem_gates, cd8_mem_gates)) {
 
 # 1) Visualize activation gates on CD3-CD19+
 
-library(openCyto) # 1.24.0
-library(CytoML) # 1.12.0
-library(flowCore) # required for description()
-library(flowWorkspace) # required for gh_pop_get_data()
-library(ggcyto) # devtools::install_github("RGLab/ggcyto", ref="ggplot3.3") for update_theme()
-library(here)
-library(tidyverse)
-
-gs_b2 <- load_gs(here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B2"))
-pData(gs_b2)$STIM <- factor(pData(gs_b2)$STIM, levels = c("DMSO", "VEMP", "Spike 1", "Spike 2", "NCAP", "SEB"))
+# library(openCyto) # 1.24.0
+# library(CytoML) # 1.12.0
+# library(flowCore) # required for description()
+# library(flowWorkspace) # required for gh_pop_get_data()
+# library(ggcyto) # devtools::install_github("RGLab/ggcyto", ref="ggplot3.3") for update_theme()
+# library(here)
+# library(tidyverse)
+# 
+# gs_b2 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B2"))
+# pData(gs_b2)$STIM <- factor(pData(gs_b2)$STIM, levels = c("DMSO", "VEMP", "Spike 1", "Spike 2", "NCAP", "SEB"))
 
 # Activation gates on CD3-CD19+
 
@@ -375,18 +375,18 @@ plot(gs_b2, bool=T, fontsize=15)
 
 recompute(gs_b2, y="/Time/S")
 
-ggcyto(gs_b2[1], aes("<G610-A>", "<V510-A>"),
-       subset = "/Time/S",
-       filter = marginalFilter) +
-  geom_hex(bins=128) +
-  geom_gate("/Time/S/LD-3-")
-
-# <V610-A>      CD38 BV605   <U395-A>    HLADR BUV395
-ggcyto(gs_b2[1], aes("<V610-A>", "<U395-A>"),
-       subset = "/Time/S/LD-3-",
-       filter = marginalFilter) +
-  geom_hex(bins=128) +
-  geom_gate(c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"))
+# ggcyto(gs_b2[1], aes("<G610-A>", "<V510-A>"),
+#        subset = "/Time/S",
+#        filter = marginalFilter) +
+#   geom_hex(bins=128) +
+#   geom_gate("/Time/S/LD-3-")
+# 
+# # <V610-A>      CD38 BV605   <U395-A>    HLADR BUV395
+# ggcyto(gs_b2[1], aes("<V610-A>", "<U395-A>"),
+#        subset = "/Time/S/LD-3-",
+#        filter = marginalFilter) +
+#   geom_hex(bins=128) +
+#   geom_gate(c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+"))
 
 currentGates <- c("/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+")
 ptids <- unique(pData(gs_b2)$`SAMPLE ID`)
