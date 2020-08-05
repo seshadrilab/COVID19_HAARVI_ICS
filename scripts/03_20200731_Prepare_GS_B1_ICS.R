@@ -359,7 +359,7 @@ for(currentGates in list(cd4_mem_gates, notcd4_mem_gates, cd8_mem_gates)) {
 # library(here)
 # library(tidyverse)
 # 
-# gs_b1 <- load_gs(here::here("out/GatingSets/20200731_HAARVI_ICS_GatingSet_B1"))
+# gs_b1 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B1"))
 # pData(gs_b1)$STIM <- factor(pData(gs_b1)$STIM, levels = c("DMSO", "VEMP", "Spike 1", "Spike 2", "NCAP", "SEB"))
 
 # Activation gates on CD3-CD19+

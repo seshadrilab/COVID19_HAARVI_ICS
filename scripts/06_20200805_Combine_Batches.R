@@ -10,9 +10,9 @@ library(tidyverse)
 # Open /etc/R/Renviron and add a line TMP = 'path/to/large/space'
 tempdir() # And make sure it's where you want it to be
 
-gs1 <- load_gs(here::here("out/GatingSets/20200603_HAARVI_ICS_GatingSet_B1/"))
-gs2 <- load_gs(here::here("out/GatingSets/20200610_HAARVI_ICS_GatingSet_B2/"))
-gs3 <- load_gs(here::here("out/GatingSets/20200609_HAARVI_ICS_GatingSet_B3"))
+gs1 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B1/"))
+gs2 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B2/"))
+gs3 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3"))
 
 # Make sure nodes and markers are consistent between the three batches
 setdiff(sort(gh_get_pop_paths(gs1)), sort(gh_get_pop_paths(gs2)))
@@ -26,11 +26,11 @@ all(markernames(gs1) == markernames(gs3))
 
 pData(parameters(gh_pop_get_data(gs1[[1]])))[,c(1, 2)]
 
-# Combining into a single GatingSet necessary if running t-SNE
+# Combining into a single GatingSet necessary if running t-SNE (we will be running both COMPASS and t-SNE on this dataset)
 gs <- gslist_to_gs(GatingSetList(list(gs1, gs2, gs3))) # This takes a while
 
-save_gs(gs, here::here("out/GatingSets/20200611_HAARVI_ICS_GatingSet_AllBatches"))
-# gs <- load_gs(here::here("out/GatingSets/20200611_HAARVI_ICS_GatingSet_AllBatches"))
+save_gs(gs, here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches"))
+# gs <- load_gs(here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches"))
 
 #######################################################
 
@@ -41,13 +41,18 @@ gs_sub <- subset(gs, STIM == "DMSO" &
 # We are looking for differences between hospitalized and not hospitalized that might confound COMPASS.
 dput(grep("\\/4\\+\\/|\\/NOT4\\+\\/", gh_get_pop_paths(gs[[1]]), value=T))
 pop_paths_of_interest <- c("/Time/LD-3+/1419-3+/S/Lymph/4+", "/Time/LD-3+/1419-3+/S/Lymph/NOT4+",
+                           "/Time/LD-3+/1419-3+/S/Lymph/8+",
                            "/Time/LD-3+/1419-3+/S/Lymph/4+/107a", "/Time/LD-3+/1419-3+/S/Lymph/4+/154", 
                            "/Time/LD-3+/1419-3+/S/Lymph/4+/IFNG", "/Time/LD-3+/1419-3+/S/Lymph/4+/IL2", 
                            "/Time/LD-3+/1419-3+/S/Lymph/4+/IL17", "/Time/LD-3+/1419-3+/S/Lymph/4+/IL4513", 
                            "/Time/LD-3+/1419-3+/S/Lymph/4+/TNF", "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/107a", 
                            "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/154", "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IFNG", 
                            "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL2", "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL17", 
-                           "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL4513", "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/TNF")
+                           "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/IL4513", "/Time/LD-3+/1419-3+/S/Lymph/NOT4+/TNF",
+                           "/Time/LD-3+/1419-3+/S/Lymph/8+/107a", "/Time/LD-3+/1419-3+/S/Lymph/8+/154", 
+                           "/Time/LD-3+/1419-3+/S/Lymph/8+/IFNG", "/Time/LD-3+/1419-3+/S/Lymph/8+/IL2", 
+                           "/Time/LD-3+/1419-3+/S/Lymph/8+/IL17", "/Time/LD-3+/1419-3+/S/Lymph/8+/IL4513", 
+                           "/Time/LD-3+/1419-3+/S/Lymph/8+/TNF")
 pops_of_interest_short <- str_replace(pop_paths_of_interest, "\\/Time\\/LD\\-3\\+\\/1419\\-3\\+\\/S\\/Lymph\\/", "")
 pop_dat <- gs_pop_get_count_with_meta(gs_sub, 
                                       subpopulations = pop_paths_of_interest) %>% 
@@ -56,7 +61,7 @@ pop_dat <- gs_pop_get_count_with_meta(gs_sub,
   pivot_wider(names_from = Population, values_from = Count) %>% 
   rename_at(vars(all_of(pop_paths_of_interest)),
             ~ pops_of_interest_short) %>% 
-  mutate(Cohort = ifelse(is.na(Cohort), "Healthy control", Cohort),
+  mutate(Cohort = ifelse(is.na(Cohort) | Cohort == "Healthy control 2017-2018", "Healthy control", Cohort),
          Cohort = factor(Cohort, levels = c("Healthy control", "Non-hospitalized", "Hospitalized")))
 
 pop_dat %>% dplyr::filter(Cohort == "Healthy control") %>% dplyr::pull(`SAMPLE ID`) # two TRIMAs remaining
@@ -89,13 +94,13 @@ plot_pop <- function(pop) {
     scale_y_continuous(labels = function(x) paste0(x*100))
 }
 
-plot_pop(pops_of_interest_short[[3]])
+plot_pop(pops_of_interest_short[[4]])
 
-for(pop in pops_of_interest_short[3:length(pops_of_interest_short)]) {
-  png(file=here::here(sprintf("out/QC/DMSO_Cytokine_Signal/20200611_%s_vs_Cohort.png", sub("\\/", "_", pop))),
+for(pop in pops_of_interest_short[4:length(pops_of_interest_short)]) {
+  png(file=here::here(sprintf("out/QC/DMSO_Cytokine_Signal/20200805_%s_vs_Cohort.png", sub("\\/", "_", pop))),
       width=408, height=265, units = "px")
   print(plot_pop(pop))
   dev.off()
 }
 
-# Most of the significant tests would not pass multiple comparisons corrections. NOT4+IL2+ is the exception. Enriched in Conv-Hosp group.
+# NOT4+IL2+ and NOT4+IL4/5/13 are of note. Enriched in Conv-Hosp group. However, the significant tests would not pass multiple comparisons corrections.
