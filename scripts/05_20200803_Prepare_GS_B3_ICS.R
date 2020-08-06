@@ -46,7 +46,7 @@ pData_tmp <- pData(gs_b3) %>%
                             "Cohort", "Age", "Sex", "Race", "Hispanic?", "Days symptom onset to visit 1", 
                             "Pair ID", "Race_v2"),
             by = c("SAMPLE ID" = "Record ID")) %>% 
-  mutate(Batch = 2)
+  mutate(Batch = 2) # TODO Typo. Should be 3.
 rownames(pData_tmp) <- rownames(pData(gs_b3))
 pData(gs_b3) <- pData_tmp
 

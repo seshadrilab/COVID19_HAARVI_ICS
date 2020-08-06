@@ -4879,4 +4879,32 @@ Returning the palette you asked for with that many colors
 
 9: In brewer.pal(10, "Purples") :
   n too large, allowed maximum for palette Purples is 9
-Re
+Returning the palette you asked for with that many colors
+
+10: In brewer.pal(10, "Purples") :
+  n too large, allowed maximum for palette Purples is 9
+Returning the palette you asked for with that many colors
+
+11: In brewer.pal(10, "Purples") :
+  n too large, allowed maximum for palette Purples is 9
+Returning the palette you asked for with that many colors
+
+12: In brewer.pal(10, "Purples") :
+  n too large, allowed maximum for palette Purples is 9
+Returning the palette you asked for with that many colors
+
+> quit
+function (save = "default", status = 0, runLast = TRUE) 
+.Internal(quit(save, status, runLast))
+<bytecode: 0x55ad8eb61d20>
+<environment: namespace:base>
+> 
+> 
+[1]+  Stopped                 R
+]0;malisa@malisa-Lenovo-YOGA-C930-13IKB: ~/Documents/uw/COMPASS/20200512_COVID_ICS[01;32mmalisa[00m:[01;34m~/Documents/uw/COMPASS/20200512_COVID_ICS[00m$ exit
+exit
+There are stopped jobs.
+]0;malisa@malisa-Lenovo-YOGA-C930-13IKB: ~/Documents/uw/COMPASS/20200512_COVID_ICS[01;32mmalisa[00m:[01;34m~/Documents/uw/COMPASS/20200512_COVID_ICS[00m$ exit
+exit
+
+Script done on 2020-08-05 17:19:58-0700
