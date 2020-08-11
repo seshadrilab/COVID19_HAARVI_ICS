@@ -893,21 +893,117 @@ sig_tests_tally # make sure all significant comparisons were plotted and account
 
 # Focus on IFNg
 
-Look at each run individually again, this time with IFNg subsets on RHS (since vaccine development pays a lot of attention to IFNg)
+Look at the heatmaps again, focus on IFNg
 
-```{r, fig.width=9, fig.height=12}
-for(cr_name in c(CD4RunNames, NotCD4RunNames, CD8RunNames)) {
-  print(my_plot.COMPASSResult(crList2[[cr_name]],
-                        y="Cohort",
-                        #show_rownames = T,
-                        fontsize=16, fontsize_row=16, fontsize_col=19,
-                        row_annotation_colors=row_ann_colors,
+<!-- # ```{r, fig.width=9, fig.height=12} -->
+<!-- # for(cr_name in c(CD4RunNames, NotCD4RunNames, CD8RunNames)) { -->
+<!-- #   print(my_plot.COMPASSResult(crList2[[cr_name]], -->
+<!-- #                         y="Cohort", -->
+<!-- #                         #show_rownames = T, -->
+<!-- #                         fontsize=16, fontsize_row=16, fontsize_col=19, -->
+<!-- #                         row_annotation_colors=row_ann_colors, -->
+<!-- #                         cytokine_annotation_colors=cytokine_annotation_colors, -->
+<!-- #                         cytokine_height_multiplier=2.5, order_by_max_functionality = T, -->
+<!-- #                         cytokine_order_for_annotation = c("IL4/5/13", "TNFa", "IL17a", -->
+<!-- #                                                           "CD154", "CD107a", "IL2", "IFNg"), -->
+<!-- #                         dichotomize_by_cytokine = "IFNg", -->
+<!-- #                         staircase_cytokine_annotation = TRUE, -->
+<!-- #                         main=cr_name)) -->
+<!-- # } -->
+<!-- # ``` -->
+
+Stack the plots from the different stims, this time with IFNg subsets on the RHS  
+  
+```{r, fig.width=12, fig.height=10}
+# Adapt code from COMPASS::plotCompassResultStack to prepare the data for my_plot.COMPASSResult
+# First we use mergeMatricesForPlotCOMPASSResultStack to merge the data from the different runs together.
+# Then use the merged data to create a fake merged COMPASSResult object with the merged categories, metadata, and mean_gamma data frames
+# This should allow us to use some of the customized options in my_plot.COMPASSResult (e.g. to get the IFNg subsets on the RHS)
+mergeMatricesForPlotCOMPASSResultStack_tmp <- utils::getFromNamespace("mergeMatricesForPlotCOMPASSResultStack", "COMPASS")
+
+CohortColors <- c("Hospitalized" = "#083b31", "Non-hospitalized" = "#018571", "Healthy" = "#80cdc1")
+# CohortColors <- c("Hospitalized" = "#9da4ce", "Non-hospitalized" = "#c1ddd7", "Healthy" = "#ebeef0") # To match Ab data color scheme?
+# CohortColors <- c("Hospitalized" = "#5c6494", "Non-hospitalized" = "#728a84", "Healthy" = "#ebeef0")
+StimColors <- c("S1" = "#fc68be", "S2" = "#d94e09", "NCAP" = "#6B49F2", "VEMP" = "#D0F249")
+row_ann_colors_v2 <- list(`Stim` = StimColors, `Cohort` = CohortColors)
+
+# CD4 runs
+cd4_data2plot <- mergeMatricesForPlotCOMPASSResultStack_tmp(crList2[CD4RunNames],
+                                                            threshold=0.01,
+                                   minimum_dof=1,
+                                   maximum_dof=Inf,
+                                   row_annotation = c("Stim", "Cohort"),
+                                   variable = "Stim")
+cd4_merged_COMPASSResult <- crList2$`4_Spike_1`
+cd4_merged_COMPASSResult$fit$mean_gamma <- cd4_data2plot$MMerged
+cd4_merged_COMPASSResult$fit$categories <- cd4_data2plot$catsMerged %>% mutate_all(~ as.numeric(as.character(.))) %>% mutate(Counts = rowSums(.))
+rownames(cd4_merged_COMPASSResult$fit$categories) <- rownames(cd4_data2plot$catsMerged)
+cd4_merged_COMPASSResult$data$meta <- cd4_data2plot$rowannMerged
+cd4_merged_COMPASSResult$data$meta$Run_SAMPLE_ID <- rownames(cd4_merged_COMPASSResult$data$meta)
+cd4_merged_COMPASSResult$data$meta$Stim <- factor(dplyr::recode(sub("^4_", "", cd4_merged_COMPASSResult$data$meta$Stim), "Spike_1" = "S1", "Spike_2" = "S2"), levels = c("S1", "S2", "NCAP", "VEMP"))
+cd4_merged_COMPASSResult$data$meta$Cohort <- factor(cd4_merged_COMPASSResult$data$meta$Cohort, levels = c("Hospitalized", "Non-hospitalized", "Healthy"))
+cd4_merged_COMPASSResult$data$individual_id <- "Run_SAMPLE_ID"
+cd4_heatmap_by_ifng <- print(my_plot.COMPASSResult(cd4_merged_COMPASSResult,
+                        y=c("Stim", "Cohort"),
+                        fontsize=25, fontsize_row=5, fontsize_col=22,
+                        row_annotation_colors=row_ann_colors_v2,
                         cytokine_annotation_colors=cytokine_annotation_colors,
-                        cytokine_height_multiplier=2.5, order_by_max_functionality = T,
-                        cytokine_order_for_annotation = c("IL4/5/13", "TNFa", "IL17a",
-                                                          "CD154", "CD107a", "IL2", "IFNg"),
+                        cytokine_height_multiplier=1.6, order_by_max_functionality = T,
+                        cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", 
+                                                          "CD107a", "IL4/5/13", "IL17a", "IFNg"),
                         dichotomize_by_cytokine = "IFNg",
+                        dichotomize_by_cytokine_color = "#999999",
                         staircase_cytokine_annotation = TRUE,
-                        main=cr_name))
+                        main="CD4 COMPASS Runs"))
+
+# CD8 runs
+cd8_data2plot <- mergeMatricesForPlotCOMPASSResultStack_tmp(crList2[CD8RunNames],
+                                                            threshold=0.01,
+                                   minimum_dof=1,
+                                   maximum_dof=Inf,
+                                   row_annotation = c("Stim", "Cohort"),
+                                   variable = "Stim")
+cd8_merged_COMPASSResult <- crList2$`8_Spike_1`
+cd8_merged_COMPASSResult$fit$mean_gamma <- cd8_data2plot$MMerged
+cd8_merged_COMPASSResult$fit$categories <- cd8_data2plot$catsMerged %>% mutate_all(~ as.numeric(as.character(.))) %>% mutate(Counts = rowSums(.))
+rownames(cd8_merged_COMPASSResult$fit$categories) <- rownames(cd8_data2plot$catsMerged)
+cd8_merged_COMPASSResult$data$meta <- cd8_data2plot$rowannMerged
+cd8_merged_COMPASSResult$data$meta$Run_SAMPLE_ID <- rownames(cd8_merged_COMPASSResult$data$meta)
+cd8_merged_COMPASSResult$data$meta$Stim <- factor(dplyr::recode(sub("^8_", "", cd8_merged_COMPASSResult$data$meta$Stim), "Spike_1" = "S1", "Spike_2" = "S2"), levels = c("S1", "S2", "NCAP", "VEMP"))
+cd8_merged_COMPASSResult$data$meta$Cohort <- factor(cd8_merged_COMPASSResult$data$meta$Cohort, levels = c("Hospitalized", "Non-hospitalized", "Healthy"))
+cd8_merged_COMPASSResult$data$individual_id <- "Run_SAMPLE_ID"
+cd8_heatmap_by_ifng <- print(my_plot.COMPASSResult(cd8_merged_COMPASSResult,
+                        y=c("Stim", "Cohort"),
+                        fontsize=25, fontsize_row=5, fontsize_col=22,
+                        row_annotation_colors=row_ann_colors_v2,
+                        cytokine_annotation_colors=cytokine_annotation_colors,
+                        cytokine_height_multiplier=1.6, order_by_max_functionality = T,
+                        cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", 
+                                                          "CD107a", "IL4/5/13", "IL17a", "IFNg"),
+                        dichotomize_by_cytokine = "IFNg",
+                        dichotomize_by_cytokine_color = "#999999",
+                        staircase_cytokine_annotation = TRUE,
+                        main="CD8 COMPASS Runs"))
+```
+
+```{r save stacked heatmaps pt2 pdf}
+if(save_output) {
+  # Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
+  Arial <- Type1Font(family = "Arial",
+                     metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
+                                 here::here("data/Arial_afm/ArialMT-Bold.afm"), 
+                                 here::here("data/Arial_afm/ArialMT-Italic.afm"),
+                                 here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
+  pdfFonts(Arial = Arial)
+  
+  pdf(file=here::here("out/PostCompassPlots/20200810_CD4_COMPASS_Heatmap.pdf"), width=12, height=8,
+        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica. pheatmap calls grid.text, which uses Arial by default.
+  grid.draw(cd4_heatmap_by_ifng)
+  dev.off()
+  
+  pdf(file=here::here("out/PostCompassPlots/20200810_CD8_COMPASS_Heatmap.pdf"), width=10, height=8,
+        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica. pheatmap calls grid.text, which uses Arial by default.
+  grid.draw(cd8_heatmap_by_ifng)
+  dev.off()
 }
 ```
