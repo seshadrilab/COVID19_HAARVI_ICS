@@ -447,7 +447,8 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
   }
   
   if(return_output) {
-    to_return <- list("Dotplot" = dotplot_with_cats)
+    to_return <- list("Dotplot" = dotplot_with_cats,
+                      "BgCorrMagnitudes" = dat_bgCorr_wide)
     if(save_test_results) {
       to_return$Test_Results <- pvals_df_for_file
     }

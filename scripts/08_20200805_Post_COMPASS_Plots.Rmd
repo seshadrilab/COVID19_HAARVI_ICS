@@ -45,6 +45,8 @@ library(ggpubr)
 library(knitr)
 library(kableExtra)
 library(cowplot)
+library(purrr)
+library(flowWorkspace)
 source(here::here("scripts/my_pheatmap_and_plotMeanGamma.R"))
 source(here::here("scripts/20200604_Helper_Functions.R"))
 ```
@@ -393,6 +395,26 @@ pairs.panels(fs_pfs_df_wide %>%
              main = "CD4 FS Correlation across Stims")
 ```
 
+Write out the FS scores to a file for further integration w/ other T cell and Ab data
+
+```{r}
+if(save_output) {
+  fs_dat_2save <- fs_pfs_df_wide %>% 
+    rename("SAMPLE_ID" = "SAMPLE ID") %>% 
+    dplyr::select("SAMPLE_ID" | matches("^FS.*_4") | matches("^FS.*_8")) %>% 
+    rename_all(~ sub("Spike_", "S", .)) %>% 
+    rename_at(vars(-"SAMPLE_ID"), ~ sub("FS_(.*)_(.*)", "CD\\2_\\1_FS", .)) %>% 
+    # Convert the numeric columns to character type after rounding to 20 digits. This will help ensure consistency when writing and reading the data to a file
+    mutate_at(vars(-"SAMPLE_ID"), ~ format(., digits = 20))
+  
+  write.csv(fs_dat_2save,
+            here::here("processed_data/20200814_HAARVI_COMPASS_FS.csv"), row.names = F)
+  # fs_dat_2save <- read.csv(here::here("processed_data/20200814_HAARVI_COMPASS_FS.csv"), stringsAsFactors = F, check.names = F, colClasses = "character")
+  # all.equal(fs_dat_2save,
+  #  read.csv(here::here("processed_data/20200814_HAARVI_COMPASS_FS.csv"), stringsAsFactors = F, check.names = F, colClasses = "character"))
+}
+```
+
 ```{r fig.width=5, fig.height=4}
 # Investigate the odd dichotomization of FS_VEMP_4 values:
 FS_VEMP_4_dat <- as.data.frame((COMPASS::FunctionalityScore(crList$`4_VEMP`))) %>%
@@ -674,6 +696,11 @@ In many of the boxplots above, Males are shifted slightly higher on the FS/PFS a
 
 ## COMPASS Heatmaps
 
+Look at the heatmaps again. Also focus on IFNg
+
+Stack the plots from the different stims, this time with IFNg subsets on the RHS   
+A commonality to the subsets which are enriched in Hospitalized individuals is CD154.    
+
 ```{r}
 # First change any NA Cohort levels to "Healthy"
 crList2 <- lapply(crList,
@@ -688,231 +715,9 @@ names(crList2) <- names(crList)
 CohortColors <- c("Healthy" = "#dfc27d", "Non-hospitalized" = "#80cdc1", "Hospitalized" = "#018571")
 row_ann_colors <- list(`Cohort` = CohortColors)
 cytokine_annotation_colors <- rep("black", 30)
-```
-
-```{r, fig.width=12, fig.height=10}
-plotCOMPASSResultStack(crList2[CD4RunNames],
-                       row_annotation = c("Stim", "Cohort"),
-                       variable = "Stim",
-                       show_rownames = FALSE,
-                       main = "CD4 COMPASS Runs",
-                       fontsize = 15, fontsize_row = 15, fontsize_col = 13,
-                       row_annotation_colors=row_ann_colors,
-                       cytokine_annotation_colors=cytokine_annotation_colors,
-                       order_by_max_functionality = T)
-```
-
-```{r, fig.width=12, fig.height=10}
-plotCOMPASSResultStack(crList2[NotCD4RunNames],
-                       row_annotation = c("Stim", "Cohort"),
-                       variable = "Stim",
-                       show_rownames = FALSE,
-                       main = "Not-CD4 COMPASS Runs",
-                       fontsize = 15, fontsize_row = 15, fontsize_col = 13,
-                       row_annotation_colors=row_ann_colors,
-                       cytokine_annotation_colors=cytokine_annotation_colors,
-                       order_by_max_functionality = T)
-```
-
-```{r, fig.width=12, fig.height=10}
-plotCOMPASSResultStack(crList2[CD8RunNames],
-                       row_annotation = c("Stim", "Cohort"),
-                       variable = "Stim",
-                       show_rownames = FALSE,
-                       main = "CD8 COMPASS Runs",
-                       fontsize = 15, fontsize_row = 15, fontsize_col = 13,
-                       row_annotation_colors=row_ann_colors,
-                       cytokine_annotation_colors=cytokine_annotation_colors,
-                       order_by_max_functionality = T)
-```
-
-```{r, fig.width=12, fig.height=15}
-plotCOMPASSResultStack(crList2[c(CD4RunNames, NotCD4RunNames)],
-                       row_annotation = c("Stim", "Cohort"),
-                       variable = "Stim",
-                       show_rownames = FALSE,
-                       main = "CD4 and Not-CD4 COMPASS Runs",
-                       fontsize = 15, fontsize_row = 15, fontsize_col = 13,
-                       row_annotation_colors=row_ann_colors,
-                       cytokine_annotation_colors=cytokine_annotation_colors,
-                       order_by_max_functionality = T)
-```
-
-```{r, fig.width=12, fig.height=15}
-plotCOMPASSResultStack(crList2[c(CD4RunNames, CD8RunNames)],
-                       row_annotation = c("Stim", "Cohort"),
-                       variable = "Stim",
-                       show_rownames = FALSE,
-                       main = "CD4 and CD8 COMPASS Runs",
-                       fontsize = 15, fontsize_row = 15, fontsize_col = 13,
-                       row_annotation_colors=row_ann_colors,
-                       cytokine_annotation_colors=cytokine_annotation_colors,
-                       order_by_max_functionality = T)
-```
-
-```{r, fig.width=12, fig.height=20}
-plotCOMPASSResultStack(crList2[c(CD4RunNames, NotCD4RunNames, CD8RunNames)],
-                       row_annotation = c("Stim", "Cohort"),
-                       variable = "Stim",
-                       show_rownames = FALSE,
-                       main = "CD4, Not-CD4, and CD8 COMPASS Runs",
-                       fontsize = 15, fontsize_row = 15, fontsize_col = 13,
-                       row_annotation_colors=row_ann_colors,
-                       cytokine_annotation_colors=cytokine_annotation_colors,
-                       order_by_max_functionality = T)
-```
-
-A commonality to the subsets which are enriched in Hospitalized individuals is CD154.  
-  
-Now look at each run individually
-
-```{r, fig.width=9, fig.height=12}
 cytokine_order_for_annotation = c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4/5/13", "IL17a")
-
-for(cr_name in c(CD4RunNames, NotCD4RunNames, CD8RunNames)) {
-  print(my_plot.COMPASSResult(crList2[[cr_name]],
-                        y="Cohort",
-                        #show_rownames = T,
-                        fontsize=16, fontsize_row=16, fontsize_col=19,
-                        row_annotation_colors=row_ann_colors,
-                        cytokine_annotation_colors=cytokine_annotation_colors,
-                        cytokine_height_multiplier=2.5, order_by_max_functionality = T,
-                        main=cr_name,
-                        cytokine_order_for_annotation=cytokine_order_for_annotation, 
-                        staircase_cytokine_annotation=T # Looks prettier and is consistent with dotplots
-                        ))
-}
 ```
 
-## FS/PFS vs Cohort
-
-```{r}
-# Note that p-values on ggboxplot plots below are *not* adjusted, e.g.:
-broom::tidy(wilcox.test(FS ~ Cohort, data = fs_pfs_df_with_manifest %>% dplyr::filter(Cohort != "Healthy" & parent == "4" & STIM == "Spike_2")))
-```
-
-```{r fig.width=10, fig.height=13}
-# Note that future ggpubr update should make outlier.shape=NA occur by default when jitter is added, but include for now
-ggboxplot(fs_pfs_df_with_manifest %>% 
-            dplyr::filter(Cohort != "Healthy"),
-          x = "Cohort", y = "FS",
-          color = "Cohort", palette = "jco",
-          add = "jitter",
-          outlier.shape = NA) + 
-  facet_grid(parent ~ STIM) +
-  stat_compare_means(aes(group = Cohort)) +
-  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"))
-
-ggboxplot(fs_pfs_df_with_manifest %>% 
-            dplyr::filter(Cohort != "Healthy"),
-          x = "Cohort", y = "PFS",
-          color = "Cohort", palette = "jco",
-          add = "jitter",
-          outlier.shape = NA) + 
-  facet_grid(parent ~ STIM) +
-  stat_compare_means(aes(group = Cohort)) +
-  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"))
-```
-
-## Background-corrected magnitudes
-
-```{r, fig.width=12, fig.height=9, warning=F}
-crList.no_healthy <- lapply(names(crList2),
-                  function(cr_name) {
-                    cr <- crList2[[cr_name]]
-                    print(sprintf("Accessing %s", cr_name))
-                    cr$data$meta <- cr$data$meta %>% 
-                      dplyr::filter(!(`SAMPLE ID` %in% setdiff(cr$data$meta$`SAMPLE ID`, rownames(cr$fit$mean_gamma))))
-                    stopifnot(all.equal(rownames(cr$fit$mean_gamma), cr$data$meta$`SAMPLE ID`))
-                    
-                    stopifnot(all.equal(rownames(cr$data$n_s), rownames(cr$fit$mean_gamma)))
-                    stopifnot(all.equal(rownames(cr$data$n_u), rownames(cr$fit$mean_gamma)))
-                    stopifnot(all.equal(names(cr$data$counts_s), rownames(cr$fit$mean_gamma)))
-                    stopifnot(all.equal(names(cr$data$counts_u), rownames(cr$fit$mean_gamma)))
-                    
-                    not_healthy_idx <- which(cr$data$meta$Cohort != "Healthy")
-                    cr$data$meta <- cr$data$meta[not_healthy_idx,] %>% 
-                      mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized")))
-                    cr$fit$mean_gamma <- cr$fit$mean_gamma[not_healthy_idx,]
-
-                    cr$data$n_s <- cr$data$n_s[not_healthy_idx,]
-                    cr$data$n_u <- cr$data$n_u[not_healthy_idx,]
-                    cr$data$counts_s <- cr$data$counts_s[not_healthy_idx]
-                    cr$data$counts_u <- cr$data$counts_u[not_healthy_idx]
-                    
-                    cr
-                  })
-names(crList.no_healthy) <- names(crList2)
-
-source(here::here("scripts/20200604_Helper_Functions.R"))
-
-# Arial is used by dotplot function
-# Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
-Arial <- Type1Font(family = "Arial",
-                   metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
-                               here::here("data/Arial_afm/ArialMT-Bold.afm"), 
-                               here::here("data/Arial_afm/ArialMT-Italic.afm"),
-                               here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
-pdfFonts(Arial = Arial)
-
-# Note p-values are bonferroni adjusted in dotplots
-# Also note that some points are not shown in order to zoom in better to the bulk of the point
-bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, NotCD4RunNames, CD8RunNames),
-                                   rep(c("CD4+", "Not-CD4+", "CD8"), each = 4),
-                                   list(c(-0.0013, 0.009), c(-0.0018, 0.0085), c(-0.002, 0.0048), NULL,
-                                        c(-0.002, 0.0024), c(-0.0012, 0.004), c(-0.002, 0.005), NULL,
-                                        c(-0.0025, 0.0065), NULL, c(-0.0015, 0.005), NULL),
-                                   c(5, 5, 3, 5,
-                                     5, 5, 5, 5,
-                                     5, 5, 5, 5)),
-                         .f = function(n, p, y, p_text_size) {
-                           # "staircase effect" for categories df heatmap gets done automatically, unlike in my_plot.COMPASSResult
-                           # Returned dotplot is cowplot
-                           make_dotplot_for_COMPASS_run(crList.no_healthy[[n]], n, parentSubset = p,
-                                                        return_output = T, current_ylim = y, include_0_line=T, 
-                                                        cytokine_order_for_annotation=cytokine_order_for_annotation,
-                                                        p_text_size=p_text_size)
-                         })
-names(bg_corr_dotplots) <- c(CD4RunNames, NotCD4RunNames, CD8RunNames)
-
-for(n in names(bg_corr_dotplots)) {
-  print(plot_grid(ggplot() +
-    theme_void() +
-    geom_text(aes(0,0,label=n), size=10) +
-    xlab(NULL),
-    bg_corr_dotplots[[n]]$Dotplot,
-    ncol=1, rel_heights = c(0.1, 1)))
-}
-```
-
-```{r}
-sig_tests_tally <- lapply(names(bg_corr_dotplots), function(n) {length(which(bg_corr_dotplots[[n]]$Test_Results$p.adj < 0.05))})
-names(sig_tests_tally) <- names(bg_corr_dotplots)
-sig_tests_tally # make sure all significant comparisons were plotted and accounted for
-```
-
-# Focus on IFNg
-
-Look at the heatmaps again, focus on IFNg
-
-<!-- # ```{r, fig.width=9, fig.height=12} -->
-<!-- # for(cr_name in c(CD4RunNames, NotCD4RunNames, CD8RunNames)) { -->
-<!-- #   print(my_plot.COMPASSResult(crList2[[cr_name]], -->
-<!-- #                         y="Cohort", -->
-<!-- #                         #show_rownames = T, -->
-<!-- #                         fontsize=16, fontsize_row=16, fontsize_col=19, -->
-<!-- #                         row_annotation_colors=row_ann_colors, -->
-<!-- #                         cytokine_annotation_colors=cytokine_annotation_colors, -->
-<!-- #                         cytokine_height_multiplier=2.5, order_by_max_functionality = T, -->
-<!-- #                         cytokine_order_for_annotation = c("IL4/5/13", "TNFa", "IL17a", -->
-<!-- #                                                           "CD154", "CD107a", "IL2", "IFNg"), -->
-<!-- #                         dichotomize_by_cytokine = "IFNg", -->
-<!-- #                         staircase_cytokine_annotation = TRUE, -->
-<!-- #                         main=cr_name)) -->
-<!-- # } -->
-<!-- # ``` -->
-
-Stack the plots from the different stims, this time with IFNg subsets on the RHS  
   
 ```{r, fig.width=12, fig.height=10}
 # Adapt code from COMPASS::plotCompassResultStack to prepare the data for my_plot.COMPASSResult
@@ -1005,5 +810,139 @@ if(save_output) {
         onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica. pheatmap calls grid.text, which uses Arial by default.
   grid.draw(cd8_heatmap_by_ifng)
   dev.off()
+}
+```
+
+## FS/PFS vs Cohort
+
+```{r}
+# Note that p-values on ggboxplot plots below are *not* adjusted, e.g.:
+broom::tidy(wilcox.test(FS ~ Cohort, data = fs_pfs_df_with_manifest %>% dplyr::filter(Cohort != "Healthy" & parent == "4" & STIM == "Spike_2")))
+```
+
+```{r fig.width=10, fig.height=13}
+# Note that future ggpubr update should make outlier.shape=NA occur by default when jitter is added, but include for now
+ggboxplot(fs_pfs_df_with_manifest %>% 
+            dplyr::filter(Cohort != "Healthy"),
+          x = "Cohort", y = "FS",
+          color = "Cohort", palette = "jco",
+          add = "jitter",
+          outlier.shape = NA) + 
+  facet_grid(parent ~ STIM) +
+  stat_compare_means(aes(group = Cohort)) +
+  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"))
+
+ggboxplot(fs_pfs_df_with_manifest %>% 
+            dplyr::filter(Cohort != "Healthy"),
+          x = "Cohort", y = "PFS",
+          color = "Cohort", palette = "jco",
+          add = "jitter",
+          outlier.shape = NA) + 
+  facet_grid(parent ~ STIM) +
+  stat_compare_means(aes(group = Cohort)) +
+  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"))
+```
+
+## Background-corrected magnitudes
+
+```{r, fig.width=12, fig.height=9, warning=F}
+crList.no_healthy <- lapply(names(crList2),
+                  function(cr_name) {
+                    cr <- crList2[[cr_name]]
+                    print(sprintf("Accessing %s", cr_name))
+                    cr$data$meta <- cr$data$meta %>% 
+                      # Filter out samples which weren't run through COMPASS
+                      dplyr::filter(!(`SAMPLE ID` %in% setdiff(cr$data$meta$`SAMPLE ID`, rownames(cr$fit$mean_gamma))))
+                    stopifnot(all.equal(rownames(cr$fit$mean_gamma), cr$data$meta$`SAMPLE ID`))
+                    
+                    # And make sure that the count data only includes counts for the samples which were run through COMPASS
+                    stopifnot(all.equal(rownames(cr$data$n_s), rownames(cr$fit$mean_gamma)))
+                    stopifnot(all.equal(rownames(cr$data$n_u), rownames(cr$fit$mean_gamma)))
+                    stopifnot(all.equal(names(cr$data$counts_s), rownames(cr$fit$mean_gamma)))
+                    stopifnot(all.equal(names(cr$data$counts_u), rownames(cr$fit$mean_gamma)))
+                    
+                    not_healthy_idx <- which(cr$data$meta$Cohort != "Healthy")
+                    cr$data$meta <- cr$data$meta[not_healthy_idx,] %>% 
+                      mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized")))
+                    cr$fit$mean_gamma <- cr$fit$mean_gamma[not_healthy_idx,]
+
+                    cr$data$n_s <- cr$data$n_s[not_healthy_idx,]
+                    cr$data$n_u <- cr$data$n_u[not_healthy_idx,]
+                    cr$data$counts_s <- cr$data$counts_s[not_healthy_idx]
+                    cr$data$counts_u <- cr$data$counts_u[not_healthy_idx]
+                    
+                    cr
+                  })
+names(crList.no_healthy) <- names(crList2)
+
+source(here::here("scripts/20200604_Helper_Functions.R"))
+
+# Arial is used by dotplot function
+# Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
+Arial <- Type1Font(family = "Arial",
+                   metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
+                               here::here("data/Arial_afm/ArialMT-Bold.afm"), 
+                               here::here("data/Arial_afm/ArialMT-Italic.afm"),
+                               here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
+pdfFonts(Arial = Arial)
+
+# Note p-values are bonferroni adjusted in dotplots
+# Also note that some points are not shown in order to zoom in better to the bulk of the point
+bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, NotCD4RunNames, CD8RunNames),
+                                   rep(c("CD4+", "Not-CD4+", "CD8"), each = 4),
+                                   list(c(-0.0013, 0.009), c(-0.0018, 0.0085), c(-0.002, 0.0048), NULL,
+                                        c(-0.002, 0.0024), c(-0.0012, 0.004), c(-0.002, 0.005), NULL,
+                                        c(-0.0025, 0.0065), NULL, c(-0.0015, 0.005), NULL),
+                                   c(5, 5, 3, 5,
+                                     5, 5, 5, 5,
+                                     5, 5, 5, 5)),
+                         .f = function(n, p, y, p_text_size) {
+                           # "staircase effect" for categories df heatmap gets done automatically, unlike in my_plot.COMPASSResult
+                           # Returned dotplot is cowplot
+                           make_dotplot_for_COMPASS_run(crList.no_healthy[[n]], n, parentSubset = p,
+                                                        return_output = T, current_ylim = y, include_0_line=T, 
+                                                        cytokine_order_for_annotation=cytokine_order_for_annotation,
+                                                        p_text_size=p_text_size)
+                         })
+names(bg_corr_dotplots) <- c(CD4RunNames, NotCD4RunNames, CD8RunNames)
+
+for(n in names(bg_corr_dotplots)) {
+  print(plot_grid(ggplot() +
+    theme_void() +
+    geom_text(aes(0,0,label=n), size=10) +
+    xlab(NULL),
+    bg_corr_dotplots[[n]]$Dotplot,
+    ncol=1, rel_heights = c(0.1, 1)))
+}
+```
+
+```{r}
+sig_tests_tally <- lapply(names(bg_corr_dotplots), function(n) {length(which(bg_corr_dotplots[[n]]$Test_Results$p.adj < 0.05))})
+names(sig_tests_tally) <- names(bg_corr_dotplots)
+sig_tests_tally # make sure all significant comparisons were plotted and accounted for
+```
+
+Save to disk: background-corrected magnitudes from subsets which were significantly different across hospitalization status. For integrated analysis with other T cell and Ab data.  
+  
+```{r}
+if(save_output) {
+  signif_bgcorr_dat_list <- lapply(c(CD4RunNames, CD8RunNames), function(runName) {
+    signif_subset_names <- bg_corr_dotplots[[runName]]$Test_Results %>% dplyr::filter(p.adj < 0.05) %>% dplyr::pull(BooleanSubset)
+    bg_corr_dotplots[[runName]]$BgCorrMagnitudes %>% 
+      rename("SAMPLE_ID" = "Individual") %>% 
+      dplyr::select(c("SAMPLE_ID", signif_subset_names)) %>% 
+      rename_at(vars(signif_subset_names), ~ paste("CD", sub("Spike_", "S", runName), " ", ., sep = ""))
+  })
+  names(signif_bgcorr_dat_list) <- c(CD4RunNames, CD8RunNames)
+
+  bgcorr_dat_2save <- purrr::reduce(signif_bgcorr_dat_list, full_join, by = "SAMPLE_ID") %>% 
+    # Convert proportions into percents
+    # Convert the numeric columns to character type after rounding to 20 digits. This will help ensure consistency when writing and reading the data to a file
+    mutate_at(vars(-"SAMPLE_ID"), ~ format(. * 100, digits = 20))
+
+  write.csv(bgcorr_dat_2save, here::here("processed_data/20200813_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt1.csv"), row.names = F)
+  # bgcorr_dat_2save <- read.csv(here::here("processed_data/20200813_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt1.csv"), stringsAsFactors = F, check.names = F)
+  # all.equal(bgcorr_dat_2save %>% mutate_at(vars(-"SAMPLE_ID"), as.numeric),
+  #  read.csv(here::here("processed_data/20200813_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt1.csv"), stringsAsFactors = F, check.names = F))
 }
 ```
