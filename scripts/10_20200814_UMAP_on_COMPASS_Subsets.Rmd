@@ -1,0 +1,640 @@
+---
+title: "HAARVI ICS Dimensionality Reduction on COMPASS subsets"
+author: "Malisa Smith"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+date: "version `r format(Sys.time(), '%B %d, %Y')`"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Run UMAP on CD4+ events which express a COMPASS subset. Repeat for CD8 events.   
+The question being asked is "What are the memory and activation profiles of Ag-specific T cells?"   
+  
+This time around, don't sample the events.  
+Don't stratify by groups, but rather color the sub-localization of the different markers.  
+Color by Cohort and Antigen (S1, S2, NCAP, VEMP, including DMSO)  
+Also color by  
+   - Degree of functionality  
+   - Cytokine
+   - CD45RA  
+   - CCR7  
+   - HLA-DR  
+   - CD38  
+Boxplots?  
+
+```{r, message=F}
+library(openCyto)
+library(CytoML) # 1.12.0
+library(flowCore) # required for description()
+library(flowWorkspace) # required for gh_pop_get_data()
+library(here)
+library(tidyverse)
+library(uwot)
+library(ggplot2)
+library(scales)
+library(patchwork)
+library(hues)
+library(RColorBrewer)
+library(ggrepel)
+library(ggpubr)
+library(tidyselect)
+source(here::here("scripts/20200604_Helper_Functions.R")) # for distributeEvents() and sampleGatingHierarchy()
+```
+
+```{r}
+date <- 20200814
+save_output <- TRUE
+rerun_dimred <- FALSE
+
+stims_for_compass_runs <- c("VEMP", "Spike 1", "Spike 2", "NCAP")
+parent_nodes_for_compass_runs <- c("4+", "NOT4+", "8+")
+stims_for_compass_runs_rep <- rep(stims_for_compass_runs, each = length(parent_nodes_for_compass_runs))
+parent_nodes_for_compass_runs_rep <- rep(parent_nodes_for_compass_runs, times = length(stims_for_compass_runs))
+
+crList <- purrr::pmap(.l = list(parent_nodes_for_compass_runs_rep,
+                                stims_for_compass_runs_rep),
+                      .f = function(parent, currentStim) {
+                        currentStimForFile <- gsub(" ", "_", currentStim)
+                        crPath <- here::here(sprintf("out/CompassOutput/%s/%s/COMPASSResult_%s_%s.rds", parent, currentStimForFile, parent, currentStimForFile))
+                        readRDS(crPath)
+                      }) %>% 
+  set_names(gsub("+", "", gsub(" ", "_", paste0(parent_nodes_for_compass_runs_rep, "_", stims_for_compass_runs_rep)), fixed=TRUE))
+names(crList)
+
+crList.no_healthy <- lapply(names(crList),
+                  function(cr_name) {
+                    cr <- crList[[cr_name]]
+                    print(sprintf("Accessing %s", cr_name))
+                    cr$data$meta <- cr$data$meta %>% 
+                      dplyr::filter(!(`SAMPLE ID` %in% setdiff(cr$data$meta$`SAMPLE ID`, rownames(cr$fit$mean_gamma)))) %>% 
+                      mutate(Cohort = factor(ifelse(Cohort %in%
+                                                c(NA, "Healthy control", "Healthy control 2017-2018"), "Healthy", Cohort),
+                                              levels = rev(c("Healthy", "Non-hospitalized", "Hospitalized"))))
+                    stopifnot(all.equal(rownames(cr$fit$mean_gamma), cr$data$meta$`SAMPLE ID`))
+                    
+                    stopifnot(all.equal(rownames(cr$data$n_s), rownames(cr$fit$mean_gamma)))
+                    stopifnot(all.equal(rownames(cr$data$n_u), rownames(cr$fit$mean_gamma)))
+                    stopifnot(all.equal(names(cr$data$counts_s), rownames(cr$fit$mean_gamma)))
+                    stopifnot(all.equal(names(cr$data$counts_u), rownames(cr$fit$mean_gamma)))
+                    
+                    not_healthy_idx <- which(cr$data$meta$Cohort != "Healthy")
+                    cr$data$meta <- cr$data$meta[not_healthy_idx,] %>% 
+                      mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized")))
+                    cr$fit$mean_gamma <- cr$fit$mean_gamma[not_healthy_idx,]
+
+                    cr$data$n_s <- cr$data$n_s[not_healthy_idx,]
+                    cr$data$n_u <- cr$data$n_u[not_healthy_idx,]
+                    cr$data$counts_s <- cr$data$counts_s[not_healthy_idx]
+                    cr$data$counts_u <- cr$data$counts_u[not_healthy_idx]
+                    
+                    cr
+                  })
+names(crList.no_healthy) <- names(crList)
+
+CD4RunNames <- c("4_Spike_1", "4_Spike_2", "4_NCAP", "4_VEMP")
+NotCD4RunNames <- c("NOT4_Spike_1", "NOT4_Spike_2", "NOT4_NCAP", "NOT4_VEMP")
+CD8RunNames <- c("8_Spike_1", "8_Spike_2", "8_NCAP", "8_VEMP")
+
+gs <- load_gs(here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches"))
+pData(gs)$Batch <- ifelse(pData(gs)$`EXPERIMENT NAME` == "20200605_COVID_ICS-B3", 3, pData(gs)$Batch)
+gs2 <- subset(gs, !(`SAMPLE ID` %in% c("37C", "BWT23", "116C", "BWT22")) &
+                !(`SAMPLE ID` == "551432" & STIM == "Spike 2"))
+dput(gh_get_pop_paths(gs2))
+```
+
+# CD4
+
+## Add COMPASS boolean gates
+
+```{r}
+# Add the CD4+ COMPASS boolean cytokine subset gates to the GatingSet
+
+cd4_categories <- unique(do.call(rbind, lapply(CD4RunNames, function(runName) {
+  # Filter the subsets to those where the average mean_gamma is greater than the threshold (default in heatmap and this function is 0.01)
+  filteredSubsetIndicesCurrentRun <- which(apply(crList.no_healthy[[runName]]$fit$mean_gamma, 2, function(x) { mean(x, na.rm = TRUE) }) > 0.01) # names()
+  # TODO: Assuming here that mean_gamma colnames are in same order as categories rows. Should do formal check.
+  crList.no_healthy[[runName]]$data$categories[filteredSubsetIndicesCurrentRun,]
+})))
+# Remove the category with zero positive cytokines
+cd4_categories <- cd4_categories[-which(cd4_categories[,"Counts"] == 0),]
+
+knitr::kable(cd4_categories)
+
+mapMarkers <- c("IL2", "IL4/5/13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
+cd4NodeMarkerMap <- mapMarkers
+# NodeMarkerMap names are gating tree paths
+names(cd4NodeMarkerMap) <- paste0("4+", "/", c("IL2", "IL4513", "IFNG", "TNF", "IL17", "154", "107a"))
+
+cd4_cats_mod <- as.data.frame(cd4_categories) %>% 
+  dplyr::select(-Counts) %>% 
+  mutate_all(~ recode(., "0" = "!", "1" = "")) %>% 
+  dplyr::rename_at(all_of(cd4NodeMarkerMap), ~ names(cd4NodeMarkerMap))
+cd4_booleanSubsets <- cd4_cats_mod %>% 
+  rowwise() %>% 
+  do(booleanSubset = paste(paste0(., colnames(cd4_cats_mod)), collapse="&")) %>% 
+  ungroup() %>% 
+  dplyr::pull(booleanSubset) %>% 
+  unlist()
+names(cd4_booleanSubsets) <- paste0("CD4_", gsub("4\\+\\/", "", gsub("\\&", "_AND_", gsub("\\!", "NOT_", cd4_booleanSubsets))))
+for(booleanSubsetName in names(cd4_booleanSubsets)) {
+  # booleanSubset The booleanSubset (a combination of existing gates) in string format, e.g. "8+/GMM+&!8+/GAMMADELTA"
+  call <- substitute(flowWorkspace::booleanFilter(v), list(v = as.symbol(cd4_booleanSubsets[[booleanSubsetName]])))
+  g <- eval(call)
+  suppressWarnings(flowWorkspace::gs_pop_add(gs2, g, parent = "4+", name=booleanSubsetName))
+}
+```
+
+## Extract mfi data
+
+```{r}
+cd4_gates_for_dimred <- c(
+  "/Time/LD-3+/1419-3+/S/Lymph/4+/107a", "/Time/LD-3+/1419-3+/S/Lymph/4+/154", 
+  "/Time/LD-3+/1419-3+/S/Lymph/4+/IFNG", "/Time/LD-3+/1419-3+/S/Lymph/4+/IL2", 
+  "/Time/LD-3+/1419-3+/S/Lymph/4+/IL17", "/Time/LD-3+/1419-3+/S/Lymph/4+/IL4513", 
+  "/Time/LD-3+/1419-3+/S/Lymph/4+/TNF",
+  "/Time/LD-3+/1419-3+/S/Lymph/4+/CCR7+", "/Time/LD-3+/1419-3+/S/Lymph/4+/CD45RA+",
+  "/Time/LD-3+/1419-3+/S/Lymph/CD38+", "/Time/LD-3+/1419-3+/S/Lymph/HLADR+")
+cd4_cytokine_gates <- c("/Time/LD-3+/1419-3+/S/Lymph/4+/107a", "/Time/LD-3+/1419-3+/S/Lymph/4+/154", 
+                        "/Time/LD-3+/1419-3+/S/Lymph/4+/IFNG", "/Time/LD-3+/1419-3+/S/Lymph/4+/IL2", 
+                        "/Time/LD-3+/1419-3+/S/Lymph/4+/IL17", "/Time/LD-3+/1419-3+/S/Lymph/4+/IL4513", 
+                        "/Time/LD-3+/1419-3+/S/Lymph/4+/TNF")
+```
+  
+Still need to add boolean gates.
+  
+```{r}
+gs_pop_add(gs2, eval(substitute(flowWorkspace::booleanFilter(v),
+                                       list(v = as.symbol(paste(names(cd4_booleanSubsets), collapse="|"))))),
+           parent = "/Time/LD-3+/1419-3+/S/Lymph/4+", name = "CD4_COMPASS_Subsets")
+recompute(gs2, "/Time/LD-3+/1419-3+/S/Lymph/4+")
+
+cd4_compass_subsets_parentGate <- "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets"
+
+pop_counts <- pData(gs2) %>% 
+  left_join(gs_pop_get_count_fast(gs2, subpopulations = cd4_compass_subsets_parentGate),
+            by = c("rowname" = "name")) %>% 
+  dplyr::rename(CD4_COMPASS_Subsets = Count) %>% 
+  dplyr::select(rowname, Batch, "SAMPLE ID", STIM, Cohort, CD4_COMPASS_Subsets) %>% 
+  dplyr::filter(!(Cohort %in% c(NA, "Healthy control", "Healthy control 2017-2018")) & STIM != "SEB")
+```
+
+Keep in mind that there is lopsided patient and group representation simply due to not sampling:  
+```{r, fig.width=12, fig.height=12}
+cd4_compass_subsets_sampleSizes_4plot <- pop_counts %>%
+  mutate(Cohort = factor(Cohort,
+                         levels = c("Non-hospitalized", "Hospitalized"),
+                         labels = c("Conv\nNon-Hosp", "Conv\nHosp")))
+ggplot(cd4_compass_subsets_sampleSizes_4plot,
+       aes(factor(Cohort), CD4_COMPASS_Subsets)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.15, height = 0) +
+  theme_bw(base_size=20) +
+  labs(title="ICS CD4 UMAP patient representation",
+       y="CD4+ COMPASS Subset+ Events\n for Dimensionality Reduction\n(not sampled)") +
+  facet_grid(Batch ~ STIM) +
+  theme(axis.title.x = element_blank())
+```
+
+```{r}
+# Extract data for dimensionality reduction (not actually sampling)
+call_sampleGatingHierarchy_for_cd4 <- function(currentSampleName) {
+  # print(sprintf("Sampling data from %s", currentSampleName))
+  sampleGatingHierarchy(gs2[[currentSampleName]], cd4_compass_subsets_parentGate, n = NULL, otherGates = cd4_gates_for_dimred)
+}
+cd4_compass_subsets_data <- map_dfr(pop_counts$rowname, call_sampleGatingHierarchy_for_cd4)
+dim(cd4_compass_subsets_data)
+knitr::kable(head(cd4_compass_subsets_data))
+```
+
+Is there maybe one cytokine that is dominating the entire sample?  
+If one cytokine has very high background expression (and a generous gate), it could be gated positive in a lot of events.  
+The high number of events expressing this cytokine could lead to it dominating the data, so that most sampled events are positive for this noisy cytokine. It would drown out real signal from other cytokines.  
+  
+```{r, fig.width=14, fig.height=8}
+cytokine_dominance <- cd4_compass_subsets_data %>% 
+  group_by(Batch) %>% 
+  summarise_at(cd4_cytokine_gates, sum) %>%
+  t() %>%
+  as.data.frame() %>%
+  set_names(c("B1", "B2", "B3")) %>%
+  rownames_to_column("Cytokine_Gate") %>%
+  dplyr::filter(Cytokine_Gate != "Batch")
+knitr::kable(cytokine_dominance)
+
+cytokine_dominance %>%
+  pivot_longer(cols = starts_with("B"), names_to = "Batch", values_to = "Events_in_Gate") %>% 
+  mutate(Cytokine = sub(".*4\\+\\/(.*)", "\\1", Cytokine_Gate)) %>% 
+  ggplot(aes(Cytokine, Events_in_Gate, fill = Cytokine)) +
+  theme_bw(base_size=18) +
+  geom_bar(stat="identity") +
+  facet_grid(. ~ Batch) +
+  labs(title = "CD4 Run Cytokine Dominance by Batch")
+```
+
+## Perform Dimensionality Reduction
+
+```{r}
+cols_4_dimred <- c("CD3 ECD", "CD8b", "CD4",
+                  "TNFa", "CD107a", 
+                  "CD154", "IL2", "IL17a", 
+                  "IL4/5/13", "IFNg", 
+                  "CCR7", "CD45RA",
+                  "CD38", "HLADR")
+cd4.scaled_dimred_input <- cd4_compass_subsets_data %>% 
+  dplyr::select(Batch, all_of(cols_4_dimred)) %>% 
+  group_by(Batch) %>% 
+  nest() %>% 
+  ungroup() %>% 
+  mutate(data = lapply(data, function(df) {as.data.frame(scale(as.matrix(df)))})) %>% 
+  unnest(cols = c(data)) %>% 
+  rename_at(vars(all_of(cols_4_dimred)),function(x) paste0(x,".scaled")) %>% 
+  dplyr::select(-Batch)
+
+cd4_compass_subsets_data <- cbind(cd4_compass_subsets_data, cd4.scaled_dimred_input)
+
+# UMAP can take a long time, so there is a rerun_dimred switch
+if(rerun_dimred) {
+  print("Running UMAP")
+  set.seed(date)
+  print(Sys.time())
+  cd4_compass_subsets_dimred_out <- cd4_compass_subsets_data %>% 
+    # Run CD3, co-receptor, cytokine, memory, and activation markers through UMAP
+    dplyr::select(all_of(paste0(cols_4_dimred, ".scaled"))) %>% 
+    uwot::umap(spread = 9, min_dist = 0.02, n_threads = 7)
+  print(Sys.time())
+  cd4_compass_subsets_w_umap <- cbind(as.data.frame(cd4_compass_subsets_dimred_out) %>% 
+    dplyr::rename(x.umap = V1, y.umap = V2),
+    cd4_compass_subsets_data)
+  if(save_output) {
+    saveRDS(cd4_compass_subsets_w_umap, here::here(sprintf("out/UMAP/%s_ICS_CD4_COMPASS_Subsets_UMAP_Unsampled.rds", date)))
+  }
+} else {
+  # Assuming UMAP results are already saved
+  print("Loading saved UMAP run")
+  cd4_compass_subsets_w_umap <- readRDS(here::here(sprintf("out/UMAP/%s_ICS_CD4_COMPASS_Subsets_UMAP_Unsampled.rds", date)))
+}
+```
+
+## Plot UMAP results
+
+Shuffle data frame rows so e.g. Batch 3 doesn't dominate foreground
+
+```{r}
+set.seed(date)
+cd4_compass_subsets_w_umap <- cd4_compass_subsets_w_umap[sample(nrow(cd4_compass_subsets_w_umap), nrow(cd4_compass_subsets_w_umap)),]
+```
+
+```{r}
+# Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
+Arial <- Type1Font(family = "Arial",
+                   metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
+                               here::here("data/Arial_afm/ArialMT-Bold.afm"), 
+                               here::here("data/Arial_afm/ArialMT-Italic.afm"),
+                               here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
+pdfFonts(Arial = Arial)
+
+boolColorScheme <- c("FALSE" = "#E2E2E2", "TRUE" = "#023FA5")
+
+cd4_compass_subsets_w_umap <- cd4_compass_subsets_w_umap %>% 
+  mutate(cytokine_degree = rowSums(dplyr::select(., all_of(cd4_cytokine_gates))))
+cd4_compass_subsets_w_umap <- cd4_compass_subsets_w_umap %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized")),
+         STIM = factor(STIM, levels = c("DMSO", "Spike 1", "Spike 2", "NCAP", "VEMP")))
+
+stim_labs <- c("DMSO", "S1", "S2", "NCAP", "VEMP") 
+names(stim_labs) <- c("DMSO", "Spike 1", "Spike 2", "NCAP", "VEMP")
+cohort_labs <- c("Conv\nNon-Hosp", "Conv\nHosp")
+names(cohort_labs) <- c("Non-hospitalized", "Hospitalized")
+
+base_dimred_plot <- function(currentColumn, pointSize = 0.02, colorScheme = NA) {
+  p <- ggplot(cd4_compass_subsets_w_umap, aes(x=x.umap, y=y.umap,
+                                       colour=if(currentColumn %in% c("Batch", "SAMPLE ID")) {
+                                         factor(!!as.name(currentColumn))
+                                         } else {
+                                           as.logical(!!as.name(currentColumn))
+                                           })) +
+    geom_point(shape=20, alpha=0.8, size=pointSize) +
+    facet_grid(Cohort ~ STIM, switch="y",
+               labeller = labeller(Cohort = cohort_labs, STIM = stim_labs)) +
+    theme_bw() +
+    theme(plot.title=element_text(hjust = 0.5, size=22, face="bold"),
+          axis.text=element_blank(),
+          axis.line=element_blank(),
+          axis.ticks=element_blank(),
+          axis.title=element_blank(),
+          strip.text=element_text(face="bold", size=22),
+          panel.grid.major = element_blank(),
+          legend.title=element_text(face="bold", size=14),
+          strip.text.x = element_text(margin = margin(0.15,0,0.15,0, "cm")))
+  if(!anyNA(colorScheme)) {
+    p <- p + scale_color_manual(values = colorScheme)
+  }
+  if(currentColumn %in% c("Batch", "SAMPLE ID")) {
+    p <- p + labs(color = currentColumn) +
+      guides(colour = guide_legend(override.aes = list(size=10))) +
+      theme(legend.title = element_text(size=15),
+            legend.text = element_text(size=15),
+            legend.position = "bottom") +
+      scale_colour_manual(values=as.character(iwanthue(length(unique(cd4_compass_subsets_w_umap[,currentColumn])))))
+  } else {
+    p <- p + theme(legend.position = "none")
+  }
+  p
+}
+```
+
+### Look for Batch and Patient sub-clustering  
+
+```{r, fig.width=10, fig.height=8}
+base_dimred_plot("Batch")
+```
+
+```{r, fig.width=10, fig.height=12}
+base_dimred_plot("SAMPLE ID")
+```
+
+### Cytokine, Memory, and Activation expression localization
+
+Now visualize the cytokine, memory, and activation expression localization  
+  
+```{r, fig.width=10, fig.height=8}
+for(cg in cd4_gates_for_dimred) {
+  print(base_dimred_plot(cg, colorScheme = boolColorScheme) +
+    labs(title = sprintf("CD4+ COMPASS Subset+ UMAP\nColored by %s", sub(".*\\/([^(\\/)]+)", "\\1", cg))))
+}
+```
+
+### Color by degree  
+
+```{r, fig.width=10, fig.height=8}
+table(cd4_compass_subsets_w_umap$cytokine_degree)
+
+myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+sc <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 6))
+
+currentColumn <- "cytokine_degree"
+pointSize <- 0.02
+ggplot(cd4_compass_subsets_w_umap, aes(x=x.umap, y=y.umap, colour=!!as.name(currentColumn))) +
+  geom_point(shape=20, alpha=0.8, size=pointSize) +
+  facet_grid(Cohort ~ STIM, switch="y",
+             labeller = labeller(Cohort = cohort_labs, STIM = stim_labs)) +
+  labs(colour="Cytokine\nDegree",
+       title="CD4+ COMPASS Subset+ UMAP\nColored by Cytokine Polyfunctionality") +
+  theme_bw() +
+  theme(plot.title=element_text(hjust = 0.5, size=22, face="bold"),
+        axis.text=element_blank(),
+        axis.line=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title=element_blank(),
+        strip.text=element_text(face="bold", size=22),
+        panel.grid.major = element_blank(),
+        legend.title=element_text(face="bold", size=15),
+        legend.text = element_text(size=13),
+        strip.text.x = element_text(margin = margin(0.15,0,0.15,0, "cm")),
+        legend.position = "bottom") +
+  sc
+```
+  
+## Unstratified UMAP plots
+
+```{r}
+pointSize <- 0.02
+# Theme settings
+# Expand axis limits so so contour lines don't get cut off near borders
+gg_themes <- ggplot(cd4_compass_subsets_w_umap, aes(x=x.umap, y=y.umap)) +
+  scale_x_continuous(limits=range(cd4_compass_subsets_w_umap$x.umap)*1.05) +
+  scale_y_continuous(limits=range(cd4_compass_subsets_w_umap$y.umap)*1.05) +
+  theme_bw() +
+  theme(plot.title=element_text(hjust = 0.5, size=22, face="bold"),
+        axis.text=element_blank(),
+        axis.line=element_blank(),
+        axis.ticks=element_blank(),
+        axis.title=element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(1, 0, 0, 0, unit = "pt"))
+```
+
+```{r}
+# Hospitalization status contour plots
+hosp_contour_plot <- gg_themes +
+  geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+  geom_density_2d(data=cd4_compass_subsets_w_umap %>% dplyr::filter(Cohort == "Hospitalized"),
+                  colour="#363636", bins=12) + # "red"
+  ggtitle("Hosp")
+
+nonhosp_contour_plot <- gg_themes +
+  geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+  geom_density_2d(data=cd4_compass_subsets_w_umap %>% dplyr::filter(Cohort == "Non-hospitalized"),
+                  colour="#363636", bins=12) + # "blue"
+  ggtitle("Not-Hosp")
+```
+
+```{r}
+# Scaled mfi expression plots for memory, activation, and cytokine markers 
+mfi_col_text_4plot <- c("TNFa" = "TNF", "CD107a" = "CD107", 
+                  "CD154" = "CD154", "IL2" = "IL-2", "IL17a" = "IL17a", 
+                  "IL4/5/13" = "IL-4/5/13", "IFNg" = "IFN-γ", 
+                  "CCR7" = "CCR7", "CD45RA" = "CD45RA",
+                  "CD38" = "CD38", "HLADR" = "HLA-DR")
+plot_scaled_mfi_v2 <- function(currentColumn) {
+  myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+  sc_mfi <- scale_colour_gradientn(colours = myPalette(100), oob=squish, limits=c(-2.5, 2.5))
+  gg_themes +
+    geom_point(aes(colour=cd4_compass_subsets_w_umap[,paste0(currentColumn, ".scaled")]),
+               shape=20, alpha=0.8, size=pointSize) + # !!as.name(paste0(currentColumn, ".scaled")) doesn't work
+    sc_mfi +
+    ggtitle(mfi_col_text_4plot[[currentColumn]])
+}
+
+unstratified_mfi_plot_cols <- c("TNFa", "CD107a", 
+                  "CD154", "IL2", "IL17a", 
+                  "IL4/5/13", "IFNg", 
+                  "CCR7", "CD45RA",
+                  "CD38", "HLADR")
+mfi_plots_unstrat <- lapply(unstratified_mfi_plot_cols, plot_scaled_mfi_v2)
+names(mfi_plots_unstrat) <- unstratified_mfi_plot_cols
+```
+
+```{r}
+# Memory UMAP plot colored by gate membership (TEMRA, TEM, TCM, Naive)
+getMemoryCategory <- function(CD45RA, CCR7) {
+  if(CD45RA & CCR7) {
+    "Naive"
+  } else if(CD45RA & !CCR7) {
+    "TEMRA"
+  } else if(!CD45RA & CCR7) {
+    "TCM"
+  } else if(!CD45RA & !CCR7) {
+    "TEM"
+  } else {
+    "Uncategorized"
+  }
+}
+
+cd4_compass_subsets_w_umap$MemoryCategory <- pmap_chr(.l = list(cd4_compass_subsets_w_umap$`/Time/LD-3+/1419-3+/S/Lymph/4+/CD45RA+`,
+                                                               cd4_compass_subsets_w_umap$`/Time/LD-3+/1419-3+/S/Lymph/4+/CCR7+`),
+                                                     .f = getMemoryCategory)
+
+memColorScheme <- c("TEM" = "#fc8d62", "TEMRA" = "#66c2a5", "TCM" = "#e78ac3", "Naive" = "#8da0cb")
+# c("TEM" = "#1b9e77", "TEMRA" = "#7570b3", "TCM" = "#e7298a", "Naive" = "#d95f02")
+# c("TEM" = "#d7191c", "TEMRA" = "#2c7bb6", "TCM" = "green3", "Naive" = "darkorange", "Uncategorized" = "#90c9dd")
+mem_plot_colored_by_gate <- gg_themes +
+  geom_point(aes(colour=cd4_compass_subsets_w_umap[,"MemoryCategory"]),
+               shape=20, alpha=0.8, size=pointSize) +
+  ggtitle("Memory") +
+  scale_color_manual(values = memColorScheme)
+# + theme(legend.position = "right") + guides(colour = guide_legend(override.aes = list(size=9)))
+```
+
+```{r}
+# Activation plots: color by gate membership, one plot per marker
+boolColorScheme <- c("0" = "#E2E2E2", "1" = "#363636")
+hladr_bool_plot <- gg_themes +
+  geom_point(aes(colour=factor(cd4_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/HLADR+"], levels = c(1, 0))),
+               shape=20, alpha=0.8, size=pointSize) +
+  scale_color_manual(values = boolColorScheme, labels=c("1"="Expressed", "0"="Not Expressed")) +
+  ggtitle("HLA-DR")
+cd38_bool_plot <- gg_themes +
+  geom_point(aes(colour=factor(cd4_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/CD38+"], levels = c(1, 0))),
+               shape=20, alpha=0.8, size=pointSize) +
+  scale_color_manual(values = boolColorScheme, labels=c("1"="Expressed", "0"="Not Expressed")) +
+  ggtitle("CD38")
+```
+
+```{r}
+# factor_colors = hsv((seq(0, 1, length.out = 4 + 1)[-1] +
+#                          0.2)%%1, 0.7, 0.95)
+# 
+# stim_colors <- c("Spike 1" = "#fc68be", "Spike 2" = "#d94e09", "NCAP" = "#6B49F2", "VEMP" = "#D0F249", "DMSO" = "#91570a") # heatmap colors
+# stim_colors <- c("Spike 1" = "#49F2BF", "Spike 2" = "#F2497C", "NCAP" = "#6B49F2", "VEMP" = "#D0F249", "DMSO" = "#91570a")
+stim_abbreviations = c("Spike 1" = "S1", "Spike 2" = "S2", "NCAP" = "NCAP", "VEMP" = "VEMP", "DMSO" = "DMSO")
+
+plot_stim_contour_plot <- function(currentStim) {
+  gg_themes +
+    geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+    geom_density_2d(data=cd4_compass_subsets_w_umap %>% dplyr::filter(STIM == currentStim),
+                    colour="#363636", bins=12) + # stim_colors[[currentStim]]
+    ggtitle(stim_abbreviations[[currentStim]])
+}
+
+stims <- c("DMSO", "Spike 1", "Spike 2", "NCAP", "VEMP")
+stim_plots <- lapply(stims, plot_stim_contour_plot)
+names(stim_plots) <- stims
+```
+
+```{r}
+# Unstratified PolyF plot
+myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+sc_polyf <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 6))
+polyf_plot_unstrat <- gg_themes +
+  geom_point(aes(colour=cd4_compass_subsets_w_umap[,"cytokine_degree"]), shape=20, alpha=0.8, size=pointSize) +
+  sc_polyf +
+  ggtitle("PolyF")
+```
+
+```{r}
+# Extract legends
+mfi_legend <- as_ggplot(get_legend(mfi_plots_unstrat$TNFa +
+                                     theme(legend.position="bottom",
+                                             legend.title.align = 0.5) +
+                                     labs(colour="Scaled Expression") +
+                                     guides(colour=guide_colorbar(title.position = "top"))))
+polyf_legend <- as_ggplot(get_legend(polyf_plot_unstrat +
+                                       theme(legend.position="bottom",
+                                             legend.title.align = 0.5) +
+                                       labs(colour="PolyF") +
+                                       guides(colour=guide_colorbar(title.position = "top"))))
+mem_legend <- as_ggplot(get_legend(mem_plot_colored_by_gate +
+                                     theme(legend.position = "right",
+                                           legend.title.align = 0.5) +
+                                     guides(colour = guide_legend(override.aes = list(size=9))) +
+                                     labs(colour="Memory")))
+bool_legend <- as_ggplot(get_legend(hladr_bool_plot +
+                                     theme(legend.position = "right",
+                                           legend.title.align = 0.5) +
+                                     guides(colour = guide_legend(override.aes = list(size=9))) +
+                                     labs(colour="Gate Membership")))
+```
+
+Put it all together
+
+```{r, fig.width=10, fig.height = 5}
+print(
+  # Top row
+  (hosp_contour_plot | nonhosp_contour_plot | plot_spacer() |
+  stim_plots$`Spike 1` | stim_plots$`Spike 2` | plot_spacer() |
+  polyf_plot_unstrat | plot_spacer() | mfi_plots_unstrat$IFNg) /
+  # Second row
+  (mem_plot_colored_by_gate | plot_spacer() | plot_spacer() |
+  stim_plots$NCAP | stim_plots$VEMP | plot_spacer() |
+  mfi_plots_unstrat$TNFa | mfi_plots_unstrat$IL2 | mfi_plots_unstrat$`IL4/5/13`) /
+  # Third row
+  (hladr_bool_plot | cd38_bool_plot | plot_spacer() |
+  stim_plots$DMSO | plot_spacer() | plot_spacer() |
+  mfi_plots_unstrat$IL17a | mfi_plots_unstrat$CD107a | mfi_plots_unstrat$CD154 )
+)
+```
+
+```{r}
+if(save_output) {
+  png(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP.png",
+                              date)),
+      width=18, height=9, units="in", res=300)
+    print(
+      # Top row
+      (hosp_contour_plot | nonhosp_contour_plot | plot_spacer() |
+      stim_plots$`Spike 1` | stim_plots$`Spike 2` | plot_spacer() |
+      polyf_plot_unstrat | plot_spacer() | mfi_plots_unstrat$IFNg) /
+      # Second row
+      (mem_plot_colored_by_gate | plot_spacer() | plot_spacer() |
+      stim_plots$NCAP | stim_plots$VEMP | plot_spacer() |
+      mfi_plots_unstrat$TNFa | mfi_plots_unstrat$IL2 | mfi_plots_unstrat$`IL4/5/13`) /
+      # Third row
+      (hladr_bool_plot | cd38_bool_plot | plot_spacer() |
+      stim_plots$DMSO | plot_spacer() | plot_spacer() |
+      mfi_plots_unstrat$IL17a | mfi_plots_unstrat$CD107a | mfi_plots_unstrat$CD154 )
+    )
+  dev.off()
+  
+  png(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_MFI_Legend.png",
+                            date)),
+    width=3, height=1.5, units="in", res=300)
+  print(mfi_legend)
+  dev.off()
+  
+  png(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_PolyF_Legend.png",
+                            date)),
+    width=3, height=1.5, units="in", res=300)
+  print(polyf_legend)
+  dev.off()
+  
+  png(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_Memory_Legend.png",
+                            date)),
+    width=2, height=3, units="in", res=300)
+  print(mem_legend)
+  dev.off()
+  
+  png(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_GateMembership_Legend.png",
+                          date)),
+  width=2, height=3, units="in", res=300)
+  print(bool_legend)
+  dev.off()
+  
+  # cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP.cairo.pdf",
+  #                             date)),
+  #     width=12, height=9, onefile = TRUE, bg = "transparent", family = "Arial")
+  # print(x)
+  # dev.off()
+}
+
+```

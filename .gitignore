@@ -44,19 +44,9 @@ scripts/20200722_ggcyto_*
 scripts/20200611_Create_Final_Manifest.R
 scripts/20200716_IFNg_*
 
-scripts/20200604_CD4_and_NotCD4_Cytokines_tSNE_ICS.R
-scripts/20200612_Run_COMPASS_old_purrr_pmap_version.R
-scripts/20200617_tSNE_on_Cytokine_Pos_Cells_ICS.R
-scripts/20200618_tSNE_on_Cytokine_Pos_Cells_ICS_incl_DMSO.Rmd
-scripts/20200618_tSNE_on_Cytokine_Pos_Cells_ICS_incl_DMSO.html
-scripts/20200618_tSNE_on_Cytokine_Pos_Cells_ICS_unscaled.html
 out/QC/FACS_Plots/*.pptx
-out/tSNE/20200604_B1_only_CD4_*
 out/QC/FACS_Plots/old
-scripts/20200708_Post_COMPASS_Plots_pt2.*
-scripts/20200717_DimRed_Cytokine_Pos_Cells_ICS.*
-scripts/20200722_DimRed_COMPASS_Subsets.*
-out/UMAP/20200717_*
 out/QC/old
 out/QC/DMSO_Cytokine_Signal/old
 scripts/old
+scripts/20200810_Explore*
