@@ -40,9 +40,7 @@ rsconnect/
 data*
 out/GatingSets/*
 out/20200716_For_*
-scripts/20200722_ggcyto_*
 scripts/20200611_Create_Final_Manifest.R
-scripts/20200716_IFNg_*
 
 out/QC/FACS_Plots/*.pptx
 out/QC/FACS_Plots/old

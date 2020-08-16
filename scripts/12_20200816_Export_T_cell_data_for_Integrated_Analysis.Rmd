@@ -1,0 +1,103 @@
+---
+title: "Merge T cell data for integrated analysis"
+author: "Malisa Smith"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+date: "version `r format(Sys.time(), '%B %d, %Y')`"
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=F}
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+```
+
+```{r}
+save_output <- FALSE
+```
+
+# Merge all T cell data for integrated analysis
+
+```{r merge T cell data}
+# Read in the patient manifest with complete data
+data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
+
+# Include the DURT panel data
+durt_dat <- read.csv(here::here("data/20200812_HAARVI_DURT_Cell_Population_Percents.csv"), stringsAsFactors = F, colClasses = "character")
+# COMPASS Functionality scores
+compass_fs_dat <- read.csv(here::here("processed_data/20200814_HAARVI_COMPASS_FS.csv"),
+                           stringsAsFactors = F, check.names = F, colClasses = "character")
+# Background-corrected magnitudes (as percent of parent population) for COMPASS subsets which were enriched in Hospitalized (or Not-hospitalized) individuals
+compass_magnitudes_pt1 <- read.csv(here::here("processed_data/20200813_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt1.csv"),
+                                   stringsAsFactors = F, check.names = F, colClasses = "character")
+# Additional background-corrected magnitudes for COMPASS subsets which were expressed more highly in one STIM compared to another, and which met a minimum threshold for median expression (> 0.002% for that STIM)
+compass_magnitudes_pt2 <- read.csv(here::here("processed_data/20200814_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt2.csv"),
+                                   stringsAsFactors = F, check.names = F, colClasses = "character")
+
+# Merge
+# Note that there are some NA values due to wells/samples being dropped during data generation and analysis
+tcell_dat_char <- durt_dat %>% 
+  full_join(compass_fs_dat, by = "SAMPLE_ID") %>% 
+  full_join(compass_magnitudes_pt1, by = "SAMPLE_ID") %>% 
+  full_join(compass_magnitudes_pt2, by = "SAMPLE_ID") %>% 
+  rename("Record ID" = "SAMPLE_ID") %>%  # rename SAMPLE_ID -> Record ID to be consistent with manifest
+  # HS9 is HS9 in the manifest but HS09 in the T cell data. Since we're filtering out healthies it doesn't matter here though.
+  left_join(data_manifest %>% dplyr::select("Record ID", "Cohort"), by = c("Record ID")) %>% 
+  dplyr::select(`Record ID`, Cohort, everything()) %>% 
+  # Drop data from any healthies that made it through to this point
+  dplyr::filter(`Record ID` %in% (data_manifest %>% dplyr::filter(Cohort %in% c("Hospitalized", "Non-hospitalized")) %>% dplyr::pull("Record ID")))
+
+tcell_dat <- tcell_dat_char %>% mutate_at(vars(-"Record ID", -"Cohort"), as.numeric)
+
+# Make sure there are no repeat column names
+unique(table(colnames(tcell_dat)))
+
+# There is T cell data for 59 COVID patients
+dim(tcell_dat)
+# This goes down to 48 if we omit patients with one or more NA values
+tcell_dat %>% na.omit() %>% dim()
+# Investigate the NA values.
+# In the integrated analysis, in order to achieve 0 NA values, would it better to exclude some columns or exclude some rows (patients)?
+# --> For per-column analyses, exclude any missing rows. But when operating on the data frame as a whole, the decision is harder.
+tcell_dat %>% mutate_at(vars(-"Record ID"), is.na) %>%
+  mutate(NA_Count = rowSums(select_if(., is.logical))) %>%
+  dplyr::select(`Record ID`, NA_Count) %>%
+  arrange(-NA_Count, `Record ID`) %>%
+  dplyr::filter(NA_Count > 0)
+
+
+# tcell_dat %>% dplyr::filter_at(vars(everything()), any_vars(is.na(.))) %>% select_if(function(.) sum(is.na(.)) > 0)
+# tcell_dat %>% select("Record ID", matches("CD8_") & matches("_FS|TNF")) %>% dplyr::filter_at(vars(everything()), any_vars(is.na(.))) # CD4 ICS data
+# tcell_dat %>% select("Record ID", matches("CD4_") & matches("_FS|TNF")) %>% dplyr::filter_at(vars(everything()), any_vars(is.na(.))) # CD8 ICS data
+# tcell_dat %>% select("Record ID", !matches("_FS|TNF")) %>% dplyr::filter_at(vars(everything()), any_vars(is.na(.))) # DURT data
+```
+Of the 59 COV2 infected patients for which we have T cell data, there are NA values for 11 patients:  
+- There is no DURT panel data for 8 of them because they did not have enough cells to get run through both flow panels:  
+  "56C", "15530", "76C", "15529", "12C", "23", "143C", "15518"  
+- ICS/COMPASS data is completely missing for two patients: 75C (not enough viable cells) and 116C (low DMSO cell count)  
+  CD8 ICS/COMPASS data specifically is missing for an additional two patients (in 8 columns of CD8 data) due to low cell count:  
+    - 15548 is missing CD8 S2 and NCAP  
+    - 15530 is missing CD8 S2  
+Also note that there is no T cell data at all for the 60th patient, 37C. Due to low viable cell counts, it got only run through ICS, and ultimately did not have enough events to get run through COMPASS.  
+Due to the way the numbers work out, I think it would be best to just do an "na.omit()" to exclude row-wise (as opposed to column-wise) in order to get a complete matrix while keeping as much data as possible   
+```{r}
+# Save the merged t cell data to a file
+if(save_output) {
+  write.csv(tcell_dat_char, here::here("processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv"), row.names = F)
+  # tcell_dat_char <- read.csv(here::here("processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv"), stringsAsFactors = F, check.names = F, colClasses = "character")
+  # all.equal(tcell_dat_char,
+  #  read.csv(here::here("processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv"), stringsAsFactors = F, check.names = F, colClasses = "character"))
+}
+```
