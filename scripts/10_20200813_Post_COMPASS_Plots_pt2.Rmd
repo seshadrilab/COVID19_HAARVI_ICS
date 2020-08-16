@@ -1,0 +1,705 @@
+---
+title: "Post-COMPASS Plots pt 2"
+author: "Malisa Smith"
+output:
+  rmdformats::html_clean:
+    thumbnails: TRUE
+    highlight: pygments
+    html_document:
+    toc: TRUE
+    toc_depth: 4
+    toc_float:
+      collapsed: FALSE
+date: "version `r format(Sys.time(), '%B %d, %Y')`"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=F}
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(flowWorkspace)
+library(cowplot)
+library(gsubfn)
+```
+
+```{r}
+save_output <- FALSE
+```
+
+Compare background-corrected magnitudes from COMPASS subsets across the stims.
+
+# Read in data
+
+```{r read in data}
+gsPath <- here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets")
+gs <- load_gs(gsPath)
+
+merged_cd4_compass_data <- readRDS(here::here("processed_data/20200815_Merged_CD4_COMPASS_Data.rds"))
+merged_cd8_compass_data <- readRDS(here::here("processed_data/20200815_Merged_CD8_COMPASS_Data.rds"))
+
+cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", "CD107a", "IL4/5/13", "IL17a", "IFNg")
+```
+
+# Compare CD4+ magnitudes across Stims
+
+Unlike the other magnitude plots which compare across all 3 cohort groups, I'm dropping healthies here. Reasoning is that we are primarily interested in differences in responses among COV2-exposed individuals, but you could probably argue the other way as well.
+
+## Add boolean gates
+
+```{r}
+gs2 <- subset(gs, !(`SAMPLE ID` %in% c("37C", "BWT23", "116C", "BWT22")) &
+                !(`SAMPLE ID` == "551432" & STIM == "Spike 2"))
+```
+
+```{r}
+cd4_booleanSubsets_gate_names <- c("CD4_NOT_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_154_AND_NOT_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD4_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_AND_IL2_AND_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_NOT_IFNG_AND_IL17_AND_NOT_IL2_AND_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_154_AND_NOT_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_154_AND_NOT_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_IL2_AND_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_154_AND_NOT_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_154_AND_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD4_NOT_107a_AND_154_AND_NOT_IFNG_AND_NOT_IL17_AND_IL2_AND_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_154_AND_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD4_NOT_107a_AND_154_AND_IFNG_AND_NOT_IL17_AND_IL2_AND_IL4513_AND_TNF", 
+  "CD4_107a_AND_154_AND_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_TNF"
+)
+
+# Prepare categories data frame for plotting
+cd4_cats_forplot <- merged_cd4_compass_data$catsMerged %>% 
+  mutate_all(~ as.numeric(as.character(.)))
+rownames(cd4_cats_forplot) <- cd4_booleanSubsets_gate_names
+cd4_cats_forplot <- cd4_cats_forplot[, cytokine_order_for_annotation]
+# Before plotting, put the categories data frame rows in the desired order (columns were already re-ordered above)
+cd4_cats_forplot <- cd4_cats_forplot[rev(do.call(order, cd4_cats_forplot)),,drop=FALSE]
+# And order the cd4_cats_forplot df rows by degrees (number of cytokines in subset)
+ckr<-apply(cd4_cats_forplot,1,function(x)sum(as.numeric(as.character(x))))
+cd4_cats_forplot = cd4_cats_forplot[order(ckr),]
+```
+
+## Extract counts & calulate magnitudes
+
+```{r}
+cd4_dat <- gs_pop_get_count_with_meta(gs2, subpopulations = c("4+", cd4_booleanSubsets_gate_names)) %>% 
+  dplyr::select(`SAMPLE ID`, STIM, Batch, Population, Count) %>% 
+  pivot_wider(names_from = Population, values_from = Count) %>% 
+  mutate_at(vars(cd4_booleanSubsets_gate_names), ~ . / `4+`) %>% 
+  dplyr::select(-`4+`) %>% 
+  pivot_longer(cols = cd4_booleanSubsets_gate_names, names_to = "Population", values_to = "Prop") %>% 
+  pivot_wider(names_from = STIM, values_from = Prop) %>% 
+  mutate_at(vars("VEMP", "Spike 1", "Spike 2", "NCAP"), ~ . - DMSO) %>% 
+  dplyr::select(-DMSO, -SEB) %>% 
+  pivot_longer(cols = c("VEMP", "Spike 1", "Spike 2", "NCAP"), names_to = "STIM", values_to = "BgCorrProp") %>% 
+  dplyr::filter(!is.na(BgCorrProp)) %>% 
+  mutate(Population = factor(Population, levels = rownames(cd4_cats_forplot)))
+```
+
+Quade test to identify subsets with variable expression across stims
+
+```{r}
+cd4_quade_test_results <- lapply(cd4_booleanSubsets_gate_names, function(n) {
+  quade.test(BgCorrProp ~ STIM | `SAMPLE ID`,
+             data = cd4_dat %>% dplyr::filter(Population == !!n) %>%
+               # Drop values if necessary to achieve unreplicated complete block design 
+               pivot_wider(names_from = STIM, values_from = BgCorrProp) %>%
+               na.omit() %>%
+               pivot_longer(cols = c("VEMP", "Spike 1", "Spike 2", "NCAP"),
+                                   names_to = "STIM", values_to = "BgCorrProp"))
+})
+names(cd4_quade_test_results) <- cd4_booleanSubsets_gate_names
+
+cd4_quade_pvals_df <- data.frame(Population = cd4_booleanSubsets_gate_names,
+                       p = unlist(lapply(cd4_quade_test_results, function(x) {x$p.value}))) %>% 
+  mutate(p.adj = p.adjust(p, method = "bonferroni")) %>% # Strict
+  mutate(p.adj.text = if_else(p.adj < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.adj, 3)))))
+table(cd4_quade_pvals_df$p.adj < 0.05)
+
+# Which subsets have median response > 0 for at least one stim? Only keep these for export to integrated analysis.
+cd4_dat %>% 
+  group_by(Population, STIM) %>% 
+  summarise(median(BgCorrProp)) %>% 
+  pivot_wider(names_from = STIM, values_from = `median(BgCorrProp)`) %>% 
+  # There are some subsets (like the TNF only subset) which get filtered here:
+  dplyr::filter_at(vars(-"Population"), all_vars(. <= 0)) %>% 
+  knitr::kable()
+cd4_subsets_pos_med_response_df <- cd4_dat %>% 
+  group_by(Population, STIM) %>% 
+  summarise(median(BgCorrProp)) %>% 
+  pivot_wider(names_from = STIM, values_from = `median(BgCorrProp)`) %>% 
+  # There are some subsets (like the TNF only subset) which get filtered here:
+  dplyr::filter_at(vars(-"Population"), any_vars(. > 0))
+
+# What is the intersect of subsets which have significantly different expression across stims and have positive expression?
+cd4_subsets_to_save_df <- cd4_subsets_pos_med_response_df %>% 
+  dplyr::filter(Population %in% (cd4_quade_pvals_df %>% dplyr::filter(p.adj < 0.05) %>% dplyr::pull(Population) %>% as.character()))
+cutoff_for_export <- 0.00002
+
+exported_cytokine_order <- c("IL2", "IL4/5/13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
+# current order: c("CD107a", "CD154", "IFNg", "IL17a", "IL2", "IL4/5/13", "TNFa")
+cd4_cats_with_exported_name <- cd4_cats_forplot %>% 
+  rownames_to_column("Gate_Name") %>%
+  mutate_at(vars(-"Gate_Name"), ~ as.numeric(as.character(.))) %>% 
+  mutate_at(vars(-"Gate_Name"), ~ recode(., "0" = "!", "1" = "")) %>%
+  mutate(Exported_Bool = paste(IL2, "IL2", "&",
+                               `IL4/5/13`, "IL4/5/13", "&",
+                               `IFNg`, "IFNg", "&",
+                               `TNFa`, "TNFa", "&",
+                               `IL17a`, "IL17a", "&",
+                               `CD154`, "CD154", "&",
+                               `CD107a`, "CD107a",
+                               sep = ""))
+
+cd4_subset_and_stim_combos_to_save <- cd4_subsets_to_save_df %>% 
+  # Further filter to just keep stims with median value > 0.00002 (or 0.002%)
+  pivot_longer(cols = c("NCAP", "Spike 1", "Spike 2", "VEMP"), names_to = "STIM", values_to = "median(BgCorrProp)") %>% 
+  dplyr::filter(`median(BgCorrProp)` > cutoff_for_export) %>% 
+  # Format the subset name to match the exported version
+  ungroup() %>% 
+  mutate(Population = as.character(Population)) %>% 
+  left_join(cd4_cats_with_exported_name %>% dplyr::select(Gate_Name, Exported_Bool), by = c("Population" = "Gate_Name")) %>% 
+  mutate(Exported_Subset_Name = sprintf("CD4_%s %s",
+                                        sub("Spike ", "S", STIM),
+                                        Exported_Bool))
+# Which subset + stim combinations have not already been exported?
+saved_bgcorr_dat_pt1 <- read.csv(here::here("processed_data/20200813_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt1.csv"), stringsAsFactors = F, check.names = F)
+cd4_subset_and_stim_combos_to_save_new <- cd4_subset_and_stim_combos_to_save %>% 
+  dplyr::filter(!(Exported_Subset_Name %in% colnames(saved_bgcorr_dat_pt1)))
+cd4_subset_and_stim_combos_to_save_new$Exported_Subset_Name
+
+bgcorr_dat_2save_pt2_cd4 <- cd4_dat %>% 
+  mutate(Population = as.character(Population)) %>% 
+  rename("SAMPLE_ID" = "SAMPLE ID") %>% 
+  left_join(cd4_cats_with_exported_name %>% dplyr::select(Gate_Name, Exported_Bool), by = c("Population" = "Gate_Name")) %>% 
+  mutate(Exported_Subset_Name = sprintf("CD4_%s %s",
+                                        sub("Spike ", "S", STIM),
+                                        Exported_Bool)) %>% 
+  pivot_wider(id_cols = "SAMPLE_ID", names_from = "Exported_Subset_Name", values_from = "BgCorrProp") %>% 
+  dplyr::select("SAMPLE_ID", all_of(cd4_subset_and_stim_combos_to_save_new$Exported_Subset_Name)) %>% 
+  # Convert proportions into percents
+  # Convert the numeric columns to character type after rounding to 20 digits. This will help ensure consistency when writing and reading the data to a file
+  mutate_at(vars(-"SAMPLE_ID"), ~ format(. * 100, digits = 20))
+```
+
+## Plot the proportions
+
+```{r}
+# factor_colors = hsv((seq(0, 1, length.out = 4 + 1)[-1] +
+#                          0.2)%%1, 0.7, 0.95)
+stim_colors <- c("Spike 1" = "#49F2BF", "Spike 2" = "#F2497C", "NCAP" = "#6B49F2", "VEMP" = "#D0F249")
+add_legend <- TRUE
+legend_position <- c(0.12, 0.97)
+point_size <- 0.3
+include_0_line <- TRUE
+
+# Calculate medians of each group for each subset
+dat_bgCorr_medians <- cd4_dat %>%
+  dplyr::group_by(!!as.symbol("STIM"), Population) %>%
+  dplyr::summarise(BgCorrProp = median(BgCorrProp))
+
+# Draw the dotplot
+p_dotplot <- ggplot(cd4_dat, aes(x = !!as.symbol("STIM"), y = BgCorrProp, fill = !!as.symbol("STIM"), group = !!as.symbol("STIM")))
+if(include_0_line) {
+  p_dotplot <- p_dotplot + geom_hline(yintercept = 0, linetype="twodash", alpha = 0.5)
+}
+p_dotplot <- p_dotplot +
+  geom_point(aes(color = !!as.symbol("STIM")), position=position_jitterdodge(dodge.width=0.2), size=point_size) +
+  geom_errorbarh(data = dat_bgCorr_medians,
+                 aes(y = BgCorrProp,
+                     xmax = 1.5 + 1.2,
+                     xmin = 1.5 - 1.2, height = 0),
+                 position=position_dodge(width=0.2),
+                 color = "black", size=0.6) +
+  facet_grid(. ~ Population) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        axis.text = element_text(color="black", size=12),
+        axis.title = element_text(size=18),
+        #text = element_text(family="Arial"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) + 
+  labs(y=sprintf("%% Responding %s T cells", sub("+", "", "CD4+", fixed=T)))
+if(!is.na(stim_colors)) {
+  p_dotplot <- p_dotplot + scale_color_manual(values=stim_colors)
+}
+
+if(add_legend) {
+  p_dotplot <- p_dotplot +
+    theme(legend.justification = c(1,1),
+          legend.position = legend_position,
+          legend.text=element_text(size=16)) +
+    guides(color=guide_legend(title=NULL, override.aes = list(size=5)), fill = FALSE)
+} else {
+  p_dotplot <- p_dotplot +
+    theme(legend.position = "none")
+}
+```
+
+```{r}
+current_ylim <- NULL
+get_y_pos_cd4 <- function(boolSubsets) {
+  sapply(boolSubsets, function(boolSubset) {
+    boolSubset <- as.character(boolSubset)
+    find_y_max_in_visible_range <- function(x) {ifelse(is.null(current_ylim), max(x), max(subset(x, x < current_ylim[[2]])))}
+    y_visible_max <- cd4_dat %>%
+      dplyr::filter(Population == !!boolSubset) %>% 
+      group_by(STIM) %>%
+      summarise(y_visible_max = find_y_max_in_visible_range(BgCorrProp)) %>% 
+      dplyr::pull(y_visible_max) %>% 
+      max()
+    y_visible_max + if(is.null(current_ylim)) {max(cd4_dat$BgCorrProp)/20} else {current_ylim[[2]]/20}
+  })
+}
+
+annotation_df <- cd4_quade_pvals_df %>% 
+  mutate(start = "NCAP",
+         end = "VEMP",
+         y_pos = get_y_pos_cd4(Population)) %>%
+  dplyr::filter(p.adj < 0.05)
+
+p_text_size <- 3
+# If I don't use the full path for ggsignif::geom_signif, it may try to use a global environment variable GeomSignif and ignore manual = T. Odd.
+p_dotplot <- p_dotplot +
+  ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
+                        aes_string(xmin="start", xmax="end", annotations="p.adj.text", y_position="y_pos"), # , family="Arial"
+                        tip_length = c(0.001, 0.001),
+                        textsize=p_text_size,
+                        manual = TRUE)
+```
+
+```{r}
+# Now make the categories legend
+
+# Set the order of the cytokines and subsets once the categories df is in long format. Then plot.
+cats_long <- as.data.frame(cd4_cats_forplot) %>%
+  rownames_to_column("Population") %>%
+  gather(Cytokine, Membership, -Population) %>%
+  mutate(Membership = dplyr::recode(Membership, "0" = "-", "1" = "+")) %>% 
+  mutate(Population = factor(Population, levels = rownames(cd4_cats_forplot)),
+         Cytokine = factor(Cytokine, levels = colnames(cd4_cats_forplot)))
+
+cats_plot <- ggplot(cats_long,
+                    aes(x = Population, y = Cytokine)) +
+  geom_tile(fill="white") +
+  geom_text(aes(label=Membership), color="black", size=7) +
+  theme(axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.title = element_blank(),
+        axis.text.y = element_text(color="black", size=14),
+        panel.border=element_blank(),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm")) + 
+  scale_y_discrete(expand=c(0,0)) + 
+  scale_x_discrete(expand=c(0,0))
+
+p_dotplot_v1 <- p_dotplot + scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.003, 0.033))
+p_dotplot_v2 <- p_dotplot + scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0005, 0.003))
+p_dotplot_v3 <- p_dotplot +
+  # draw line to indicate cutoff of which conditions got saved to file for integrated analysis
+  geom_hline(yintercept = cutoff_for_export, alpha = 0.5, color="red") +
+  scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0005, 0.003))
+
+dotplot_with_cats_v1 <- plot_grid(p_dotplot_v1, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
+dotplot_with_cats_v2 <- plot_grid(p_dotplot_v2, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
+dotplot_with_cats_v3 <- plot_grid(p_dotplot_v3, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
+```
+
+```{r, fig.width=14, fig.height=8}
+dotplot_with_cats_v1
+# Zoom in a bit
+dotplot_with_cats_v2
+dotplot_with_cats_v3
+```
+
+# Compare CD8 magnitudes across Stims
+
+## Add boolean gates
+
+```{r}
+# Drop certain wells for just the CD8 runs due to low CD8 count:
+gs3 <- subset(gs2, !(STIM %in% c("Spike 2", "NCAP") & `SAMPLE ID` %in% c("BWT20", "15548")) &
+         !(STIM == "Spike 2" & `SAMPLE ID` == "15530"))
+```
+
+```{r}
+cd8_booleanSubsets_gate_names <- c("CD8_NOT_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_IL4513_AND_NOT_TNF", 
+  "CD8_NOT_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD8_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD8_NOT_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_TNF", 
+  "CD8_NOT_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD8_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_NOT_TNF", 
+  "CD8_107a_AND_NOT_154_AND_IFNG_AND_NOT_IL17_AND_NOT_IL2_AND_NOT_IL4513_AND_TNF"
+)
+
+# Prepare categories data frame for plotting
+cd8_cats_forplot <- merged_cd8_compass_data$catsMerged %>% 
+  mutate_all(~ as.numeric(as.character(.)))
+rownames(cd8_cats_forplot) <- cd8_booleanSubsets_gate_names
+cd8_cats_forplot <- cd8_cats_forplot[, cytokine_order_for_annotation]
+# Before plotting, put the categories data frame rows in the desired order (columns were already re-ordered above)
+cd8_cats_forplot <- cd8_cats_forplot[rev(do.call(order, cd8_cats_forplot)),,drop=FALSE]
+# And order the cd8_cats_forplot df rows by degrees (number of cytokines in subset)
+ckr<-apply(cd8_cats_forplot,1,function(x)sum(as.numeric(as.character(x))))
+cd8_cats_forplot = cd8_cats_forplot[order(ckr),]
+```
+
+## Extract counts & calulate magnitudes
+
+```{r}
+cd8_dat <- gs_pop_get_count_with_meta(gs3, subpopulations = c("8+", cd8_booleanSubsets_gate_names)) %>%
+  dplyr::select(`SAMPLE ID`, STIM, Batch, Population, Count) %>%
+  pivot_wider(names_from = Population, values_from = Count) %>%
+  mutate_at(vars(cd8_booleanSubsets_gate_names), ~ . / `8+`) %>%
+  dplyr::select(-`8+`) %>%
+  pivot_longer(cols = all_of(cd8_booleanSubsets_gate_names), names_to = "Population", values_to = "Prop") %>%
+  pivot_wider(names_from = STIM, values_from = Prop) %>%
+  mutate_at(vars("VEMP", "Spike 1", "Spike 2", "NCAP"), ~ . - DMSO) %>%
+  dplyr::select(-DMSO, -SEB) %>%
+  pivot_longer(cols = c("VEMP", "Spike 1", "Spike 2", "NCAP"), names_to = "STIM", values_to = "BgCorrProp") %>%
+  dplyr::filter(!is.na(BgCorrProp)) %>%
+  mutate(Population = factor(Population, levels = rownames(cd8_cats_forplot)))
+```
+
+Quade test to identify subsets with variable expression across stims
+
+```{r}
+cd8_quade_test_results <- lapply(cd8_booleanSubsets_gate_names, function(n) {
+  quade.test(BgCorrProp ~ STIM | `SAMPLE ID`,
+             data = cd8_dat %>% dplyr::filter(Population == !!n) %>%
+               # Drop values if necessary to achieve unreplicated complete block design 
+               pivot_wider(names_from = STIM, values_from = BgCorrProp) %>%
+               na.omit() %>%
+               pivot_longer(cols = c("VEMP", "Spike 1", "Spike 2", "NCAP"),
+                                   names_to = "STIM", values_to = "BgCorrProp"))
+})
+names(cd8_quade_test_results) <- cd8_booleanSubsets_gate_names
+
+cd8_quade_pvals_df <- data.frame(Population = cd8_booleanSubsets_gate_names,
+                       p = unlist(lapply(cd8_quade_test_results, function(x) {x$p.value}))) %>% 
+  mutate(p.adj = p.adjust(p, method = "bonferroni")) %>% # Strict
+  mutate(p.adj.text = if_else(p.adj < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.adj, 3)))))
+table(cd8_quade_pvals_df$p.adj < 0.05)
+
+# Which subsets have median response > 0 for at least one stim? Only keep these for export to integrated analysis.
+cd8_dat %>% 
+  group_by(Population, STIM) %>% 
+  summarise(median(BgCorrProp)) %>% 
+  pivot_wider(names_from = STIM, values_from = `median(BgCorrProp)`) %>% 
+  # There are some subsets (like the TNF only subset) which get filtered here:
+  dplyr::filter_at(vars(-"Population"), all_vars(. <= 0)) %>% 
+  knitr::kable()
+cd8_subsets_pos_med_response_df <- cd8_dat %>% 
+  group_by(Population, STIM) %>% 
+  summarise(median(BgCorrProp)) %>% 
+  pivot_wider(names_from = STIM, values_from = `median(BgCorrProp)`) %>% 
+  # There are some subsets (like the TNF only subset) which get filtered here:
+  dplyr::filter_at(vars(-"Population"), any_vars(. > 0))
+
+# What is the intersect of subsets which have significantly different expression across stims and have positive expression?
+cd8_subsets_to_save_df <- cd8_subsets_pos_med_response_df %>% 
+  dplyr::filter(Population %in% (cd8_quade_pvals_df %>% dplyr::filter(p.adj < 0.05) %>% dplyr::pull(Population) %>% as.character()))
+cutoff_for_export <- 0.00002
+
+exported_cytokine_order <- c("IL2", "IL4/5/13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
+# current order: c("CD107a", "CD154", "IFNg", "IL17a", "IL2", "IL4/5/13", "TNFa")
+cd8_cats_with_exported_name <- cd8_cats_forplot %>% 
+  rownames_to_column("Gate_Name") %>%
+  mutate_at(vars(-"Gate_Name"), ~ as.numeric(as.character(.))) %>% 
+  mutate_at(vars(-"Gate_Name"), ~ recode(., "0" = "!", "1" = "")) %>%
+  mutate(Exported_Bool = paste(IL2, "IL2", "&",
+                               `IL4/5/13`, "IL4/5/13", "&",
+                               `IFNg`, "IFNg", "&",
+                               `TNFa`, "TNFa", "&",
+                               `IL17a`, "IL17a", "&",
+                               `CD154`, "CD154", "&",
+                               `CD107a`, "CD107a",
+                               sep = ""))
+
+cd8_subset_and_stim_combos_to_save <- cd8_subsets_to_save_df %>% 
+  # Further filter to just keep stims with median value > 0.00002 (or 0.002%)
+  pivot_longer(cols = c("NCAP", "Spike 1", "Spike 2", "VEMP"), names_to = "STIM", values_to = "median(BgCorrProp)") %>% 
+  dplyr::filter(`median(BgCorrProp)` > cutoff_for_export) %>% 
+  # Format the subset name to match the exported version
+  ungroup() %>% 
+  mutate(Population = as.character(Population)) %>% 
+  left_join(cd8_cats_with_exported_name %>% dplyr::select(Gate_Name, Exported_Bool), by = c("Population" = "Gate_Name")) %>% 
+  mutate(Exported_Subset_Name = sprintf("CD8_%s %s",
+                                        sub("Spike ", "S", STIM),
+                                        Exported_Bool))
+# Which subset + stim combinations have not already been exported?
+saved_bgcorr_dat_pt1 <- read.csv(here::here("processed_data/20200813_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt1.csv"), stringsAsFactors = F, check.names = F)
+cd8_subset_and_stim_combos_to_save_new <- cd8_subset_and_stim_combos_to_save %>% 
+  dplyr::filter(!(Exported_Subset_Name %in% colnames(saved_bgcorr_dat_pt1)))
+cd8_subset_and_stim_combos_to_save_new$Exported_Subset_Name
+
+bgcorr_dat_2save_pt2_cd8 <- cd8_dat %>% 
+  mutate(Population = as.character(Population)) %>% 
+  rename("SAMPLE_ID" = "SAMPLE ID") %>% 
+  left_join(cd8_cats_with_exported_name %>% dplyr::select(Gate_Name, Exported_Bool), by = c("Population" = "Gate_Name")) %>% 
+  mutate(Exported_Subset_Name = sprintf("CD8_%s %s",
+                                        sub("Spike ", "S", STIM),
+                                        Exported_Bool)) %>% 
+  pivot_wider(id_cols = "SAMPLE_ID", names_from = "Exported_Subset_Name", values_from = "BgCorrProp") %>% 
+  dplyr::select("SAMPLE_ID", all_of(cd8_subset_and_stim_combos_to_save_new$Exported_Subset_Name)) %>% 
+  # Convert proportions into percents
+  # Convert the numeric columns to character type after rounding to 20 digits. This will help ensure consistency when writing and reading the data to a file
+  mutate_at(vars(-"SAMPLE_ID"), ~ format(. * 100, digits = 20))
+```
+
+## Plot the proportions
+
+```{r}
+# factor_colors = hsv((seq(0, 1, length.out = 4 + 1)[-1] +
+#                          0.2)%%1, 0.7, 0.95)
+stim_colors <- c("Spike 1" = "#49F2BF", "Spike 2" = "#F2497C", "NCAP" = "#6B49F2", "VEMP" = "#D0F249")
+add_legend <- TRUE
+legend_position <- c(0.12, 0.97)
+point_size <- 0.3
+include_0_line <- TRUE
+
+# Calculate medians of each group for each subset
+dat_bgCorr_medians <- cd8_dat %>%
+  dplyr::group_by(!!as.symbol("STIM"), Population) %>%
+  dplyr::summarise(BgCorrProp = median(BgCorrProp))
+
+# Draw the dotplot
+p_dotplot <- ggplot(cd8_dat, aes(x = !!as.symbol("STIM"), y = BgCorrProp, fill = !!as.symbol("STIM"), group = !!as.symbol("STIM")))
+if(include_0_line) {
+  p_dotplot <- p_dotplot + geom_hline(yintercept = 0, linetype="twodash", alpha = 0.5)
+}
+p_dotplot <- p_dotplot +
+  geom_point(aes(color = !!as.symbol("STIM")), position=position_jitterdodge(dodge.width=0.2), size=point_size) +
+  geom_errorbarh(data = dat_bgCorr_medians,
+                 aes(y = BgCorrProp,
+                     xmax = 1.5 + 1.2,
+                     xmin = 1.5 - 1.2, height = 0),
+                 position=position_dodge(width=0.2),
+                 color = "black", size=0.6) +
+  facet_grid(. ~ Population) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        axis.text = element_text(color="black", size=12),
+        axis.title = element_text(size=18),
+        #text = element_text(family="Arial"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) +
+  labs(y=sprintf("%% Responding %s T cells", sub("+", "", "Not-CD4+", fixed=T)))
+if(!is.na(stim_colors)) {
+  p_dotplot <- p_dotplot + scale_color_manual(values=stim_colors)
+}
+
+if(add_legend) {
+  p_dotplot <- p_dotplot +
+    theme(legend.justification = c(1,1),
+          legend.position = legend_position,
+          legend.text=element_text(size=16)) +
+    guides(color=guide_legend(title=NULL, override.aes = list(size=5)), fill = FALSE)
+} else {
+  p_dotplot <- p_dotplot +
+    theme(legend.position = "none")
+}
+```
+
+```{r}
+current_ylim <- NULL
+get_y_pos_cd8 <- function(boolSubsets) {
+  sapply(boolSubsets, function(boolSubset) {
+    boolSubset <- as.character(boolSubset)
+    find_y_max_in_visible_range <- function(x) {ifelse(is.null(current_ylim), max(x), max(subset(x, x < current_ylim[[2]])))}
+    y_visible_max <- cd8_dat %>%
+      dplyr::filter(Population == !!boolSubset) %>% 
+      group_by(STIM) %>%
+      summarise(y_visible_max = find_y_max_in_visible_range(BgCorrProp)) %>% 
+      dplyr::pull(y_visible_max) %>% 
+      max()
+    y_visible_max + if(is.null(current_ylim)) {max(cd8_dat$BgCorrProp)/20} else {current_ylim[[2]]/20}
+  })
+}
+
+annotation_df <- cd8_quade_pvals_df %>% 
+  mutate(start = "NCAP",
+         end = "VEMP",
+         y_pos = get_y_pos_cd8(Population)) %>%
+  dplyr::filter(p.adj < 0.05)
+
+p_text_size <- 3
+# If I don't use the full path for ggsignif::geom_signif, it may try to use a global environment variable GeomSignif and ignore manual = T. Odd.
+p_dotplot <- p_dotplot +
+  ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
+                        aes_string(xmin="start", xmax="end", annotations="p.adj.text", y_position="y_pos"), # , family="Arial"
+                        tip_length = c(0.001, 0.001),
+                        textsize=p_text_size,
+                        manual = TRUE)
+```
+
+```{r}
+# Now make the categories legend
+
+# Set the order of the cytokines and subsets once the categories df is in long format. Then plot.
+cats_long <- as.data.frame(cd8_cats_forplot) %>%
+  rownames_to_column("Population") %>%
+  gather(Cytokine, Membership, -Population) %>%
+  mutate(Membership = dplyr::recode(Membership, "0" = "-", "1" = "+")) %>%
+  mutate(Population = factor(Population, levels = rownames(cd8_cats_forplot)),
+         Cytokine = factor(Cytokine, levels = colnames(cd8_cats_forplot)))
+
+cats_plot <- ggplot(cats_long,
+                    aes(x = Population, y = Cytokine)) +
+  geom_tile(fill="white") +
+  geom_text(aes(label=Membership), color="black", size=7) +
+  theme(axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.title = element_blank(),
+        axis.text.y = element_text(color="black", size=14),
+        panel.border=element_blank(),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        plot.margin = unit(c(0,0,0,0), "cm")) +
+  scale_y_discrete(expand=c(0,0)) +
+  scale_x_discrete(expand=c(0,0))
+
+p_dotplot_v1 <- p_dotplot + scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.003, 0.03)) + theme(legend.position = c(0.88, 0.97))
+p_dotplot_v2 <- p_dotplot + scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0007, 0.003))
+p_dotplot_v3 <- p_dotplot +
+  # draw line to indicate cutoff of which conditions got saved to file for integrated analysis
+  geom_hline(yintercept = cutoff_for_export, alpha = 0.5, color="red") +
+  scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0007, 0.003))
+
+dotplot_with_cats_v1 <- plot_grid(p_dotplot_v1, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
+dotplot_with_cats_v2 <- plot_grid(p_dotplot_v2, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
+dotplot_with_cats_v3 <- plot_grid(p_dotplot_v3, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
+```
+
+```{r, fig.width=14, fig.height=8}
+dotplot_with_cats_v1
+# Zoom in a bit
+dotplot_with_cats_v2
+dotplot_with_cats_v3
+```
+
+# Memory & Activation status of COMPASS subsets
+
+Take this opportunity to look at the memory and activation status of COMPASS Subset+ events  
+(note the data here is not subset down to just the samples which made it through COMPASS)  
+
+```{r, fig.width=7, fig.height=7}
+pop_paths_of_interest <- c("/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets",
+                           "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/Naive", "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TCM",
+                           "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TEMRA", "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TEM",
+                           "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/Naive", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TCM",
+                           "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TEMRA", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TEM",
+                           "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/HLADR+CD38+", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/HLADR+CD38+")
+new_names_pop_paths_of_interest <- c("CD4_COMPASS_Pos", "CD8_COMPASS_Pos",
+                                     "CD4_COMPASS_Naive", "CD4_COMPASS_TCM",
+                                     "CD4_COMPASS_TEMRA", "CD4_COMPASS_TEM",
+                                     "CD8_COMPASS_Naive", "CD8_COMPASS_TCM",
+                                     "CD8_COMPASS_TEMRA", "CD8_COMPASS_TEM",
+                                     "CD4_COMPASS_Activated", "CD8_COMPASS_Activated")
+compass_mem_activation_dat <- gs_pop_get_count_with_meta(gs,
+                                      subpopulations = pop_paths_of_interest) %>% 
+  dplyr::select(Population, Count, "SAMPLE ID", "STIM", "Cohort", "Age", "Sex", "Race_v2", "Hispanic?", 
+                "Days symptom onset to visit 1", "Batch") %>% 
+  pivot_wider(names_from = Population, values_from = Count) %>% 
+  rename_at(vars(all_of(pop_paths_of_interest)),
+            ~ new_names_pop_paths_of_interest) %>% 
+  mutate(Naive_div_CD4_COMPASS = CD4_COMPASS_Naive / CD4_COMPASS_Pos,
+         TCM_div_CD4_COMPASS = CD4_COMPASS_TCM / CD4_COMPASS_Pos,
+         TEM_div_CD4_COMPASS = CD4_COMPASS_TEM / CD4_COMPASS_Pos,
+         TEMRA_div_CD4_COMPASS = CD4_COMPASS_TEMRA / CD4_COMPASS_Pos,
+         Naive_div_CD8_COMPASS = CD8_COMPASS_Naive / CD8_COMPASS_Pos,
+         TCM_div_CD8_COMPASS = CD8_COMPASS_TCM / CD8_COMPASS_Pos,
+         TEM_div_CD8_COMPASS = CD8_COMPASS_TEM / CD8_COMPASS_Pos,
+         TEMRA_div_CD8_COMPASS = CD8_COMPASS_TEMRA / CD8_COMPASS_Pos,
+         HLADR_CD38_div_CD4_COMPASS = CD4_COMPASS_Activated / CD4_COMPASS_Pos,
+         HLADR_CD38_div_CD8_COMPASS = CD8_COMPASS_Activated / CD8_COMPASS_Pos)
+compass_mem_activation_dat_sub <- compass_mem_activation_dat %>%
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>%
+  rename(Days_Symptom_Onset_to_Visit_1 = `Days symptom onset to visit 1`) %>%
+  mutate(Days_Symptom_Onset_to_Visit_1 = as.numeric(Days_Symptom_Onset_to_Visit_1),
+         Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized")))
+
+ggplot(compass_mem_activation_dat_sub, aes(Cohort, Naive_div_CD4_COMPASS)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_bw(base_size = 18) +
+  geom_jitter(width=0.15) +
+  facet_wrap(. ~ STIM) +
+  labs(title="% Naive of CD4+ COMPASS Subset+ events",
+       y = "% Naive") +
+  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
+                   expand = c(0.2,0.2)) +
+  scale_y_continuous(labels = function(x) paste0(x*100))
+
+ggplot(compass_mem_activation_dat_sub, aes(Cohort, Naive_div_CD8_COMPASS)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_bw(base_size = 18) +
+  geom_jitter(width=0.15) +
+  facet_wrap(. ~ STIM) +
+  labs(title="% Naive of CD8+ COMPASS Subset+ events",
+       y = "% Naive") +
+  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
+                   expand = c(0.2,0.2)) +
+  scale_y_continuous(labels = function(x) paste0(x*100))
+
+ggplot(compass_mem_activation_dat_sub, aes(Cohort, HLADR_CD38_div_CD4_COMPASS)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_bw(base_size = 18) +
+  geom_jitter(width=0.15) +
+  facet_wrap(. ~ STIM, scales = "free") +
+  labs(title="% Activated of CD4+ COMPASS Subset+ events",
+       y = "% HLA-DR+CD38+") +
+  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
+                   expand = c(0.2,0.2)) +
+  scale_y_continuous(labels = function(x) paste0(x*100))
+
+ggplot(compass_mem_activation_dat_sub, aes(Cohort, HLADR_CD38_div_CD8_COMPASS)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_bw(base_size = 18) +
+  geom_jitter(width=0.15) +
+  facet_wrap(. ~ STIM, scales = "free") +
+  labs(title="% Activated of CD8+ COMPASS Subset+ events",
+       y = "% HLA-DR+CD38+") +
+  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
+                   expand = c(0.2,0.2)) +
+  scale_y_continuous(labels = function(x) paste0(x*100))
+```
+
+# Export data for integrated analysis
+
+```{r}
+if(save_output) {
+  bgcorr_dat_2save_pt2 <- bgcorr_dat_2save_pt2_cd4 %>% full_join(bgcorr_dat_2save_pt2_cd8, by = "SAMPLE_ID")
+  write.csv(bgcorr_dat_2save_pt2,
+            here::here("processed_data/20200814_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt2.csv"), row.names = F)
+  # bgcorr_dat_2save_pt2 <- read.csv(here::here("processed_data/20200814_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt2.csv"), stringsAsFactors = F, check.names = F, colClasses = "character")
+  # all.equal(bgcorr_dat_2save_pt2,
+  #  read.csv(here::here("processed_data/20200814_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt2.csv"), stringsAsFactors = F, check.names = F, colClasses = "character"))
+}
+```

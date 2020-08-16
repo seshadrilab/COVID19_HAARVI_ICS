@@ -734,11 +734,14 @@ row_ann_colors_v2 <- list(`Stim` = StimColors, `Cohort` = CohortColors)
 
 # CD4 runs
 cd4_data2plot <- mergeMatricesForPlotCOMPASSResultStack_tmp(crList2[CD4RunNames],
-                                                            threshold=0.01,
+                                   threshold=0.01,
                                    minimum_dof=1,
                                    maximum_dof=Inf,
                                    row_annotation = c("Stim", "Cohort"),
                                    variable = "Stim")
+if(save_output) {
+  saveRDS(cd4_data2plot, here::here("processed_data/20200815_Merged_CD4_COMPASS_Data.rds"))
+}
 cd4_merged_COMPASSResult <- crList2$`4_Spike_1`
 cd4_merged_COMPASSResult$fit$mean_gamma <- cd4_data2plot$MMerged
 cd4_merged_COMPASSResult$fit$categories <- cd4_data2plot$catsMerged %>% mutate_all(~ as.numeric(as.character(.))) %>% mutate(Counts = rowSums(.))
@@ -763,11 +766,14 @@ cd4_heatmap_by_ifng <- print(my_plot.COMPASSResult(cd4_merged_COMPASSResult,
 
 # CD8 runs
 cd8_data2plot <- mergeMatricesForPlotCOMPASSResultStack_tmp(crList2[CD8RunNames],
-                                                            threshold=0.01,
+                                   threshold=0.01,
                                    minimum_dof=1,
                                    maximum_dof=Inf,
                                    row_annotation = c("Stim", "Cohort"),
                                    variable = "Stim")
+if(save_output) {
+  saveRDS(cd8_data2plot, here::here("processed_data/20200815_Merged_CD8_COMPASS_Data.rds"))
+}
 cd8_merged_COMPASSResult <- crList2$`8_Spike_1`
 cd8_merged_COMPASSResult$fit$mean_gamma <- cd8_data2plot$MMerged
 cd8_merged_COMPASSResult$fit$categories <- cd8_data2plot$catsMerged %>% mutate_all(~ as.numeric(as.character(.))) %>% mutate(Counts = rowSums(.))
