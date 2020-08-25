@@ -48,13 +48,14 @@ cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", "CD107a", "IL4/5/13", 
 
 # Compare CD4+ magnitudes across Stims
 
-Unlike the other magnitude plots which compare across all 3 cohort groups, I'm dropping healthies here. Reasoning is that we are primarily interested in differences in responses among COV2-exposed individuals, but you could probably argue the other way as well.
+Dropping healthies here. Reasoning is that we are primarily interested in differences in responses among COV2-exposed individuals, but you could probably argue the other way as well.
 
-## Add boolean gates
+## Define gates of interest
 
 ```{r}
 gs2 <- subset(gs, !(`SAMPLE ID` %in% c("37C", "BWT23", "116C", "BWT22")) &
-                !(`SAMPLE ID` == "551432" & STIM == "Spike 2"))
+                !(`SAMPLE ID` == "551432" & STIM == "Spike 2") &
+                Cohort %in% c("Hospitalized", "Non-hospitalized"))
 ```
 
 ```{r}
@@ -148,7 +149,7 @@ cd4_subsets_pos_med_response_df <- cd4_dat %>%
 # What is the intersect of subsets which have significantly different expression across stims and have positive expression?
 cd4_subsets_to_save_df <- cd4_subsets_pos_med_response_df %>% 
   dplyr::filter(Population %in% (cd4_quade_pvals_df %>% dplyr::filter(p.adj < 0.05) %>% dplyr::pull(Population) %>% as.character()))
-cutoff_for_export <- 0.00002
+cutoff_for_export <- 0.00004
 
 exported_cytokine_order <- c("IL2", "IL4/5/13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
 # current order: c("CD107a", "CD154", "IFNg", "IL17a", "IL2", "IL4/5/13", "TNFa")
@@ -166,7 +167,7 @@ cd4_cats_with_exported_name <- cd4_cats_forplot %>%
                                sep = ""))
 
 cd4_subset_and_stim_combos_to_save <- cd4_subsets_to_save_df %>% 
-  # Further filter to just keep stims with median value > 0.00002 (or 0.002%)
+  # Further filter to just keep stims with median value > 0.00004 (or 0.004%)
   pivot_longer(cols = c("NCAP", "Spike 1", "Spike 2", "VEMP"), names_to = "STIM", values_to = "median(BgCorrProp)") %>% 
   dplyr::filter(`median(BgCorrProp)` > cutoff_for_export) %>% 
   # Format the subset name to match the exported version
@@ -420,7 +421,7 @@ cd8_subsets_pos_med_response_df <- cd8_dat %>%
 # What is the intersect of subsets which have significantly different expression across stims and have positive expression?
 cd8_subsets_to_save_df <- cd8_subsets_pos_med_response_df %>% 
   dplyr::filter(Population %in% (cd8_quade_pvals_df %>% dplyr::filter(p.adj < 0.05) %>% dplyr::pull(Population) %>% as.character()))
-cutoff_for_export <- 0.00002
+cutoff_for_export <- 0.00004
 
 exported_cytokine_order <- c("IL2", "IL4/5/13", "IFNg", "TNFa", "IL17a", "CD154", "CD107a")
 # current order: c("CD107a", "CD154", "IFNg", "IL17a", "IL2", "IL4/5/13", "TNFa")
@@ -438,7 +439,7 @@ cd8_cats_with_exported_name <- cd8_cats_forplot %>%
                                sep = ""))
 
 cd8_subset_and_stim_combos_to_save <- cd8_subsets_to_save_df %>% 
-  # Further filter to just keep stims with median value > 0.00002 (or 0.002%)
+  # Further filter to just keep stims with median value > 0.00004 (or 0.004%)
   pivot_longer(cols = c("NCAP", "Spike 1", "Spike 2", "VEMP"), names_to = "STIM", values_to = "median(BgCorrProp)") %>% 
   dplyr::filter(`median(BgCorrProp)` > cutoff_for_export) %>% 
   # Format the subset name to match the exported version
@@ -510,7 +511,7 @@ p_dotplot <- p_dotplot +
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(colour = "black")) +
-  labs(y=sprintf("%% Responding %s T cells", sub("+", "", "Not-CD4+", fixed=T)))
+  labs(y=sprintf("%% Responding %s T cells", sub("+", "", "CD8+", fixed=T)))
 if(!is.na(stim_colors)) {
   p_dotplot <- p_dotplot + scale_color_manual(values=stim_colors)
 }
@@ -587,11 +588,11 @@ cats_plot <- ggplot(cats_long,
   scale_x_discrete(expand=c(0,0))
 
 p_dotplot_v1 <- p_dotplot + scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.003, 0.03)) + theme(legend.position = c(0.88, 0.97))
-p_dotplot_v2 <- p_dotplot + scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0007, 0.003))
+p_dotplot_v2 <- p_dotplot + scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0007, 0.006)) # Anything < 0.006 throws error
 p_dotplot_v3 <- p_dotplot +
   # draw line to indicate cutoff of which conditions got saved to file for integrated analysis
   geom_hline(yintercept = cutoff_for_export, alpha = 0.5, color="red") +
-  scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0007, 0.003))
+  scale_y_continuous(labels = function(x) paste0(x*100), limits=c(-0.0007, 0.006))
 
 dotplot_with_cats_v1 <- plot_grid(p_dotplot_v1, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
 dotplot_with_cats_v2 <- plot_grid(p_dotplot_v2, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))

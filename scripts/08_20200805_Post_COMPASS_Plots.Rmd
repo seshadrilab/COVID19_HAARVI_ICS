@@ -585,6 +585,8 @@ In general, we can't rely on a particular condition to predict the FS/PFS of all
 
 # Regress FS/PFS vs Demographics
 
+For this next part, drop the healthies  
+
 ```{r}
 # Read in the patient manifest with complete data (though it's also in the COMPASSResult object)
 data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
@@ -606,7 +608,10 @@ fs_pfs_df_with_manifest <- fs_pfs_df %>%
   mutate(Days_Symptom_Onset_to_Visit_1 = as.numeric(`Days symptom onset to visit 1`),
          Cohort = factor(ifelse(Cohort %in%
                                                 c(NA, "Healthy control", "Healthy control 2017-2018"), "Healthy", Cohort),
-                                              levels = c("Healthy", "Non-hospitalized", "Hospitalized")))
+                                              levels = c("Healthy", "Non-hospitalized", "Hospitalized"))) %>% 
+  # Decided to drop the healthies anyway
+  dplyr::filter(Cohort != "Healthy")
+unique(fs_pfs_df_with_manifest$Cohort)
 fs_pfs_df_with_manifest %>% dplyr::filter(is.na(FS) | is.na(`Record ID`) | is.na(`SAMPLE ID`) | is.na(STIM) | is.na(Cohort))
 ```
 
@@ -911,6 +916,11 @@ bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, NotCD4RunNames, CD8RunNames),
                                                         p_text_size=p_text_size)
                          })
 names(bg_corr_dotplots) <- c(CD4RunNames, NotCD4RunNames, CD8RunNames)
+
+if(save_output) {
+  # Save the output of make_dotplot_for_COMPASS_run to disk so we can use the extracted data for follow-up analysis
+  saveRDS(bg_corr_dotplots, here::here("processed_data/20200824_make_dotplot_for_COMPASS_run_list.rds"))
+}
 
 for(n in names(bg_corr_dotplots)) {
   print(plot_grid(ggplot() +
