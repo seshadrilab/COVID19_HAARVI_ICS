@@ -1517,7 +1517,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Merge T cell data for integrated analysis</h1>
 <h4 class="author">Malisa Smith</h4>
-<h4 class="date">version August 17, 2020</h4>
+<h4 class="date">version August 26, 2020</h4>
 
 </div>
 
@@ -1526,7 +1526,7 @@ div.tocify {
 library(tidyverse)
 library(ggplot2)
 library(knitr)</code></pre>
-<pre class="r"><code>save_output &lt;- FALSE</code></pre>
+<pre class="r"><code>save_output &lt;- TRUE</code></pre>
 <div id="merge-all-t-cell-data-for-integrated-analysis" class="section level1">
 <h1>Merge all T cell data for integrated analysis</h1>
 <pre class="r"><code># Read in the patient manifest with complete data
@@ -1557,23 +1557,42 @@ tcell_dat_char &lt;- durt_dat %&gt;%
   # Drop data from any healthies that made it through to this point
   dplyr::filter(`Record ID` %in% (data_manifest %&gt;% dplyr::filter(Cohort %in% c(&quot;Hospitalized&quot;, &quot;Non-hospitalized&quot;)) %&gt;% dplyr::pull(&quot;Record ID&quot;)))
 
+# Make the ICS boolean subset column names more readable
+names_to_change &lt;- grep(&quot;&amp;&quot;, colnames(tcell_dat_char), value = T)
+new_names &lt;- sapply(names_to_change, function(n) {
+  sprintf(&quot;%s_%s&quot;,
+          sub(&quot;(.*) .*&quot;, &quot;\\1&quot;, n),
+          gsub(&quot;/&quot;, &quot;_&quot;, paste(grep(&quot;!&quot;, strsplit(sub(&quot;.* &quot;, &quot;&quot;, n), &quot;&amp;&quot;)[[1]], invert = T, value = T), collapse = &quot;_&quot;)))
+})
+tcell_dat_char &lt;- tcell_dat_char %&gt;% 
+  rename_at(vars(tidyselect::all_of(names_to_change)), ~new_names)
+
 tcell_dat &lt;- tcell_dat_char %&gt;% mutate_at(vars(-&quot;Record ID&quot;, -&quot;Cohort&quot;), as.numeric)</code></pre>
-<pre><code>## Warning: NAs introduced by coercion
-
-## Warning: NAs introduced by coercion
-
-## Warning: NAs introduced by coercion
-
-## Warning: NAs introduced by coercion</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `CD8_S2_FS`.
+## ℹ NAs introduced by coercion
+## ℹ Input `CD8_S2_FS` is `.Primitive(&quot;as.double&quot;)(CD8_S2_FS)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introduced by coercion</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `CD8_NCAP_FS`.
+## ℹ NAs introduced by coercion
+## ℹ Input `CD8_NCAP_FS` is `.Primitive(&quot;as.double&quot;)(CD8_NCAP_FS)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introduced by coercion</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `CD8_S2_CD107a`.
+## ℹ NAs introduced by coercion
+## ℹ Input `CD8_S2_CD107a` is `.Primitive(&quot;as.double&quot;)(CD8_S2_CD107a)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introduced by coercion</code></pre>
+<pre><code>## Warning: Problem with `mutate()` input `CD8_NCAP_IFNg`.
+## ℹ NAs introduced by coercion
+## ℹ Input `CD8_NCAP_IFNg` is `.Primitive(&quot;as.double&quot;)(CD8_NCAP_IFNg)`.</code></pre>
+<pre><code>## Warning in mask$eval_all_mutate(dots[[i]]): NAs introduced by coercion</code></pre>
 <pre class="r"><code># Make sure there are no repeat column names
 unique(table(colnames(tcell_dat)))</code></pre>
 <pre><code>## [1] 1</code></pre>
 <pre class="r"><code># There is T cell data for 59 COVID patients
 dim(tcell_dat)</code></pre>
-<pre><code>## [1] 59 72</code></pre>
+<pre><code>## [1] 59 69</code></pre>
 <pre class="r"><code># This goes down to 48 if we omit patients with one or more NA values
 tcell_dat %&gt;% na.omit() %&gt;% dim()</code></pre>
-<pre><code>## [1] 48 72</code></pre>
+<pre><code>## [1] 48 69</code></pre>
 <pre class="r"><code># Investigate the NA values.
 # In the integrated analysis, in order to achieve 0 NA values, would it better to exclude some columns or exclude some rows (patients)?
 # --&gt; For per-column analyses, exclude any missing rows. But when operating on the data frame as a whole, the decision is harder.
@@ -1583,16 +1602,16 @@ tcell_dat %&gt;% mutate_at(vars(-&quot;Record ID&quot;), is.na) %&gt;%
   arrange(-NA_Count, `Record ID`) %&gt;%
   dplyr::filter(NA_Count &gt; 0)</code></pre>
 <pre><code>##    Record ID NA_Count
-## 1       116C       42
-## 2        75C       42
-## 3      15530       30
-## 4        12C       28
-## 5       143C       28
-## 6      15518       28
-## 7      15529       28
-## 8         23       28
-## 9        56C       28
-## 10       76C       28
+## 1       116C       38
+## 2        75C       38
+## 3      15530       31
+## 4        12C       29
+## 5       143C       29
+## 6      15518       29
+## 7      15529       29
+## 8         23       29
+## 9        56C       29
+## 10       76C       29
 ## 11     15548        4</code></pre>
 <pre class="r"><code># tcell_dat %&gt;% dplyr::filter_at(vars(everything()), any_vars(is.na(.))) %&gt;% select_if(function(.) sum(is.na(.)) &gt; 0)
 # tcell_dat %&gt;% select(&quot;Record ID&quot;, matches(&quot;CD8_&quot;) &amp; matches(&quot;_FS|TNF&quot;)) %&gt;% dplyr::filter_at(vars(everything()), any_vars(is.na(.))) # CD4 ICS data
@@ -1609,10 +1628,10 @@ Also note that there is no T cell data at all for the 60th patient, 37C. Due to 
 Due to the way the numbers work out, I think it would be best to just do an “na.omit()” to exclude row-wise (as opposed to column-wise) in order to get a complete matrix while keeping as much data as possible</p>
 <pre class="r"><code># Save the merged t cell data to a file
 if(save_output) {
-  write.csv(tcell_dat_char, here::here(&quot;processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv&quot;), row.names = F)
-  # tcell_dat_char &lt;- read.csv(here::here(&quot;processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv&quot;), stringsAsFactors = F, check.names = F, colClasses = &quot;character&quot;)
+  write.csv(tcell_dat_char, here::here(&quot;processed_data/20200826_HAARVI_Seshadri_T_cell_data.csv&quot;), row.names = F)
+  # tcell_dat_char &lt;- read.csv(here::here(&quot;processed_data/20200826_HAARVI_Seshadri_T_cell_data.csv&quot;), stringsAsFactors = F, check.names = F, colClasses = &quot;character&quot;)
   # all.equal(tcell_dat_char,
-  #  read.csv(here::here(&quot;processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv&quot;), stringsAsFactors = F, check.names = F, colClasses = &quot;character&quot;))
+  #  read.csv(here::here(&quot;processed_data/20200826_HAARVI_Seshadri_T_cell_data.csv&quot;), stringsAsFactors = F, check.names = F, colClasses = &quot;character&quot;))
 }</code></pre>
 </div>
 
@@ -1666,7 +1685,7 @@ $(document).ready(function ()  {
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
       },
       ignoreSelector: ".toc-ignore",
       scrollTo: 0

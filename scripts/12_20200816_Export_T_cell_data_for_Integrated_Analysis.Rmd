@@ -25,7 +25,7 @@ library(knitr)
 ```
 
 ```{r}
-save_output <- FALSE
+save_output <- TRUE
 ```
 
 # Merge all T cell data for integrated analysis
@@ -58,6 +58,16 @@ tcell_dat_char <- durt_dat %>%
   dplyr::select(`Record ID`, Cohort, everything()) %>% 
   # Drop data from any healthies that made it through to this point
   dplyr::filter(`Record ID` %in% (data_manifest %>% dplyr::filter(Cohort %in% c("Hospitalized", "Non-hospitalized")) %>% dplyr::pull("Record ID")))
+
+# Make the ICS boolean subset column names more readable
+names_to_change <- grep("&", colnames(tcell_dat_char), value = T)
+new_names <- sapply(names_to_change, function(n) {
+  sprintf("%s_%s",
+          sub("(.*) .*", "\\1", n),
+          gsub("/", "_", paste(grep("!", strsplit(sub(".* ", "", n), "&")[[1]], invert = T, value = T), collapse = "_")))
+})
+tcell_dat_char <- tcell_dat_char %>% 
+  rename_at(vars(tidyselect::all_of(names_to_change)), ~new_names)
 
 tcell_dat <- tcell_dat_char %>% mutate_at(vars(-"Record ID", -"Cohort"), as.numeric)
 
@@ -95,9 +105,9 @@ Due to the way the numbers work out, I think it would be best to just do an "na.
 ```{r}
 # Save the merged t cell data to a file
 if(save_output) {
-  write.csv(tcell_dat_char, here::here("processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv"), row.names = F)
-  # tcell_dat_char <- read.csv(here::here("processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv"), stringsAsFactors = F, check.names = F, colClasses = "character")
+  write.csv(tcell_dat_char, here::here("processed_data/20200826_HAARVI_Seshadri_T_cell_data.csv"), row.names = F)
+  # tcell_dat_char <- read.csv(here::here("processed_data/20200826_HAARVI_Seshadri_T_cell_data.csv"), stringsAsFactors = F, check.names = F, colClasses = "character")
   # all.equal(tcell_dat_char,
-  #  read.csv(here::here("processed_data/20200816_HAARVI_Seshadri_T_cell_data.csv"), stringsAsFactors = F, check.names = F, colClasses = "character"))
+  #  read.csv(here::here("processed_data/20200826_HAARVI_Seshadri_T_cell_data.csv"), stringsAsFactors = F, check.names = F, colClasses = "character"))
 }
 ```
