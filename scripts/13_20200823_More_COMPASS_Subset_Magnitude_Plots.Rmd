@@ -47,30 +47,6 @@ CD8RunNames <- c("8_Spike_1", "8_Spike_2", "8_NCAP", "8_VEMP")
 # And load the GatingSet. We can extract the data for the rest ofthe ploots from this.
 gsPath <- here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets")
 gs <- load_gs(gsPath)
-
-# merged_cd4_compass_data <- readRDS(here::here("processed_data/20200815_Merged_CD4_COMPASS_Data.rds"))
-# merged_cd8_compass_data <- readRDS(here::here("processed_data/20200815_Merged_CD8_COMPASS_Data.rds"))
-# 
-# cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", "CD107a", "IL4/5/13", "IL17a", "IFNg")
-
-# stims_for_compass_runs <- c("VEMP", "Spike 1", "Spike 2", "NCAP")
-# parent_nodes_for_compass_runs <- c("4+", "8+")
-# stims_for_compass_runs_rep <- rep(stims_for_compass_runs, each = length(parent_nodes_for_compass_runs))
-# parent_nodes_for_compass_runs_rep <- rep(parent_nodes_for_compass_runs, times = length(stims_for_compass_runs))
-# 
-# crList <- purrr::pmap(.l = list(parent_nodes_for_compass_runs_rep,
-#                                 stims_for_compass_runs_rep),
-#                       .f = function(parent, currentStim) {
-#                         currentStimForFile <- gsub(" ", "_", currentStim)
-#                         crPath <- here::here(sprintf("out/CompassOutput/%s/%s/COMPASSResult_%s_%s.rds", parent, currentStimForFile, parent, currentStimForFile))
-#                         cr <- readRDS(crPath)
-#                         cr$data$meta$Cohort <- factor(ifelse(cr$data$meta$Cohort %in%
-#                                                 c(NA, "Healthy control", "Healthy control 2017-2018"), "Healthy", cr$data$meta$Cohort),
-#                                               levels = rev(c("Healthy", "Non-hospitalized", "Hospitalized")))
-#                         cr
-#                       }) %>% 
-#   set_names(gsub("+", "", gsub(" ", "_", paste0(parent_nodes_for_compass_runs_rep, "_", stims_for_compass_runs_rep)), fixed=TRUE))
-
 ```
 
 # IFNg+ vs IFNg- COMPASS subset magnitudes
@@ -81,7 +57,11 @@ It's easiest to extract this from the output of `make_dotplot_for_COMPASS_run()`
 The list is already filtered for non-healthies and just individuals which were run through COMPASS, and the magnitude data is filtered for COMPASS subsets which passed the mean_gamma threshold from the respective COMPASS run. The magnitudes are stored as proportions, not percents.   
 
 ```{r}
-stim_labels <- c("Spike_1"="S1", "Spike_2"="S2", "NCAP" = "NCAP", "VEMP" = "VEMP")
+stim_labels <- c("Spike_1"="S1", "Spike_2"="S2", "NCAP" = "N", "VEMP" = "E")
+StimIFNgColors <- list("S1" = c("IFNg_Pos" = "#bd0264", "IFNg_Neg" = "#fd2898"),
+                      "S2" = c("IFNg_Pos" = "#fca654", "IFNg_Neg" = "#fedab8"),
+                      "N" = c("IFNg_Pos" = "#a38dc2", "IFNg_Neg" = "#d9cfe6"),
+                      "E" = c("IFNg_Pos" = "#d4d41b", "IFNg_Neg" = "#ecec69"))
 
 plot_ifng_strat <- function(current_run, current_ylim=NA) {
   current_dat_wide <- bg_corr_dotplots[[current_run]]$BgCorrMagnitudes %>% 
@@ -91,7 +71,8 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
   current_dat_long <- current_dat_wide %>% 
     pivot_longer(cols = c("IFNg_Neg", "IFNg_Pos"),
                  names_to = "IFNg_Pos_or_Neg", values_to = "BgCorr_Prop_Sum") %>% 
-    mutate(IFNg_Pos_or_Neg = factor(IFNg_Pos_or_Neg, levels = c("IFNg_Pos", "IFNg_Neg")))
+    mutate(IFNg_Pos_or_Neg = factor(IFNg_Pos_or_Neg, levels = c("IFNg_Pos", "IFNg_Neg")),
+           BgCorr_Prop_Sum_zeroed = ifelse(BgCorr_Prop_Sum > 0, BgCorr_Prop_Sum, 0))
   
   current_signed_rank_test <- wilcox.test(current_dat_wide$IFNg_Neg, current_dat_wide$IFNg_Pos, paired=T)
   p.text <- if(current_signed_rank_test$p.value < 0.001) { "p<.001"} else {
@@ -100,19 +81,16 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
   current_coreceptor <- paste0("CD", sub("([0-9])_.*", "\\1", current_run))
   current_stim <- stim_labels[[sub("[0-9]_(.*)", "\\1", current_run)]]
   
-  # The data is paired, but the violin plot + beeswarm shows the density better than a line plot
+  # The data is paired, but the violin plot shows the density better than a line plot
   # geom_line(aes(group=Individual), color="grey")
-  current_plot <- ggplot(current_dat_long, aes(IFNg_Pos_or_Neg, BgCorr_Prop_Sum)) +
+  current_plot <- ggplot(current_dat_long, aes(IFNg_Pos_or_Neg, BgCorr_Prop_Sum_zeroed)) +
     theme_bw(base_size = 22) +
     geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5) +
-    geom_violin() +
-    geom_beeswarm(color="black", size=0.5) +
-    geom_errorbarh(data = current_dat_long %>% group_by(IFNg_Pos_or_Neg) %>% summarise(med = median(BgCorr_Prop_Sum)),
-                   aes(y = med,
-                       xmax = 1.5 + 0.35,
-                       xmin = 1.5 - 0.35,
-                       height = 0),
-                     position=position_dodge(width=0), color = "black") +
+    geom_violin(aes(fill = IFNg_Pos_or_Neg), draw_quantiles = c(0.5),
+                # All violins have the same maximum width. Overrides default of equal area
+                scale="width") +
+    geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
+                scale="width") +
     theme(axis.title.x = element_blank(),
             axis.title.y = element_text(size=27),
             axis.text.y = element_text(color="black", size=26),
@@ -122,10 +100,11 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
             legend.position = "none",
             plot.margin = margin(0.3, 0.2, 0.1, 0.2, "cm")) +
     scale_y_continuous(labels = function(x) paste0(x*100)) + 
-    scale_x_discrete(labels=c(c("IFNg_Pos" = "IFNg+", "IFNg_Neg" = "IFNg-")),
+    scale_x_discrete(labels=c("IFNg_Pos" = "IFNg+", "IFNg_Neg" = "IFNg-"),
                        expand = c(0.3, 0.3)) +
     labs(y = sprintf("Cytokine+\n(%% %s)", current_coreceptor),
-         title = current_stim)
+         title = current_stim) +
+    scale_fill_manual(values = StimIFNgColors[[current_stim]])
   
   suppressWarnings(if(!is.na(current_ylim)) {
     current_plot <- current_plot + coord_cartesian(ylim = current_ylim)
@@ -137,17 +116,18 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
     annotate("text", x = 1.5, y = plot_ylims[1] + 0.85*diff(plot_ylims), label = p.text, size=7)
 
   list("plot" = current_plot,
-       "test_result" = current_signed_rank_test)
+       "test_result" = current_signed_rank_test,
+       "data_long" = current_dat_long)
 }
 
 ifng_stratified_plots <- map2(.x = c(CD4RunNames, CD8RunNames),
-                              .y = list(c(-0.001, 0.011),
-                                        c(-0.0025, 0.007),
-                                        c(-0.004, NA),
+                              .y = list(NA,
                                         NA,
-                                        c(-0.005, 0.0065),
-                                        c(-0.003, 0.005),
-                                        c(-0.004, 0.004),
+                                        NA,
+                                        NA,
+                                        NA,
+                                        c(0, 0.005),
+                                        c(0, 0.0045),
                                         NA),
                               .f = plot_ifng_strat)
 names(ifng_stratified_plots) <- c(CD4RunNames, CD8RunNames)
@@ -166,6 +146,9 @@ data.frame(run = names(ifng_stratified_plots),
 for(x in ifng_stratified_plots) {
   print(x$plot)
 }
+
+ifng_stratified_plots$`8_Spike_2`$data_long %>% dplyr::filter(BgCorr_Prop_Sum > 0.005)
+ifng_stratified_plots$`8_NCAP`$data_long %>% dplyr::filter(BgCorr_Prop_Sum > 0.0045)
 ```
 
 # Compare magnitudes of selected subsets across stims
@@ -198,7 +181,7 @@ cd4_booleanSubsets_gate_names <- c(
 cd4_dat <- gs_pop_get_count_with_meta(gs_cd4, subpopulations = c("4+", tidyselect::all_of(cd4_booleanSubsets_gate_names))) %>% 
   dplyr::select(`SAMPLE ID`, Cohort, STIM, Population, Count) %>% 
   pivot_wider(names_from = Population, values_from = Count) %>% 
-  mutate_at(vars(cd4_booleanSubsets_gate_names), ~ . / `4+`) %>% 
+  mutate_at(vars(tidyselect::all_of(cd4_booleanSubsets_gate_names)), ~ . / `4+`) %>% 
   dplyr::select(-`4+`) %>% 
   pivot_longer(cols = tidyselect::all_of(cd4_booleanSubsets_gate_names), names_to = "Population", values_to = "Prop") %>% 
   pivot_wider(names_from = STIM, values_from = Prop) %>% 
@@ -209,6 +192,7 @@ cd4_dat <- gs_pop_get_count_with_meta(gs_cd4, subpopulations = c("4+", tidyselec
   rename("SAMPLE_ID" = "SAMPLE ID") %>% 
   dplyr::filter(!is.na(BgCorrProp))
 
+StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "N" = "#beaed4", "E" = "#e6e63c")
 plot_subset_vs_stim <- function(current_data, current_subset) {
   current_coreceptor <- sub("(CD[48])_.*", "\\1", current_subset)
   current_subset_trunc <- paste(grep("NOT_", strsplit(sub("CD[48]_(.*)", "\\1", current_subset), "_AND_")[[1]],
@@ -225,27 +209,22 @@ plot_subset_vs_stim <- function(current_data, current_subset) {
     # It should already be in order, but make sure the SAMPLE_IDs are in the same order for each STIM
     arrange(SAMPLE_ID, STIM)
   pwt <- pairwise.wilcox.test(current_data_for_test$BgCorrProp, current_data_for_test$STIM, p.adjust.method = "bonferroni")
-  # broom::tidy(pwt)
   
   # For the plot, don't filter out individuals who don't have data for all 4 stims
   # This may result in inconsistency between the test results and the plot, but it should be pretty similar
   current_data_for_plot <- current_data %>%
     dplyr::filter(Population == current_subset) %>% 
-    mutate(STIM = factor(STIM, levels = c("S1", "S2", "N", "E")))
+    mutate(STIM = factor(STIM, levels = c("S1", "S2", "N", "E")),
+           BgCorrProp_zeroed = ifelse(BgCorrProp > 0, BgCorrProp, 0))
   
-  current_plot <- ggplot(current_data_for_plot, aes(STIM, BgCorrProp)) +
+  current_plot <- ggplot(current_data_for_plot, aes(STIM, BgCorrProp_zeroed)) +
     theme_bw(base_size = 22) +
     geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5) +
-    # geom_point(position = position_jitter(width=0.12, height=0), size=0.3) +
-    geom_violin() +
-    # geom_quasirandom(method="quasirandom", size=0.3) +
-    geom_beeswarm(color="black", size=0.3, cex=0.8) +
-    geom_errorbarh(data = current_data_for_plot %>% group_by(STIM) %>% summarise(med = median(BgCorrProp)),
-                   aes(y = med,
-                       xmax = 1.5 + 0.47,
-                       xmin = 1.5 - 0.47,
-                       height = 0),
-                     position=position_dodge(width=0), color = "black") +
+    geom_violin(aes(fill = STIM), draw_quantiles = c(0.5),
+            # All violins have the same maximum width. Overrides default of equal area
+            scale="width") +
+    geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
+                scale="width") +
     theme(axis.title.x = element_blank(),
             axis.title.y = element_text(size=27),
             axis.text.y = element_text(color="black", size=26),
@@ -257,7 +236,8 @@ plot_subset_vs_stim <- function(current_data, current_subset) {
     scale_y_continuous(labels = function(x) paste0(x*100)) + 
     scale_x_discrete(expand = c(0.3, 0.3)) +
     labs(y = sprintf("%% Responding %s T cells", current_coreceptor),
-         title = current_subset_trunc)
+         title = current_subset_trunc) +
+    scale_fill_manual(values = StimColors)
 
   list("plot" = current_plot,
        "test_result" = pwt)
@@ -272,7 +252,7 @@ current_subset <- cd4_booleanSubsets_gate_names[[1]]
 ggplot_build(plot_subset_vs_stim_list[[current_subset]]$plot)$layout$panel_params[[1]]$y.range
 annotation_df <- broom::tidy(plot_subset_vs_stim_list[[current_subset]]$test_result) %>%
   dplyr::filter(p.value < 0.05) %>% 
-  mutate(y_pos = c(0.0283, 0.0333, 0.0308, 0.0085, 0.006, 0.0035),
+  mutate(y_pos = c(0.0283, 0.0333, 0.0085, 0.0308, 0.006, 0.0035),
          p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
 cd4_cd107a_plot <- plot_subset_vs_stim_list[[current_subset]]$plot +
   coord_cartesian(ylim = c(NA, 0.035)) +
@@ -329,7 +309,7 @@ cd8_booleanSubset_gate_name <- "CD8_107a_AND_NOT_154_AND_NOT_IFNG_AND_NOT_IL17_A
 cd8_dat <- gs_pop_get_count_with_meta(gs_cd8, subpopulations = c("8+", cd8_booleanSubset_gate_name)) %>% 
   dplyr::select(`SAMPLE ID`, Cohort, STIM, Population, Count) %>% 
   pivot_wider(names_from = Population, values_from = Count) %>% 
-  mutate_at(vars(cd8_booleanSubset_gate_name), ~ . / `8+`) %>% 
+  mutate_at(vars(all_of(cd8_booleanSubset_gate_name)), ~ . / `8+`) %>% 
   dplyr::select(-`8+`) %>% 
   pivot_longer(cols = cd8_booleanSubset_gate_name, names_to = "Population", values_to = "Prop") %>% 
   pivot_wider(names_from = STIM, values_from = Prop) %>% 
@@ -346,7 +326,7 @@ current_subset <- cd8_booleanSubset_gate_name
 ggplot_build(cd8_subset_vs_stim_out$plot)$layout$panel_params[[1]]$y.range
 annotation_df <- broom::tidy(cd8_subset_vs_stim_out$test_result) %>%
   dplyr::filter(p.value < 0.05) %>% 
-  mutate(y_pos = c(0.0281, 0.0339, 0.031, 0.0092, 0.0063, 0.0034),
+  mutate(y_pos = c(0.0281, 0.0339, 0.0092, 0.031, 0.0063, 0.0034),
          p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
 cd8_107_plot <- cd8_subset_vs_stim_out$plot +
   coord_cartesian(ylim = c(NA, 0.035)) +
@@ -372,8 +352,10 @@ For S1, S2, and NCAP
 This can be extracted from the output of `make_dotplot_for_COMPASS_run()`. Remember the p-values have already been bonferroni adjusted.   
 
 ```{r}
+CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f")
 plot_subset_vs_cohort <- function(current_run, current_subset) {
-  current_data <- bg_corr_dotplots[[current_run]]$BgCorrMagnitudes %>% dplyr::select(Individual, Cohort, !!as.symbol(current_subset))
+  current_data <- bg_corr_dotplots[[current_run]]$BgCorrMagnitudes %>% dplyr::select(Individual, Cohort, !!as.symbol(current_subset)) %>% 
+    mutate(BgCorr_Zeroed = ifelse(!!as.symbol(current_subset) < 0, 0, !!as.symbol(current_subset)))
   current_test_result <- bg_corr_dotplots[[current_run]]$Test_Results %>% dplyr::filter(BooleanSubset == current_subset)
   current_coreceptor <- paste0("CD", sub("([48])_.*", "\\1", current_run))
   current_stim <- c("Spike_1"="S1", "Spike_2"="S2", "NCAP" = "NCAP", "VEMP" = "VEMP")[[sub("[48]_(.*)", "\\1", current_run)]]
@@ -383,19 +365,14 @@ plot_subset_vs_cohort <- function(current_run, current_subset) {
     dplyr::pull(Cyt) %>%
     paste(collapse = ", ")
   
-  current_plot <- ggplot(current_data, aes(Cohort, !!as.symbol(current_subset))) +
+  current_plot <- ggplot(current_data, aes(Cohort, BgCorr_Zeroed)) +
     theme_bw(base_size = 22) +
       geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5) +
-      # geom_point(position = position_jitter(width=0.12, height=0), size=0.3) +
-      geom_violin() +
-      # geom_quasirandom(method="quasirandom", size=0.3) +
-      geom_beeswarm(color="black", size=0.3, cex=1) +
-      geom_errorbarh(data = current_data %>% group_by(Cohort) %>% summarise(med = median(!!as.symbol(current_subset))),
-                     aes(y = med,
-                         xmax = 1.5 + 0.47,
-                         xmin = 1.5 - 0.47,
-                         height = 0),
-                       position=position_dodge(width=0), color = "black") +
+      geom_violin(aes(fill = Cohort), draw_quantiles = c(0.5),
+              # All violins have the same maximum width. Overrides default of equal area
+              scale="width") +
+      geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
+                  scale="width") +
       theme(axis.title.x = element_blank(),
               axis.title.y = element_text(size=27),
               axis.text.y = element_text(color="black", size=26),
@@ -405,9 +382,10 @@ plot_subset_vs_cohort <- function(current_run, current_subset) {
               legend.position = "none",
               plot.margin = margin(0.3, 0.2, 0.1, 0.2, "cm")) +
       scale_y_continuous(labels = function(x) paste0(x*100)) + 
-      scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"), expand = c(0.3, 0.3)) +
+      scale_x_discrete(labels=c("Non-hospitalized" = "NH", "Hospitalized" = "H"), expand = c(0.3, 0.3)) +
       labs(y = sprintf("%% Responding %s T cells", current_coreceptor),
-           title = sprintf("%s\n%s", current_stim, current_subset_trunc))
+           title = sprintf("%s\n%s", current_stim, current_subset_trunc)) +
+      scale_fill_manual(values = CohortColors)
   plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
   current_plot <- current_plot + 
     annotate("text", x = 1.5, y = plot_ylims[1] + 0.85*diff(plot_ylims), label = current_test_result[,"p.adj.text"], size=7)
@@ -424,16 +402,3 @@ plot_subset_vs_cohort("4_Spike_1", "IL2&!IL4/5/13&!IFNg&TNFa&!IL17a&CD154&!CD107
 plot_subset_vs_cohort("4_Spike_2", "IL2&!IL4/5/13&!IFNg&TNFa&!IL17a&CD154&!CD107a")
 plot_subset_vs_cohort("4_NCAP", "IL2&!IL4/5/13&!IFNg&TNFa&!IL17a&CD154&!CD107a")
 ```
-
-<!-- # Memory and activation of COMPASS subsets -->
-
-<!-- Is this somewhat redundant with Fig 1C and D? -->
-<!-- Plot the percent of memory and activated events out of COMPASS subset+ events -->
-<!-- How to deal with DMSO/background? Do we just show DMSO as a separate boxplot? Is memory and activation affected by the experimental stimulation? -->
-
-<!-- The presence of 5 different stims makes it somewhat difficult to represent this data concisely via boxplots. -->
-
-<!-- ```{r} -->
-
-<!-- ``` -->
-

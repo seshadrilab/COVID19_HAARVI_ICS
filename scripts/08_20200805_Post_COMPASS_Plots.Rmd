@@ -667,7 +667,7 @@ Stack the plots from the different stims, this time with IFNg subsets on the RHS
 A commonality to the subsets which are enriched in Hospitalized individuals is CD154.    
 
 ```{r}
-CohortColors <- c("Healthy" = "#dfc27d", "Non-hospitalized" = "#80cdc1", "Hospitalized" = "#018571")
+CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f", "Healthy" = "#ebeef0")
 row_ann_colors <- list(`Cohort` = CohortColors)
 cytokine_annotation_colors <- rep("black", 30)
 cytokine_order_for_annotation = c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4/5/13", "IL17a")
@@ -681,13 +681,6 @@ cytokine_order_for_annotation = c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4
 # This should allow us to use some of the customized options in my_plot.COMPASSResult (e.g. to get the IFNg subsets on the RHS)
 mergeMatricesForPlotCOMPASSResultStack_tmp <- utils::getFromNamespace("mergeMatricesForPlotCOMPASSResultStack", "COMPASS")
 
-# CohortColors <- c("Hospitalized" = "#083b31", "Non-hospitalized" = "#018571", "Healthy" = "#80cdc1") # shades of green
-# CohortColors <- c("Hospitalized" = "#9da4ce", "Non-hospitalized" = "#c1ddd7", "Healthy" = "#ebeef0") # pastel periwinkle and green
-# CohortColors <- c("Hospitalized" = "#707ed4", "Non-hospitalized" = "#69c2af", "Healthy" = "#ebeef0") # darker shades
-# CohortColors <- c("Hospitalized" = "#00579A", "Non-hospitalized" = "#A0C78F", "Healthy" = "#ebeef0") # blue and green
-CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f", "Healthy" = "#ebeef0") # blue and green darker    https://colorbrewer2.org/?type=qualitative&scheme=Accent&n=6
-# CohortColors <- c("Hospitalized" = "#5c6494", "Non-hospitalized" = "#728a84", "Healthy" = "#ebeef0")
-# StimColors <- c("S1" = "#fc68be", "S2" = "#d94e09", "NCAP" = "#6B49F2", "VEMP" = "#D0F249")
 StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "NCAP" = "#beaed4", "VEMP" = "#e6e63c") # https://colorbrewer2.org/?type=qualitative&scheme=Accent&n=6
 row_ann_colors_v2 <- list(`Stim` = StimColors, `Cohort` = CohortColors)
 
@@ -781,7 +774,7 @@ if(save_output) {
 ## FS/PFS vs Cohort
 
 ```{r, fig.width=4, fig.height=4}
-CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f", "Healthy" = "#ebeef0")
+CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f")
 CohortLabs <- c("Non-hospitalized" = "NH", "Hospitalized" = "H")
 fs_vs_x_plot_categorical("4", "S1", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
 fs_vs_x_plot_categorical("4", "S2", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
@@ -809,13 +802,11 @@ pdfFonts(Arial = Arial)
 
 # Note p-values are bonferroni adjusted in dotplots
 # Also note that some points are not shown in order to zoom in better to the bulk of the point
-bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, NotCD4RunNames, CD8RunNames),
-                                   rep(c("CD4+", "Not-CD4+", "CD8"), each = 4),
-                                   list(c(-0.0013, 0.009), c(-0.0018, 0.0085), c(-0.002, 0.0048), NULL,
-                                        c(-0.002, 0.0024), c(-0.0012, 0.004), c(-0.002, 0.005), NULL,
-                                        c(-0.0025, 0.0065), NULL, c(-0.0015, 0.005), NULL),
+bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, CD8RunNames),
+                                   rep(c("CD4+", "CD8"), each = 4),
+                                   list(NULL, c(0, 0.0085), NULL, NULL,
+                                        NULL, NULL, c(0, 0.005), NULL),
                                    c(5, 5, 3, 5,
-                                     5, 5, 5, 5,
                                      5, 5, 5, 5)),
                          .f = function(n, p, y, p_text_size) {
                            # "staircase effect" for categories df heatmap gets done automatically, unlike in my_plot.COMPASSResult
@@ -823,9 +814,10 @@ bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, NotCD4RunNames, CD8RunNames),
                            make_dotplot_for_COMPASS_run(crList.no_healthy[[n]], n, parentSubset = p,
                                                         return_output = T, current_ylim = y, include_0_line=T, 
                                                         cytokine_order_for_annotation=cytokine_order_for_annotation,
-                                                        p_text_size=p_text_size)
+                                                        p_text_size=p_text_size, group_by_colors=CohortColors,
+                                                        zeroed_BgCorr_stats = FALSE, zeroed_BgCorr_plot = TRUE)
                          })
-names(bg_corr_dotplots) <- c(CD4RunNames, NotCD4RunNames, CD8RunNames)
+names(bg_corr_dotplots) <- c(CD4RunNames, CD8RunNames)
 
 if(save_output) {
   # Save the output of make_dotplot_for_COMPASS_run to disk so we can use the extracted data for follow-up analysis
@@ -835,11 +827,20 @@ if(save_output) {
 for(n in names(bg_corr_dotplots)) {
   print(plot_grid(ggplot() +
     theme_void() +
-    geom_text(aes(0,0,label=n), size=10) +
+    geom_text(aes(0,0,label=sprintf("CD%s %s", sub("([48]).*", "\\1", n), sub("_", " ", sub("[48]_(.*)", "\\1", n)))), size=10) +
     xlab(NULL),
     bg_corr_dotplots[[n]]$Dotplot,
     ncol=1, rel_heights = c(0.1, 1)))
 }
+
+# How many points are out of bounds of the plot for plots where boundaries were specified?
+bg_corr_dotplots$`4_Spike_2`$BgCorrMagnitudes %>% dplyr::filter_if(is.numeric, any_vars(. > 0.0085)) %>%
+  select(-Individual, -Cohort) %>% 
+  select_if(~max(.) > 0.0085)
+bg_corr_dotplots$`8_NCAP`$BgCorrMagnitudes %>% dplyr::filter_if(is.numeric, any_vars(. > 0.005)) %>%
+  select(-Individual, -Cohort) %>% 
+  select_if(~max(.) > 0.005)
+  
 ```
 
 ```{r}

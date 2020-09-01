@@ -206,11 +206,12 @@ runCompassOnce <- function(gs,
 # Dotplot of background-corrected subset percents out of the parent population
 # cr is the COMPASSResult object
 make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current_ylim=NULL, add_legend=FALSE, legend_position=c(0.16, 0),
-                                         save_test_results=TRUE, p_text_size=5, include_0_line=FALSE, zeroed_BgCorr = FALSE, plot_width=7, plot_height=6,
-                                         dichotomize_by_cytokine=NA, group_by_colname="Cohort", group_by_order=c("Non-hospitalized", "Hospitalized"),
-                                         group_by_colors=c("Non-hospitalized" = "#80cdc1", "Hospitalized" = "#dfc27d"), return_output=FALSE, parentSubset="CD4+",
-                                         point_size=0.3, cytokine_order_for_annotation=NULL) {
-  
+                                         save_test_results=TRUE, p_text_size=5, include_0_line=FALSE, zeroed_BgCorr_stats = FALSE, zeroed_BgCorr_plot = FALSE, 
+                                         plot_width=7, plot_height=6, dichotomize_by_cytokine=NA, group_by_colname="Cohort",
+                                         group_by_order=c("Non-hospitalized", "Hospitalized"), group_by_colors=c("Non-hospitalized" = "#80cdc1", "Hospitalized" = "#dfc27d"),
+                                         return_output=FALSE, parentSubset="CD4+", point_size=0.3, cytokine_order_for_annotation=NULL) {
+  # zeroed_BgCorr_stats If TRUE, the returned magnitude values and statistics are calculated using zeroed values
+  # zeroed_BgCorr_plot If TRUE, the points on the plot are zeroed (regardless of zeroed_BgCorr_stats)
   library(cowplot) # among others
   
   mean_gamma <- cr$fit$mean_gamma
@@ -264,7 +265,8 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
                        names_from = Stim,
                        values_from = Proportion) %>% 
     drop_na() %>% # Filter out rows with NA
-    mutate(BgCorr = if(zeroed_BgCorr) {pmax(0, Dummy_Stim_Name - DMSO)} else {Dummy_Stim_Name - DMSO}) %>% 
+    mutate(BgCorr = if(zeroed_BgCorr_stats) {pmax(0, Dummy_Stim_Name - DMSO)} else {Dummy_Stim_Name - DMSO},
+           BgCorr_plot = if(zeroed_BgCorr_plot) {pmax(0, Dummy_Stim_Name - DMSO)} else {Dummy_Stim_Name - DMSO}) %>% 
     dplyr::select(-c(DMSO, Dummy_Stim_Name))
   
   dat_bgCorr_wide <- dat_bgCorr_long %>% 
@@ -298,7 +300,8 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
   # Calculate medians of each group for each subset
   dat_bgCorr_medians <- dat_bgCorr_long %>%
     dplyr::group_by(!!as.symbol(group_by_colname), BooleanSubset) %>%
-    dplyr::summarise(BgCorr = median(BgCorr))
+    dplyr::summarise(BgCorr = median(BgCorr),
+                     BgCorr_plot = median(BgCorr_plot))
   
   if(save_test_results) {
     # Save some form of the test results to disk so it doesn't only exist in the plot as adjusted p-values
@@ -314,7 +317,7 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
     if(!is.na(output_folder)) {
       test_results_file_path <- file.path(output_folder,
                                           sprintf("%s_%s_BooleanSubsets_BgCorrProps_MannWhitney.tsv",
-                                                  run_name, if(zeroed_BgCorr) {"Zeroed"} else {"NotZeroed"}))
+                                                  run_name, if(zeroed_BgCorr_stats) {"Zeroed"} else {"NotZeroed"}))
       write.table(pvals_df_for_file,
                   file = test_results_file_path,
                   sep = "\t", row.names = FALSE, quote = FALSE)
@@ -322,14 +325,14 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
   }
   
   # Draw the dotplot
-  p_dotplot <- ggplot(dat_bgCorr_long, aes(x = !!as.symbol(group_by_colname), y = BgCorr, fill = !!as.symbol(group_by_colname), group = !!as.symbol(group_by_colname)))
+  p_dotplot <- ggplot(dat_bgCorr_long, aes(x = !!as.symbol(group_by_colname), y = BgCorr_plot, fill = !!as.symbol(group_by_colname), group = !!as.symbol(group_by_colname)))
   if(include_0_line) {
     p_dotplot <- p_dotplot + geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5)
   }
   p_dotplot <- p_dotplot +
     geom_jitter(aes(color = !!as.symbol(group_by_colname)), width = 0.2, size=point_size) +
     geom_errorbarh(data = dat_bgCorr_medians,
-                   aes(y = BgCorr,
+                   aes(y = BgCorr_plot,
                        xmax = 1.5 + 0.6,
                        xmin = 1.5 - 0.6, height = 0),
                    position=position_dodge(width=0.25), color = "black") +
@@ -339,8 +342,8 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
           axis.ticks.x=element_blank(),
           strip.background = element_blank(),
           strip.text.x = element_blank(),
-          axis.text = element_text(color="black", size=12),
-          axis.title = element_text(size=18),
+          axis.text = element_text(color="black", size=18),
+          axis.title = element_text(size=25),
           text = element_text(family="Arial"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -437,8 +440,9 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
   dotplot_with_cats <- plot_grid(p_dotplot, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
   
   if(!is.na(output_folder)) {
-    p_base_path <- file.path(output_folder, sprintf("%s_%s_Dotplot%s%s", run_name,
-                                                    if(zeroed_BgCorr) {"Zeroed"} else {"NotZeroed"},
+    p_base_path <- file.path(output_folder, sprintf("%s_%s_%s_Dotplot%s%s", run_name,
+                                                    if(zeroed_BgCorr_stats) {"ZeroedStats"} else {"NotZeroedStats"},
+                                                    if(zeroed_BgCorr_plot) {"ZeroedPoints"} else {"NotZeroedPoints"},
                                                     if(!is.null(current_ylim)) { paste0("_ylim_", paste0(paste0(c("min", "max"), current_ylim), collapse="")) } else {""},
                                                     if(include_0_line) { "_with0line" } else { "" }))
     ggsave(filename=paste0(p_base_path, ".png"), plot=dotplot_with_cats, width=plot_width, height=plot_height, dpi=300)
