@@ -258,7 +258,7 @@ fs_pfs_df_with_manifest <- lapply(c(CD4RunNames, CD8RunNames), function(n) {
   dplyr::filter(!(`Record ID` %in% c("116C", "37C", "75C"))) %>% 
   mutate(Cohort = factor(ifelse(Cohort %in%
                                                 c(NA, "Healthy control", "Healthy control 2017-2018"), "Healthy", Cohort),
-                                              levels = c("Healthy", "Non-hospitalized", "Hospitalized"))) %>% 
+                                              levels = c("Hospitalized", "Non-hospitalized", "Healthy"))) %>% 
   # drop the healthies anyway
   dplyr::filter(Cohort != "Healthy") %>% 
   mutate(Days_Symptom_Onset_to_Visit_1 = as.numeric(`Days symptom onset to visit 1`)) %>% 
@@ -538,7 +538,7 @@ In general, we can't rely on a particular condition to predict the FS/PFS of all
 
 ```{r, fig.width=5, fig.height=5}
 StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "N" = "#beaed4", "E" = "#e6e63c")
-fs_vs_x_plot <- function(current_parent, current_stim, xaxis="Age") {
+fs_vs_x_plot <- function(current_parent, current_stim, xaxis="Age", include_regression_line = TRUE) {
   current_data <- fs_pfs_df_with_manifest %>% 
     dplyr::filter(parent == !!current_parent & STIM == !!current_stim)
   
@@ -554,7 +554,9 @@ fs_vs_x_plot <- function(current_parent, current_stim, xaxis="Age") {
           legend.position = "none",
           plot.margin = margin(0.3, 0.4, 0.1, 0.2, "cm")) +
     labs(title = current_stim,
-         x = sub("([A-Za-z]*)_.*", "\\1", xaxis)) +
+         x = sub("([A-Za-z]*)_.*", "\\1", xaxis))
+  if(include_regression_line) {
+    current_plot <- current_plot + 
     # Linear regression line with 95% CI (based on "standard error of predicted means")
     # By "predicted means", we're talking about the regression line's y-value at each value of x
     # Pretty sure the grey 95% CI is the "confidence interval of the prediction", as discussed here: https://statisticsbyjim.com/glossary/confidence-interval-prediction/
@@ -563,6 +565,7 @@ fs_vs_x_plot <- function(current_parent, current_stim, xaxis="Age") {
     geom_smooth(color = "black", method="lm")  +
     # stat_cor from ggpubr
     stat_cor(method = "pearson", size=5)
+  }
   current_plot
 }
 
@@ -571,10 +574,12 @@ fs_vs_x_plot("4", "S1")
 fs_vs_x_plot("4", "S2")
 fs_vs_x_plot("4", "N")
 fs_vs_x_plot("4", "E")
+fs_vs_x_plot("4", "E", include_regression_line = F)
 fs_vs_x_plot("8", "S1")
 fs_vs_x_plot("8", "S2")
 fs_vs_x_plot("8", "N")
 fs_vs_x_plot("8", "E")
+fs_vs_x_plot("8", "E", include_regression_line = F)
 ```
 
 ## FS vs Days from Symptom Onset to Visit
@@ -584,10 +589,12 @@ fs_vs_x_plot("4", "S1", xaxis="Days_Symptom_Onset_to_Visit_1")
 fs_vs_x_plot("4", "S2", xaxis="Days_Symptom_Onset_to_Visit_1")
 fs_vs_x_plot("4", "N", xaxis="Days_Symptom_Onset_to_Visit_1")
 fs_vs_x_plot("4", "E", xaxis="Days_Symptom_Onset_to_Visit_1")
+fs_vs_x_plot("4", "E", xaxis="Days_Symptom_Onset_to_Visit_1", include_regression_line = F)
 fs_vs_x_plot("8", "S1", xaxis="Days_Symptom_Onset_to_Visit_1")
 fs_vs_x_plot("8", "S2", xaxis="Days_Symptom_Onset_to_Visit_1")
 fs_vs_x_plot("8", "N", xaxis="Days_Symptom_Onset_to_Visit_1")
 fs_vs_x_plot("8", "E", xaxis="Days_Symptom_Onset_to_Visit_1")
+fs_vs_x_plot("8", "E", xaxis="Days_Symptom_Onset_to_Visit_1", include_regression_line = F)
 ```
 
 ## FS vs Sex
@@ -667,8 +674,6 @@ Stack the plots from the different stims, this time with IFNg subsets on the RHS
 A commonality to the subsets which are enriched in Hospitalized individuals is CD154.    
 
 ```{r}
-CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f", "Healthy" = "#ebeef0")
-row_ann_colors <- list(`Cohort` = CohortColors)
 cytokine_annotation_colors <- rep("black", 30)
 cytokine_order_for_annotation = c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4/5/13", "IL17a")
 ```
@@ -681,8 +686,9 @@ cytokine_order_for_annotation = c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4
 # This should allow us to use some of the customized options in my_plot.COMPASSResult (e.g. to get the IFNg subsets on the RHS)
 mergeMatricesForPlotCOMPASSResultStack_tmp <- utils::getFromNamespace("mergeMatricesForPlotCOMPASSResultStack", "COMPASS")
 
+CohortColors_forHeatmap <- c("Conv Hosp" = "#707ed4", "Conv Non-Hosp" = "#c1ddd7", "Assay Controls" = "#ebeef0")
 StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "NCAP" = "#beaed4", "VEMP" = "#e6e63c") # https://colorbrewer2.org/?type=qualitative&scheme=Accent&n=6
-row_ann_colors_v2 <- list(`Stim` = StimColors, `Cohort` = CohortColors)
+row_ann_colors_v2 <- list(`Stim` = StimColors, `Cohort` = CohortColors_forHeatmap)
 
 # CD4 runs
 cd4_data2plot <- mergeMatricesForPlotCOMPASSResultStack_tmp(crList2[CD4RunNames],
@@ -701,7 +707,11 @@ rownames(cd4_merged_COMPASSResult$fit$categories) <- rownames(cd4_data2plot$cats
 cd4_merged_COMPASSResult$data$meta <- cd4_data2plot$rowannMerged
 cd4_merged_COMPASSResult$data$meta$Run_SAMPLE_ID <- rownames(cd4_merged_COMPASSResult$data$meta)
 cd4_merged_COMPASSResult$data$meta$Stim <- factor(dplyr::recode(sub("^4_", "", cd4_merged_COMPASSResult$data$meta$Stim), "Spike_1" = "S1", "Spike_2" = "S2"), levels = c("S1", "S2", "NCAP", "VEMP"))
-cd4_merged_COMPASSResult$data$meta$Cohort <- factor(cd4_merged_COMPASSResult$data$meta$Cohort, levels = c("Hospitalized", "Non-hospitalized", "Healthy"))
+cd4_merged_COMPASSResult$data$meta$Cohort <- factor(recode(cd4_merged_COMPASSResult$data$meta$Cohort,
+                                                           "Hospitalized" = "Conv Hosp",
+                                                           "Non-hospitalized" = "Conv Non-Hosp",
+                                                           "Healthy" = "Assay Controls"),
+                                                    levels = c("Conv Hosp", "Conv Non-Hosp", "Assay Controls"))
 cd4_merged_COMPASSResult$data$individual_id <- "Run_SAMPLE_ID"
 cd4_heatmap_by_ifng <- print(my_plot.COMPASSResult(cd4_merged_COMPASSResult,
                         y=c("Stim", "Cohort"),
@@ -733,7 +743,11 @@ rownames(cd8_merged_COMPASSResult$fit$categories) <- rownames(cd8_data2plot$cats
 cd8_merged_COMPASSResult$data$meta <- cd8_data2plot$rowannMerged
 cd8_merged_COMPASSResult$data$meta$Run_SAMPLE_ID <- rownames(cd8_merged_COMPASSResult$data$meta)
 cd8_merged_COMPASSResult$data$meta$Stim <- factor(dplyr::recode(sub("^8_", "", cd8_merged_COMPASSResult$data$meta$Stim), "Spike_1" = "S1", "Spike_2" = "S2"), levels = c("S1", "S2", "NCAP", "VEMP"))
-cd8_merged_COMPASSResult$data$meta$Cohort <- factor(cd8_merged_COMPASSResult$data$meta$Cohort, levels = c("Hospitalized", "Non-hospitalized", "Healthy"))
+cd8_merged_COMPASSResult$data$meta$Cohort <- factor(recode(cd8_merged_COMPASSResult$data$meta$Cohort,
+                                                           "Hospitalized" = "Conv Hosp",
+                                                           "Non-hospitalized" = "Conv Non-Hosp",
+                                                           "Healthy" = "Assay Controls"),
+                                                    levels = c("Conv Hosp", "Conv Non-Hosp", "Assay Controls"))
 cd8_merged_COMPASSResult$data$individual_id <- "Run_SAMPLE_ID"
 cd8_heatmap_by_ifng <- print(my_plot.COMPASSResult(cd8_merged_COMPASSResult,
                         y=c("Stim", "Cohort"),
@@ -774,8 +788,8 @@ if(save_output) {
 ## FS/PFS vs Cohort
 
 ```{r, fig.width=4, fig.height=4}
-CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f")
-CohortLabs <- c("Non-hospitalized" = "NH", "Hospitalized" = "H")
+CohortColors <- c("Hospitalized" = "#707ed4", "Non-hospitalized" = "#c1ddd7")
+CohortLabs <- c("Hospitalized" = "H", "Non-hospitalized" = "NH")
 fs_vs_x_plot_categorical("4", "S1", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
 fs_vs_x_plot_categorical("4", "S2", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
 fs_vs_x_plot_categorical("4", "N", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
@@ -815,7 +829,8 @@ bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, CD8RunNames),
                                                         return_output = T, current_ylim = y, include_0_line=T, 
                                                         cytokine_order_for_annotation=cytokine_order_for_annotation,
                                                         p_text_size=p_text_size, group_by_colors=CohortColors,
-                                                        zeroed_BgCorr_stats = FALSE, zeroed_BgCorr_plot = TRUE)
+                                                        zeroed_BgCorr_stats = FALSE, zeroed_BgCorr_plot = TRUE,
+                                                        point_size = 1.2)
                          })
 names(bg_corr_dotplots) <- c(CD4RunNames, CD8RunNames)
 

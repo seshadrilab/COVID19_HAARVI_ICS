@@ -208,11 +208,12 @@ runCompassOnce <- function(gs,
 make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current_ylim=NULL, add_legend=FALSE, legend_position=c(0.16, 0),
                                          save_test_results=TRUE, p_text_size=5, include_0_line=FALSE, zeroed_BgCorr_stats = FALSE, zeroed_BgCorr_plot = FALSE, 
                                          plot_width=7, plot_height=6, dichotomize_by_cytokine=NA, group_by_colname="Cohort",
-                                         group_by_order=c("Non-hospitalized", "Hospitalized"), group_by_colors=c("Non-hospitalized" = "#80cdc1", "Hospitalized" = "#dfc27d"),
+                                         group_by_order=c("Hospitalized", "Non-hospitalized"), group_by_colors=c("Non-hospitalized" = "#80cdc1", "Hospitalized" = "#dfc27d"),
                                          return_output=FALSE, parentSubset="CD4+", point_size=0.3, cytokine_order_for_annotation=NULL) {
   # zeroed_BgCorr_stats If TRUE, the returned magnitude values and statistics are calculated using zeroed values
   # zeroed_BgCorr_plot If TRUE, the points on the plot are zeroed (regardless of zeroed_BgCorr_stats)
   library(cowplot) # among others
+  library(ggbeeswarm)
   
   mean_gamma <- cr$fit$mean_gamma
   cats <- as.data.frame(cr$fit$categories[, -ncol(cr$fit$categories),drop=FALSE]) # drop the "Counts" column
@@ -266,7 +267,8 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
                        values_from = Proportion) %>% 
     drop_na() %>% # Filter out rows with NA
     mutate(BgCorr = if(zeroed_BgCorr_stats) {pmax(0, Dummy_Stim_Name - DMSO)} else {Dummy_Stim_Name - DMSO},
-           BgCorr_plot = if(zeroed_BgCorr_plot) {pmax(0, Dummy_Stim_Name - DMSO)} else {Dummy_Stim_Name - DMSO}) %>% 
+           BgCorr_plot = if(zeroed_BgCorr_plot) {pmax(0, Dummy_Stim_Name - DMSO)} else {Dummy_Stim_Name - DMSO},
+           !!as.symbol(group_by_colname) := factor(!!as.symbol(group_by_colname), levels = group_by_order)) %>% 
     dplyr::select(-c(DMSO, Dummy_Stim_Name))
   
   dat_bgCorr_wide <- dat_bgCorr_long %>% 
@@ -330,11 +332,12 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
     p_dotplot <- p_dotplot + geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5)
   }
   p_dotplot <- p_dotplot +
-    geom_jitter(aes(color = !!as.symbol(group_by_colname)), width = 0.2, size=point_size) +
+    # geom_jitter(aes(fill = !!as.symbol(group_by_colname)), pch = 21, width = 0.2, size=point_size) +
+    geom_quasirandom(aes(fill = !!as.symbol(group_by_colname)), pch = 21, width = 0.3, size=point_size) +
     geom_errorbarh(data = dat_bgCorr_medians,
                    aes(y = BgCorr_plot,
-                       xmax = 1.5 + 0.6,
-                       xmin = 1.5 - 0.6, height = 0),
+                       xmax = 1.5 + 0.8,
+                       xmin = 1.5 - 0.8, height = 0),
                    position=position_dodge(width=0.25), color = "black") +
     facet_grid(. ~ BooleanSubset) +
     theme(axis.title.x=element_blank(),
@@ -351,7 +354,7 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
           axis.line = element_line(colour = "black")) + 
     labs(y=sprintf("%% Responding %s T cells", sub("+", "", parentSubset, fixed=T)))
   if(!is.na(group_by_colors)) {
-    p_dotplot <- p_dotplot + scale_color_manual(values=group_by_colors)
+    p_dotplot <- p_dotplot + scale_fill_manual(values=group_by_colors)
   }
   
   # Adjust ylim here manually if specified

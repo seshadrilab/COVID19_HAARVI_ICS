@@ -389,15 +389,17 @@ cd4_compass_subsets_w_umap$MemoryCategory <- pmap_chr(.l = list(cd4_compass_subs
                                                                cd4_compass_subsets_w_umap$`/Time/LD-3+/1419-3+/S/Lymph/4+/CCR7+`),
                                                      .f = getMemoryCategory)
 
-memColorScheme <- c("TEM" = "#fc8d62", "TEMRA" = "#66c2a5", "TCM" = "#e78ac3", "Naive" = "#8da0cb")
-# c("TEM" = "#1b9e77", "TEMRA" = "#7570b3", "TCM" = "#e7298a", "Naive" = "#d95f02")
-# c("TEM" = "#d7191c", "TEMRA" = "#2c7bb6", "TCM" = "green3", "Naive" = "darkorange", "Uncategorized" = "#90c9dd")
+myPalette(4)
+scales::show_col(myPalette(4))
+memColorScheme <- c("TEM" = "#9E0142", "TEMRA" = "#BEE4A0", "TCM" = "#5E4FA2", "Naive" = "#FDBE6F")
 mem_plot_colored_by_gate <- gg_themes +
   geom_point(aes(colour=cd4_compass_subsets_w_umap[,"MemoryCategory"]),
                shape=20, alpha=0.8, size=pointSize) +
   ggtitle("Memory") +
   scale_color_manual(values = memColorScheme)
 # + theme(legend.position = "right") + guides(colour = guide_legend(override.aes = list(size=9)))
+
+mem_plot_colored_by_gate
 ```
 
 ```{r}
@@ -875,9 +877,7 @@ cd8_compass_subsets_w_umap$MemoryCategory <- pmap_chr(.l = list(cd8_compass_subs
                                                                cd8_compass_subsets_w_umap$`/Time/LD-3+/1419-3+/S/Lymph/8+/CCR7+`),
                                                      .f = getMemoryCategory)
 
-memColorScheme <- c("TEM" = "#fc8d62", "TEMRA" = "#66c2a5", "TCM" = "#e78ac3", "Naive" = "#8da0cb")
-# c("TEM" = "#1b9e77", "TEMRA" = "#7570b3", "TCM" = "#e7298a", "Naive" = "#d95f02")
-# c("TEM" = "#d7191c", "TEMRA" = "#2c7bb6", "TCM" = "green3", "Naive" = "darkorange", "Uncategorized" = "#90c9dd")
+memColorScheme <- c("TEM" = "#9E0142", "TEMRA" = "#BEE4A0", "TCM" = "#5E4FA2", "Naive" = "#FDBE6F")
 mem_plot_colored_by_gate <- gg_themes +
   geom_point(aes(colour=cd8_compass_subsets_w_umap[,"MemoryCategory"]),
                shape=20, alpha=0.8, size=pointSize) +
