@@ -49,7 +49,8 @@ library(purrr)
 library(flowWorkspace)
 library(GGally)
 library(patchwork)
-source(here::here("scripts/my_pheatmap_and_plotMeanGamma.R"))
+library(RColorBrewer)
+library(ComplexHeatmap)
 source(here::here("scripts/20200604_Helper_Functions.R"))
 ```
 
@@ -134,50 +135,6 @@ plotCOMPASSResultStack(crList[c(CD4RunNames, NotCD4RunNames, CD8RunNames)],
                        show_rownames = FALSE,
                        main = "CD4, Not-CD4, and CD8 COMPASS Runs",
                        fontsize = 15, fontsize_row = 15, fontsize_col = 13)
-```
-
-```{r save stacked heatmaps}
-if(save_output) {
-  png(filename=here::here("out/PostCompassPlots/20200805_CD4_COMPASS_Heatmap_All_Stims.png"),
-      width=700, height=1000)
-  plotCOMPASSResultStack(crList[CD4RunNames],
-                         row_annotation = c("Stim"),
-                         variable = "Stim",
-                         show_rownames = FALSE,
-                         main = "CD4 COMPASS Runs",
-                         fontsize = 14, fontsize_row = 13, fontsize_col = 13)
-  dev.off()
-  
-  png(filename=here::here("out/PostCompassPlots/20200805_NotCD4_COMPASS_Heatmap_All_Stims.png"),
-      width=700, height=1000)
-  plotCOMPASSResultStack(crList[NotCD4RunNames],
-                         row_annotation = c("Stim"),
-                         variable = "Stim",
-                         show_rownames = FALSE,
-                         main = "Not-CD4 COMPASS Runs",
-                         fontsize = 14, fontsize_row = 13, fontsize_col = 13)
-  dev.off()
-  
-  png(filename=here::here("out/PostCompassPlots/20200805_CD8_COMPASS_Heatmap_All_Stims.png"),
-    width=700, height=1000)
-  plotCOMPASSResultStack(crList[CD8RunNames],
-                         row_annotation = c("Stim"),
-                         variable = "Stim",
-                         show_rownames = FALSE,
-                         main = "CD8 COMPASS Runs",
-                         fontsize = 14, fontsize_row = 13, fontsize_col = 13)
-  dev.off()
-  
-  png(filename=here::here("out/PostCompassPlots/20200805_CD4_and_NotCD4_COMPASS_Heatmap_All_Stims.png"),
-      width=900, height=2000)
-  plotCOMPASSResultStack(crList[c(CD4RunNames, NotCD4RunNames)],
-                         row_annotation = c("Stim"),
-                         variable = "Stim",
-                         show_rownames = FALSE,
-                         main = "CD4 and Not-CD4 COMPASS Runs",
-                         fontsize = 14, fontsize_row = 13, fontsize_col = 13)
-  dev.off()
-}
 ```
 
 # Drop assay controls
@@ -387,15 +344,6 @@ cd8_fs_cor_plot <- ggcorr(fs_pfs_df_wide %>%
        nbreaks=8, label=TRUE, label_size=7, label_color='black',
        legend.position = "none", size=9)
 cd8_fs_cor_plot
-
-# pairs.panels(fs_pfs_df_wide %>% 
-#                dplyr::select(-c(`SAMPLE ID`)) %>% 
-#                dplyr::select(matches("^FS.*_4")), 
-#              method = "pearson", # correlation method, "r" displayed in upper off diagonals. Not r^2.
-#              hist.col = "#00AFBB",
-#              density = TRUE,  # show density plots,
-#              lm = T,
-#              main = "CD4 FS Correlation across Stims")
 ```
 
 Write out the FS scores to a file for further integration w/ other T cell and Ab data
@@ -675,15 +623,15 @@ A commonality to the subsets which are enriched in Hospitalized individuals is C
 
 ```{r}
 cytokine_annotation_colors <- rep("black", 30)
-cytokine_order_for_annotation = c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4/5/13", "IL17a")
+cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", "CD107a", "IL4/5/13", "IL17a", "IFNg")
 ```
 
   
 ```{r, fig.width=12, fig.height=10}
-# Adapt code from COMPASS::plotCompassResultStack to prepare the data for my_plot.COMPASSResult
+# Adapt code from COMPASS::plotCompassResultStack to prepare the data for plotting
 # First we use mergeMatricesForPlotCOMPASSResultStack to merge the data from the different runs together.
 # Then use the merged data to create a fake merged COMPASSResult object with the merged categories, metadata, and mean_gamma data frames
-# This should allow us to use some of the customized options in my_plot.COMPASSResult (e.g. to get the IFNg subsets on the RHS)
+# This should allow us to use some of the customized options in plot.COMPASSResult.ComplexHeatmap (e.g. to get the IFNg subsets on the RHS)
 mergeMatricesForPlotCOMPASSResultStack_tmp <- utils::getFromNamespace("mergeMatricesForPlotCOMPASSResultStack", "COMPASS")
 
 CohortColors_forHeatmap <- c("Conv Hosp" = "#707ed4", "Conv Non-Hosp" = "#c1ddd7", "Assay Controls" = "#ebeef0")
@@ -713,18 +661,25 @@ cd4_merged_COMPASSResult$data$meta$Cohort <- factor(recode(cd4_merged_COMPASSRes
                                                            "Healthy" = "Assay Controls"),
                                                     levels = c("Conv Hosp", "Conv Non-Hosp", "Assay Controls"))
 cd4_merged_COMPASSResult$data$individual_id <- "Run_SAMPLE_ID"
-cd4_heatmap_by_ifng <- print(my_plot.COMPASSResult(cd4_merged_COMPASSResult,
-                        y=c("Stim", "Cohort"),
-                        fontsize=25, fontsize_row=5, fontsize_col=22,
-                        row_annotation_colors=row_ann_colors_v2,
-                        cytokine_annotation_colors=cytokine_annotation_colors,
-                        cytokine_height_multiplier=1.6, order_by_max_functionality = T,
-                        cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", 
-                                                          "CD107a", "IL4/5/13", "IL17a", "IFNg"),
-                        dichotomize_by_cytokine = "IFNg",
-                        dichotomize_by_cytokine_color = "#999999",
-                        staircase_cytokine_annotation = TRUE,
-                        main="CD4 COMPASS Runs"))
+
+cd4_heatmap_by_ifng <- plot.COMPASSResult.ComplexHeatmap(cr = cd4_merged_COMPASSResult,
+                                  row_annotation = c("Stim", "Cohort"),
+                                  cytokine_order_for_annotation = cytokine_order_for_annotation,
+                                  dichotomize_by_cytokine = "IFNg",
+                                  dichotomize_by_cytokine_color = "#999999",
+                                  row_annotation_colors = row_ann_colors_v2,
+                                  staircase_cytokine_annotation = TRUE)
+draw(cd4_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T)
+
+cd4_heatmap_by_ifng_gap <- plot.COMPASSResult.ComplexHeatmap(cr = cd4_merged_COMPASSResult,
+                                  row_annotation = c("Stim", "Cohort"),
+                                  cytokine_order_for_annotation = cytokine_order_for_annotation,
+                                  dichotomize_by_cytokine = "IFNg",
+                                  dichotomize_by_cytokine_color = "#999999",
+                                  row_annotation_colors = row_ann_colors_v2,
+                                  staircase_cytokine_annotation = TRUE,
+                                  row_gap = unit(0.05, "in"))
+# draw(cd4_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T)
 
 # CD8 runs
 cd8_data2plot <- mergeMatricesForPlotCOMPASSResultStack_tmp(crList2[CD8RunNames],
@@ -749,18 +704,25 @@ cd8_merged_COMPASSResult$data$meta$Cohort <- factor(recode(cd8_merged_COMPASSRes
                                                            "Healthy" = "Assay Controls"),
                                                     levels = c("Conv Hosp", "Conv Non-Hosp", "Assay Controls"))
 cd8_merged_COMPASSResult$data$individual_id <- "Run_SAMPLE_ID"
-cd8_heatmap_by_ifng <- print(my_plot.COMPASSResult(cd8_merged_COMPASSResult,
-                        y=c("Stim", "Cohort"),
-                        fontsize=25, fontsize_row=5, fontsize_col=22,
-                        row_annotation_colors=row_ann_colors_v2,
-                        cytokine_annotation_colors=cytokine_annotation_colors,
-                        cytokine_height_multiplier=1.6, order_by_max_functionality = T,
-                        cytokine_order_for_annotation = c("CD154", "IL2", "TNFa", 
-                                                          "CD107a", "IL4/5/13", "IL17a", "IFNg"),
-                        dichotomize_by_cytokine = "IFNg",
-                        dichotomize_by_cytokine_color = "#999999",
-                        staircase_cytokine_annotation = TRUE,
-                        main="CD8 COMPASS Runs"))
+
+cd8_heatmap_by_ifng <- plot.COMPASSResult.ComplexHeatmap(cr = cd8_merged_COMPASSResult,
+                                  row_annotation = c("Stim", "Cohort"),
+                                  cytokine_order_for_annotation = cytokine_order_for_annotation,
+                                  dichotomize_by_cytokine = "IFNg",
+                                  dichotomize_by_cytokine_color = "#999999",
+                                  row_annotation_colors = row_ann_colors_v2,
+                                  staircase_cytokine_annotation = TRUE)
+draw(cd8_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T)
+
+cd8_heatmap_by_ifng_gap <- plot.COMPASSResult.ComplexHeatmap(cr = cd8_merged_COMPASSResult,
+                                  row_annotation = c("Stim", "Cohort"),
+                                  cytokine_order_for_annotation = cytokine_order_for_annotation,
+                                  dichotomize_by_cytokine = "IFNg",
+                                  dichotomize_by_cytokine_color = "#999999",
+                                  row_annotation_colors = row_ann_colors_v2,
+                                  staircase_cytokine_annotation = TRUE,
+                                  row_gap = unit(0.05, "in"))
+# draw(cd8_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T)
 ```
 
 ```{r save stacked heatmaps pt2 pdf}
@@ -773,15 +735,29 @@ if(save_output) {
                                  here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
   pdfFonts(Arial = Arial)
   
-  pdf(file=here::here("out/PostCompassPlots/20200810_CD4_COMPASS_Heatmap.pdf"), width=12, height=8,
-        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica. pheatmap calls grid.text, which uses Arial by default.
-  grid.draw(cd4_heatmap_by_ifng)
+  pdf(file=here::here("out/PostCompassPlots/20200902_CD4_COMPASS_Heatmap.pdf"), width=9, height=8,
+        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
+  draw(cd4_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T)
   dev.off()
   
-  pdf(file=here::here("out/PostCompassPlots/20200810_CD8_COMPASS_Heatmap.pdf"), width=10, height=8,
-        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica. pheatmap calls grid.text, which uses Arial by default.
-  grid.draw(cd8_heatmap_by_ifng)
+  pdf(file=here::here("out/PostCompassPlots/20200902_CD8_COMPASS_Heatmap.pdf"), width=5, height=8,
+        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica
+  draw(cd8_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T)
   dev.off()
+  
+  # With row gaps
+  pdf(file=here::here("out/PostCompassPlots/20200902_CD4_COMPASS_Heatmap_gap.pdf"), width=9, height=9,
+      onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
+  draw(cd4_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T)
+  dev.off()
+  
+  pdf(file=here::here("out/PostCompassPlots/20200902_CD8_COMPASS_Heatmap_gap.pdf"), width=5, height=9,
+        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica
+  draw(cd8_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T)
+  dev.off()
+  
+  # Later run in linux terminal:
+  # convert -density 300 20200902_CD4_COMPASS_Heatmap_Edit.pdf -quality 90 20200902_CD4_COMPASS_Heatmap_Edit.png
 }
 ```
 
@@ -823,14 +799,14 @@ bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, CD8RunNames),
                                    c(5, 5, 3, 5,
                                      5, 5, 5, 5)),
                          .f = function(n, p, y, p_text_size) {
-                           # "staircase effect" for categories df heatmap gets done automatically, unlike in my_plot.COMPASSResult
+                           # "staircase effect" for categories df heatmap gets done automatically, unlike in heatmap
                            # Returned dotplot is cowplot
                            make_dotplot_for_COMPASS_run(crList.no_healthy[[n]], n, parentSubset = p,
                                                         return_output = T, current_ylim = y, include_0_line=T, 
                                                         cytokine_order_for_annotation=cytokine_order_for_annotation,
                                                         p_text_size=p_text_size, group_by_colors=CohortColors,
                                                         zeroed_BgCorr_stats = FALSE, zeroed_BgCorr_plot = TRUE,
-                                                        point_size = 1.2)
+                                                        point_size = 1.2, dichotomize_by_cytokine = "IFNg")
                          })
 names(bg_corr_dotplots) <- c(CD4RunNames, CD8RunNames)
 
