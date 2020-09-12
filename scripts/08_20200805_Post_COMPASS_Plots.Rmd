@@ -51,11 +51,20 @@ library(GGally)
 library(patchwork)
 library(RColorBrewer)
 library(ComplexHeatmap)
+library(ggbeeswarm)
 source(here::here("scripts/20200604_Helper_Functions.R"))
 ```
 
 ```{r}
 save_output <- FALSE
+
+# Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
+Arial <- Type1Font(family = "Arial",
+                   metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
+                               here::here("data/Arial_afm/ArialMT-Bold.afm"), 
+                               here::here("data/Arial_afm/ArialMT-Italic.afm"),
+                               here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
+pdfFonts(Arial = Arial)
 ```
 
 # Read in data
@@ -232,7 +241,8 @@ fs_pfs_df_with_manifest %>% dplyr::filter(is.na(FS) | is.na(`SAMPLE ID`) | is.na
 # Statistics is calculated after exclusion, but all points are plotted
 
 plot_fs_vs_stim <- function(current_parent) {
-  StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "N" = "#beaed4", "E" = "#e6e63c")
+  StimColors <- c("S1" = "#f0027fac", "S2" = "#fdc086ac", "N" = "#beaed4ac", "E" = "#e6e63cac")
+  StimOutlineColors <- c("S1" = "#f0027fdf", "S2" = "#fdc086df", "N" = "#beaed4df", "E" = "#e6e63cdf")
   
   current_data_for_test <- fs_pfs_df_with_manifest %>%
     dplyr::filter(parent == current_parent) %>% 
@@ -258,15 +268,15 @@ plot_fs_vs_stim <- function(current_parent) {
     geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5) +
     geom_violin(aes(fill = `STIM`), draw_quantiles = c(0.5),
                 # All violins have the same maximum width. Overrides default of equal area
-                scale="width") +
+                scale="width", width = 0.6) +
     geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
-                scale="width") +
-    # geom_point(color="grey", alpha=0.2, size=0.1) +
-    # geom_line(aes(group=`SAMPLE ID`), color="grey", alpha=0.2) +
-    # geom_beeswarm(color="grey", size=0.3, cex=0.8) +
+                scale="width", width = 0.6) +
+    geom_violin(aes(color=`STIM`), fill="transparent",
+              scale="width", width=0.6, size=1.1) +
+    geom_quasirandom(size=0.1, width=0.2, varwidth=T, method="quasirandom") +
     theme(axis.title.x = element_blank(),
           axis.title.y = element_text(size=27),
-          axis.text.y = element_text(color="black", size=26),
+          axis.text.y = element_text(color="black", size=20),
           axis.text.x = element_text(color="black", size=26),
           plot.title = element_text(hjust = 0.5, size=29),
           panel.grid = element_blank(),
@@ -275,7 +285,8 @@ plot_fs_vs_stim <- function(current_parent) {
     # scale_x_discrete(expand = c(0.3, 0.3)) +
     labs(y = "Functionality Score",
          title = sprintf("CD%s", current_parent)) +
-    scale_fill_manual(values = StimColors)
+    scale_fill_manual(values = StimColors) +
+    scale_color_manual(values = StimOutlineColors)
   
   list("plot" = current_plot,
        "quade_test" = quade_test,
@@ -287,10 +298,10 @@ cd4_fs_vs_stim_out$quade_test$p.value
 ggplot_build(cd4_fs_vs_stim_out$plot)$layout$panel_params[[1]]$y.range
 annotation_df <- broom::tidy(cd4_fs_vs_stim_out$wilcox_test) %>%
   dplyr::filter(p.value < 0.05) %>% 
-  mutate(y_pos = c(0.118, 0.151, 0.135, 0.114),
+  mutate(y_pos = c(0.118, 0.145, 0.132, 0.114),
          p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
 cd4_fs_vs_stim_plot <- cd4_fs_vs_stim_out$plot +
-  coord_cartesian(ylim = c(NA, 0.16)) +
+  coord_cartesian(ylim = c(NA, 0.154)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
                                          aes_string(xmin="group1", xmax="group2", annotations="p.text", y_position="y_pos"),
                                          tip_length = c(0.005, 0.005),
@@ -314,6 +325,21 @@ cd8_fs_vs_stim_plot <- cd8_fs_vs_stim_out$plot +
                                          manual = TRUE))
 cd8_fs_vs_stim_plot
 # Note that the above data are paired, even though it's represented as violin plots.
+```
+
+```{r}
+if(save_output) {
+
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4A_CD4_FS_vs_Stim.pdf"), width=5, height=4,
+        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
+  cd4_fs_vs_stim_plot
+  dev.off()
+  
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5F_CD8_FS_vs_Stim.pdf"), width=5, height=4,
+      onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
+  cd8_fs_vs_stim_plot
+  dev.off()
+}
 ```
 
 As we saw in the heatmaps, NCAP and Spike 1 consistently have the highest FS/PFS scores, and VEMP has the lowest. 
@@ -435,45 +461,80 @@ getOption("na.action") # Default behavior of cor.test
 # matrix of the p-value of the correlation
 # the test statistic is based on Pearson's product moment correlation coefficient cor(x, y)
 # The P-value is the probability that you would have found the current result if the correlation coefficient were in fact zero (null hypothesis). If this probability is lower than the conventional 5% (P<0.05) the correlation coefficient is called statistically significant.
-p.mat <- cor.mtest(fs_pfs_df_wide %>% 
-               dplyr::select(-c(`SAMPLE ID`)) %>% 
-               dplyr::select(matches("FS")))
-# head(p.mat[, 1:5])
 
-col <- colorRampPalette(rev(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA")))
+col <- colorRampPalette(c("#3B9AB2", "#EEEEEE", "#F21A00"))
 
 # CD4 FS
-M <- cor(fs_pfs_df_wide %>% 
+cd4_fs_cor_dat <- fs_pfs_df_wide %>% 
                dplyr::select(-c(`SAMPLE ID`)) %>% 
-               dplyr::select(starts_with("FS") & ends_with("_4")),
+               dplyr::select(starts_with("FS") & ends_with("_4")) %>% 
+           rename_all(~ sub(".*_(.*)_.*", "\\1", .))
+p.mat_cd4 <- cor.mtest(cd4_fs_cor_dat)
+cd4_M <- cor(cd4_fs_cor_dat,
          use = "complete.obs") # missing values are handled by casewise deletion
-corrplot(M,
+cd4_fs_corrplot <- corrplot(cd4_M,
          method="color", col=col(200),  
-         type="upper", order="hclust", 
+         type="lower", order="original", 
          addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black", tl.srt=45, #Text label color and rotation
+         tl.cex = 2, number.cex = 1.5,
+         tl.pos = "ld", tl.col="black", tl.srt=0, #Text label color and rotation
          # Combine with significance
-         p.mat = p.mat, sig.level = 0.01, insig = "blank", 
+         p.mat = p.mat_cd4, sig.level = 0.05, insig = "blank", 
          # hide correlation coefficient on the principal diagonal
-         diag=FALSE)
+         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n")
 # significant coefficients are colored
 
 # CD8 FS
-M <- cor(fs_pfs_df_wide %>% 
+cd8_fs_cor_dat <- fs_pfs_df_wide %>% 
                dplyr::select(-c(`SAMPLE ID`)) %>% 
-               dplyr::select(starts_with("FS") & ends_with("_8")),
+               dplyr::select(starts_with("FS") & ends_with("_8")) %>% 
+           rename_all(~ sub(".*_(.*)_.*", "\\1", .))
+p.mat_cd8 <- cor.mtest(cd8_fs_cor_dat)
+cd8_M <- cor(cd8_fs_cor_dat,
          use = "complete.obs") # missing values are handled by casewise deletion
-
-corrplot(M,
+cd8_fs_corrplot <- corrplot(cd8_M,
          method="color", col=col(200),  
-         type="upper", order="hclust", 
+         type="lower", order="original", 
          addCoef.col = "black", # Add coefficient of correlation
-         tl.col="black", tl.srt=45, #Text label color and rotation
+         tl.cex = 2, number.cex = 1.5,
+         tl.pos = "ld", tl.col="black", tl.srt=0, #Text label color and rotation
          # Combine with significance
-         p.mat = p.mat, sig.level = 0.01, insig = "blank", 
+         p.mat = p.mat_cd8, sig.level = 0.05, insig = "blank", 
          # hide correlation coefficient on the principal diagonal
-         diag=FALSE)
+         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n")
 # significant coefficients are colored
+```
+
+```{r}
+if(save_output) {
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4B_CD4_FS_corr.pdf"), width=4, height=4,
+        onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
+  corrplot(cd4_M,
+         method="color", col=col(200),  
+         type="lower", order="original", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.cex = 2, number.cex = 1.5,
+         tl.pos = "ld", tl.col="black", tl.srt=0, #Text label color and rotation
+         # Combine with significance
+         p.mat = p.mat_cd4, sig.level = 0.05, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n")
+  dev.off()
+  
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5G_CD8_FS_corr.pdf"), width=4, height=4,
+      onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
+  corrplot(cd8_M,
+         method="color", col=col(200),  
+         type="lower", order="original", 
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.cex = 2, number.cex = 1.5,
+         tl.pos = "ld", tl.col="black", tl.srt=0, #Text label color and rotation
+         # Combine with significance
+         p.mat = p.mat_cd8, sig.level = 0.05, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n")
+  dev.off()  
+}
 ```
 
 Note that FS and PFS scores for the same condition tend to be highly correlated (not shown). Not surprising. 
@@ -485,20 +546,21 @@ In general, we can't rely on a particular condition to predict the FS/PFS of all
 ## FS vs Age
 
 ```{r, fig.width=5, fig.height=5}
-StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "N" = "#beaed4", "E" = "#e6e63c")
+# StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "N" = "#beaed4", "E" = "#e6e63c")
+StimColors <- c("S1" = "#f0027fac", "S2" = "#fdc086ac", "N" = "#beaed4ac", "E" = "#e6e63cac")
 fs_vs_x_plot <- function(current_parent, current_stim, xaxis="Age", include_regression_line = TRUE) {
   current_data <- fs_pfs_df_with_manifest %>% 
     dplyr::filter(parent == !!current_parent & STIM == !!current_stim)
   
   current_plot <- ggplot(current_data, aes(!!as.symbol(xaxis), FS)) +
     theme_bw(base_size = 22) +
-    geom_point(color=StimColors[[current_stim]]) +
-    theme(axis.title.x = element_text(size=25),
-          axis.title.y = element_text(size=25),
-          axis.text.y = element_text(color="black", size=25),
-          axis.text.x = element_text(color="black", size=25),
-          plot.title = element_text(hjust = 0.5, size=29),
-          panel.grid.minor = element_blank(),
+    geom_point(fill=StimColors[[current_stim]], pch=21, size=2.5) +
+    theme(axis.title.x = element_text(size=20),
+          axis.title.y = element_text(size=20),
+          axis.text.y = element_text(color="black", size=17),
+          axis.text.x = element_text(color="black", size=17),
+          plot.title = element_text(hjust=0.5, size=21),
+          panel.grid = element_blank(),
           legend.position = "none",
           plot.margin = margin(0.3, 0.4, 0.1, 0.2, "cm")) +
     labs(title = current_stim,
@@ -512,47 +574,44 @@ fs_vs_x_plot <- function(current_parent, current_stim, xaxis="Age", include_regr
     # Help understanding CI from ?predict.lm and here: https://stackoverflow.com/questions/45742987/how-is-level-used-to-generate-the-confidence-interval-in-geom-smooth
     geom_smooth(color = "black", method="lm")  +
     # stat_cor from ggpubr
-    stat_cor(method = "pearson", size=5)
+    stat_cor(method = "pearson", size=5.5)
   }
   current_plot
 }
 
+parents_vec <- rep(c("4", "8"), each = 4)
+stim_vec <- rep(c("S1", "S2", "N", "E"), times = 2)
+fs_vs_age_plot_list <- map2(parents_vec, stim_vec, fs_vs_x_plot)
+names(fs_vs_age_plot_list) <- paste0(stim_vec, "_", parents_vec)
+
 # p-values NOT adjusted:
-fs_vs_x_plot("4", "S1")
-fs_vs_x_plot("4", "S2")
-fs_vs_x_plot("4", "N")
-fs_vs_x_plot("4", "E")
-fs_vs_x_plot("4", "E", include_regression_line = F)
-fs_vs_x_plot("8", "S1")
-fs_vs_x_plot("8", "S2")
-fs_vs_x_plot("8", "N")
-fs_vs_x_plot("8", "E")
-fs_vs_x_plot("8", "E", include_regression_line = F)
+fs_vs_age_plot_list
 ```
 
 ## FS vs Days from Symptom Onset to Visit
 
 ```{r, fig.width=5, fig.height=5}
-fs_vs_x_plot("4", "S1", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("4", "S2", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("4", "N", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("4", "E", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("4", "E", xaxis="Days_Symptom_Onset_to_Visit_1", include_regression_line = F)
-fs_vs_x_plot("8", "S1", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("8", "S2", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("8", "N", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("8", "E", xaxis="Days_Symptom_Onset_to_Visit_1")
-fs_vs_x_plot("8", "E", xaxis="Days_Symptom_Onset_to_Visit_1", include_regression_line = F)
+fs_vs_days_plot_list <- map2(parents_vec, stim_vec, fs_vs_x_plot, xaxis="Days_Symptom_Onset_to_Visit_1")
+names(fs_vs_days_plot_list) <- paste0(stim_vec, "_", parents_vec)
+
+fs_vs_days_plot_list
 ```
 
 ## FS vs Sex
 
 ```{r, fig.width=4, fig.height=4}
-StimSexColors <- list("S1" = c("F" = "#bd0264", "M" = "#fd2898"),
-                      "S2" = c("F" = "#fca654", "M" = "#fedab8"),
-                      "N" = c("F" = "#a38dc2", "M" = "#d9cfe6"),
-                      "E" = c("F" = "#d4d41b", "M" = "#ecec69"))
-fs_vs_x_plot_categorical <- function(current_parent, current_stim, xaxis="Sex", current_colors=StimSexColors[[current_stim]], xcategorylabs = NULL) {
+StimSexColors <- list("S1" = c("F" = "#bd0264ac", "M" = "#fd2898ac"),
+                      "S2" = c("F" = "#fca654ac", "M" = "#fedab8ac"),
+                      "N" = c("F" = "#a38dc2ac", "M" = "#d9cfe6ac"),
+                      "E" = c("F" = "#d4d41bac", "M" = "#ecec69ac"))
+StimSexOutlineColors <- list("S1" = c("F" = "#bd0264ff", "M" = "#fd2898ff"),
+                      "S2" = c("F" = "#fca654ff", "M" = "#fedab8ff"),
+                      "N" = c("F" = "#a38dc2ff", "M" = "#d9cfe6ff"),
+                      "E" = c("F" = "#d4d41bff", "M" = "#ecec69ff"))
+fs_vs_x_plot_categorical <- function(current_parent, current_stim, xaxis="Sex",
+                                     current_fill_colors=StimSexColors[[current_stim]],
+                                     current_outline_colors = StimSexOutlineColors[[current_stim]],
+                                     xcategorylabs = NULL) {
   # current_parent <- "4"; current_stim <- "S1"; xaxis <- "Sex"; current_colors <- StimSexColors[[current_stim]]
   # CohortColors <- c("Hospitalized" = "#386cb0", "Non-hospitalized" = "#7fc97f", "Healthy" = "#ebeef0")
   # CohortLabs <- c("Non-hospitalized" = "NH", "Hospitalized" = "H")
@@ -565,20 +624,24 @@ fs_vs_x_plot_categorical <- function(current_parent, current_stim, xaxis="Sex", 
     theme_bw(base_size = 22) +
     geom_violin(aes(fill = !!as.symbol(xaxis)), draw_quantiles = c(0.5),
                 # All violins have the same maximum width. Overrides default of equal area
-                scale="width") +
+                scale="width", width = 0.6) +
     geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
-                scale="width") +
-    theme(axis.title.x = element_text(size=27),
-          axis.title.y = element_text(size=27),
-          axis.text.y = element_text(color="black", size=26),
-          axis.text.x = element_text(color="black", size=26),
-          plot.title = element_text(hjust = 0.5, size=29),
-          panel.grid.minor = element_blank(),
+                scale="width", width = 0.6) +
+    geom_violin(aes(color=!!as.symbol(xaxis)), fill="transparent",
+              scale="width", width=0.6, size=1.1) +
+    geom_quasirandom(size=0.1, width=0.2, varwidth=T, method="quasirandom") +
+    theme(axis.title.x = element_blank(),
+          axis.title.y = element_text(size=20),
+          axis.text.y = element_text(color="black", size=17),
+          axis.text.x = element_text(color="black", size=20),
+          plot.title = element_text(hjust = 0.5, size=21),
+          panel.grid = element_blank(),
           legend.position = "none",
           plot.margin = margin(0.3, 0.2, 0.1, 0.2, "cm")) +
-    labs(title = current_stim,
-         x = sub("([A-Za-z]*)_.*", "\\1", xaxis)) +
-    scale_fill_manual(values = current_colors)
+    labs(title = current_stim) + #,
+         # x = sub("([A-Za-z]*)_.*", "\\1", xaxis)) +
+    scale_fill_manual(values = current_fill_colors) +
+    scale_color_manual(values = current_outline_colors)
   
   wilcox_result <- wilcox.test(as.formula(sprintf("FS ~ %s", xaxis)), data = current_data)
   p.text <- if(wilcox_result$p.value < 0.001) {
@@ -589,7 +652,7 @@ fs_vs_x_plot_categorical <- function(current_parent, current_stim, xaxis="Sex", 
   y_range <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
   current_plot <- current_plot +
     coord_cartesian(ylim = c(NA, y_range[[2]] + 0.07*diff(y_range))) +
-    annotate("text", x = 1.5, y = y_range[[2]] + 0.01*diff(y_range), label = p.text, size=6)
+    annotate("text", x = 1.5, y = y_range[[2]] + 0.01*diff(y_range), label = p.text, size=5.5)
   if(!is.null(xcategorylabs)) {
     current_plot <- current_plot +
       scale_x_discrete(labels=xcategorylabs)
@@ -597,14 +660,12 @@ fs_vs_x_plot_categorical <- function(current_parent, current_stim, xaxis="Sex", 
   current_plot
 }
 
-fs_vs_x_plot_categorical("4", "S1")
-fs_vs_x_plot_categorical("4", "S2")
-fs_vs_x_plot_categorical("4", "N")
-fs_vs_x_plot_categorical("4", "E")
-fs_vs_x_plot_categorical("8", "S1")
-fs_vs_x_plot_categorical("8", "S2")
-fs_vs_x_plot_categorical("8", "N")
-fs_vs_x_plot_categorical("8", "E")
+parents_vec <- rep(c("4", "8"), each = 4)
+stim_vec <- rep(c("S1", "S2", "N", "E"), times = 2)
+fs_vs_sex_plot_list <- map2(parents_vec, stim_vec, fs_vs_x_plot_categorical)
+names(fs_vs_sex_plot_list) <- paste0(stim_vec, "_", parents_vec)
+
+fs_vs_sex_plot_list
 ```
 
 In many of the boxplots above, Males are shifted slightly higher on the FS/PFS axis compared to Females, but none of the comparisons are significant.
@@ -727,14 +788,6 @@ cd8_heatmap_by_ifng_gap <- plot.COMPASSResult.ComplexHeatmap(cr = cd8_merged_COM
 
 ```{r save stacked heatmaps pt2 pdf}
 if(save_output) {
-  # Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
-  Arial <- Type1Font(family = "Arial",
-                     metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
-                                 here::here("data/Arial_afm/ArialMT-Bold.afm"), 
-                                 here::here("data/Arial_afm/ArialMT-Italic.afm"),
-                                 here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
-  pdfFonts(Arial = Arial)
-  
   pdf(file=here::here("out/PostCompassPlots/20200902_CD4_COMPASS_Heatmap.pdf"), width=9, height=8,
         onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
   draw(cd4_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T)
@@ -764,16 +817,41 @@ if(save_output) {
 ## FS/PFS vs Cohort
 
 ```{r, fig.width=4, fig.height=4}
-CohortColors <- c("Hospitalized" = "#707ed4", "Non-hospitalized" = "#c1ddd7")
+CohortColors <- c("Hospitalized" = "#757bbcb2", "Non-hospitalized" = "#b0d2c8bf")
+CohortOutlineColors <- c("Hospitalized" = "#757bbbff", "Non-hospitalized" = "#b0d1c8ff")
 CohortLabs <- c("Hospitalized" = "H", "Non-hospitalized" = "NH")
-fs_vs_x_plot_categorical("4", "S1", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
-fs_vs_x_plot_categorical("4", "S2", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
-fs_vs_x_plot_categorical("4", "N", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
-fs_vs_x_plot_categorical("4", "E", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
-fs_vs_x_plot_categorical("8", "S1", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
-fs_vs_x_plot_categorical("8", "S2", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
-fs_vs_x_plot_categorical("8", "N", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
-fs_vs_x_plot_categorical("8", "E", xaxis = "Cohort", current_colors = CohortColors, xcategorylabs = CohortLabs)
+
+parents_vec <- rep(c("4", "8"), each = 4)
+stim_vec <- rep(c("S1", "S2", "N", "E"), times = 2)
+fs_vs_cohort_plot_list <- map2(parents_vec, stim_vec, fs_vs_x_plot_categorical,
+                               xaxis = "Cohort", current_fill_colors = CohortColors,
+                               current_outline_colors = CohortOutlineColors, xcategorylabs = CohortLabs)
+names(fs_vs_cohort_plot_list) <- paste0(stim_vec, "_", parents_vec)
+
+fs_vs_cohort_plot_list
+```
+
+```{r}
+# FS vs demographics plots to disk
+
+if(save_output) {
+  
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4CDEF_CD4_FS_vs_Demographics.pdf"), width=14, height=14,
+      onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  (fs_vs_age_plot_list$S1_4 | fs_vs_age_plot_list$S2_4 | fs_vs_age_plot_list$N_4 | fs_vs_age_plot_list$E_4)  /
+    (fs_vs_sex_plot_list$S1_4 | fs_vs_sex_plot_list$S2_4 | fs_vs_sex_plot_list$N_4 | fs_vs_sex_plot_list$E_4) /
+    (fs_vs_days_plot_list$S1_4 | fs_vs_days_plot_list$S2_4 | fs_vs_days_plot_list$N_4 | fs_vs_days_plot_list$E_4) /
+    (fs_vs_cohort_plot_list$S1_4 | fs_vs_cohort_plot_list$S2_4 | fs_vs_cohort_plot_list$N_4 | fs_vs_cohort_plot_list$E_4)
+  dev.off()  
+  
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5HIJK_CD8_FS_vs_Demographics.pdf"), width=14, height=14,
+    onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  (fs_vs_age_plot_list$S1_8 | fs_vs_age_plot_list$S2_8 | fs_vs_age_plot_list$N_8 | fs_vs_age_plot_list$E_8)  /
+    (fs_vs_sex_plot_list$S1_8 | fs_vs_sex_plot_list$S2_8 | fs_vs_sex_plot_list$N_8 | fs_vs_sex_plot_list$E_8) /
+    (fs_vs_days_plot_list$S1_8 | fs_vs_days_plot_list$S2_8 | fs_vs_days_plot_list$N_8 | fs_vs_days_plot_list$E_8) /
+    (fs_vs_cohort_plot_list$S1_8 | fs_vs_cohort_plot_list$S2_8 | fs_vs_cohort_plot_list$N_8 | fs_vs_cohort_plot_list$E_8)
+  dev.off()  
+}
 ```
 
 ## Background-corrected magnitudes
@@ -781,14 +859,7 @@ fs_vs_x_plot_categorical("8", "E", xaxis = "Cohort", current_colors = CohortColo
 ```{r, fig.width=12, fig.height=9, warning=F}
 source(here::here("scripts/20200604_Helper_Functions.R"))
 
-# Arial is used by dotplot function
-# Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
-Arial <- Type1Font(family = "Arial",
-                   metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
-                               here::here("data/Arial_afm/ArialMT-Bold.afm"), 
-                               here::here("data/Arial_afm/ArialMT-Italic.afm"),
-                               here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
-pdfFonts(Arial = Arial)
+# Arial is used by dotplot function below
 
 # Note p-values are bonferroni adjusted in dotplots
 # Also note that some points are not shown in order to zoom in better to the bulk of the point
@@ -796,7 +867,7 @@ bg_corr_dotplots <- pmap(.l = list(c(CD4RunNames, CD8RunNames),
                                    rep(c("CD4+", "CD8"), each = 4),
                                    list(NULL, c(0, 0.0085), NULL, NULL,
                                         NULL, NULL, c(0, 0.005), NULL),
-                                   c(5, 5, 3, 5,
+                                   c(5, 5, 5, 5,
                                      5, 5, 5, 5)),
                          .f = function(n, p, y, p_text_size) {
                            # "staircase effect" for categories df heatmap gets done automatically, unlike in heatmap
@@ -832,6 +903,30 @@ bg_corr_dotplots$`8_NCAP`$BgCorrMagnitudes %>% dplyr::filter_if(is.numeric, any_
   select(-Individual, -Cohort) %>% 
   select_if(~max(.) > 0.005)
   
+```
+
+```{r}
+if(save_output) {
+  pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5A_CD4_S1_COMPASS_Magnitudes_vs_Cohort.pdf"), width=12, height=7,
+    onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  bg_corr_dotplots[["4_Spike_1"]]$Dotplot
+  dev.off()
+  
+  pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5B_CD4_S2_COMPASS_Magnitudes_vs_Cohort.pdf"), width=11.5, height=7,
+    onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  bg_corr_dotplots[["4_Spike_2"]]$Dotplot
+  dev.off()
+  
+  pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5C_CD4_N_COMPASS_Magnitudes_vs_Cohort.pdf"), width=14, height=7,
+    onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  bg_corr_dotplots[["4_NCAP"]]$Dotplot
+  dev.off()
+  
+  pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5D_CD4_E_COMPASS_Magnitudes_vs_Cohort.pdf"), width=3, height=7,
+    onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  bg_corr_dotplots[["4_VEMP"]]$Dotplot
+  dev.off()
+}
 ```
 
 ```{r}

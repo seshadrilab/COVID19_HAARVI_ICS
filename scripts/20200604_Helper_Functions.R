@@ -440,7 +440,7 @@ make_dotplot_for_COMPASS_run <- function(cr, run_name, output_folder=NA, current
     scale_y_discrete(expand=c(0,0)) + 
     scale_x_discrete(expand=c(0,0))
   
-  dotplot_with_cats <- plot_grid(p_dotplot, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.4))
+  dotplot_with_cats <- plot_grid(p_dotplot, cats_plot, ncol = 1, axis = "lr", align = "v", rel_heights = c(1, 0.3))
   
   if(!is.na(output_folder)) {
     p_base_path <- file.path(output_folder, sprintf("%s_%s_%s_Dotplot%s%s", run_name,

@@ -30,10 +30,19 @@ library(flowWorkspace)
 library(broom)
 library(grid)
 library(gridExtra)
+library(patchwork)
 ```
 
 ```{r}
 save_output <- FALSE
+
+# Arial font setup. Downloaded afms from https://github.com/microsoft/microsoft-r-open/tree/ec3fd89e5fb5794bd8149905c134ad801bb61800
+Arial <- Type1Font(family = "Arial",
+                   metrics = c(here::here("data/Arial_afm/ArialMT.afm"),
+                               here::here("data/Arial_afm/ArialMT-Bold.afm"), 
+                               here::here("data/Arial_afm/ArialMT-Italic.afm"),
+                               here::here("data/Arial_afm/ArialMT-BoldItalic.afm")))
+pdfFonts(Arial = Arial)
 ```
 
 Examine background-corrected magnitudes from selected COMPASS subsets.
@@ -60,10 +69,14 @@ The list is already filtered for non-healthies and just individuals which were r
 
 ```{r}
 stim_labels <- c("Spike_1"="S1", "Spike_2"="S2", "NCAP" = "N", "VEMP" = "E")
-StimIFNgColors <- list("S1" = c("IFNg_Pos" = "#bd0264", "IFNg_Neg" = "#fd2898"),
-                      "S2" = c("IFNg_Pos" = "#fca654", "IFNg_Neg" = "#fedab8"),
-                      "N" = c("IFNg_Pos" = "#a38dc2", "IFNg_Neg" = "#d9cfe6"),
-                      "E" = c("IFNg_Pos" = "#d4d41b", "IFNg_Neg" = "#ecec69"))
+StimIFNgColors <- list("S1" = c("IFNg_Pos" = "#bd0264ac", "IFNg_Neg" = "#fd2898ac"),
+                      "S2" = c("IFNg_Pos" = "#fca654ac", "IFNg_Neg" = "#fedab8ac"),
+                      "N" = c("IFNg_Pos" = "#a38dc2ac", "IFNg_Neg" = "#d9cfe6ac"),
+                      "E" = c("IFNg_Pos" = "#d4d41bac", "IFNg_Neg" = "#ecec69ac"))
+StimIFNgOutlineColors <- list("S1" = c("IFNg_Pos" = "#bd0264df", "IFNg_Neg" = "#fd2898df"),
+                      "S2" = c("IFNg_Pos" = "#fca654df", "IFNg_Neg" = "#fedab8df"),
+                      "N" = c("IFNg_Pos" = "#a38dc2df", "IFNg_Neg" = "#d9cfe6df"),
+                      "E" = c("IFNg_Pos" = "#d4d41bdf", "IFNg_Neg" = "#ecec69df"))
 
 plot_ifng_strat <- function(current_run, current_ylim=NA) {
   current_dat_wide <- bg_corr_dotplots[[current_run]]$BgCorrMagnitudes %>% 
@@ -90,23 +103,27 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
     geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5) +
     geom_violin(aes(fill = IFNg_Pos_or_Neg), draw_quantiles = c(0.5),
                 # All violins have the same maximum width. Overrides default of equal area
-                scale="width") +
+                scale="width", width = 0.6) +
     geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
-                scale="width") +
+                scale="width", width = 0.6) +
+    geom_violin(aes(color=IFNg_Pos_or_Neg), fill="transparent",
+              scale="width", width=0.6, size=1.1) +
+    geom_quasirandom(size=0.1, width=0.2, varwidth=T, method="quasirandom") +
     theme(axis.title.x = element_blank(),
-            axis.title.y = element_text(size=27),
-            axis.text.y = element_text(color="black", size=26),
-            axis.text.x = element_text(color="black", size=26),
-            plot.title = element_text(hjust = 0.5, size=29),
+            axis.title.y = element_text(size=20),
+            axis.text.y = element_text(color="black", size=17),
+            axis.text.x = element_text(color="black", size=17),
+            plot.title = element_text(hjust = 0.5, size=21),
             panel.grid = element_blank(),
             legend.position = "none",
             plot.margin = margin(0.3, 0.2, 0.1, 0.2, "cm")) +
     scale_y_continuous(labels = function(x) paste0(x*100)) + 
-    scale_x_discrete(labels=c("IFNg_Pos" = "IFNg+", "IFNg_Neg" = "IFNg-"),
+    scale_x_discrete(labels=c("IFNg_Pos" = "IFN-\u03B3+", "IFNg_Neg" = "IFN-\u03B3-"),
                        expand = c(0.3, 0.3)) +
     labs(y = sprintf("Cytokine+\n(%% %s)", current_coreceptor),
          title = current_stim) +
-    scale_fill_manual(values = StimIFNgColors[[current_stim]])
+    scale_fill_manual(values = StimIFNgColors[[current_stim]]) +
+    scale_color_manual(values = StimIFNgOutlineColors[[current_stim]])
   
   suppressWarnings(if(!is.na(current_ylim)) {
     current_plot <- current_plot + coord_cartesian(ylim = current_ylim)
@@ -115,7 +132,14 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
   plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
   
   current_plot <- current_plot + 
-    annotate("text", x = 1.5, y = plot_ylims[1] + 0.85*diff(plot_ylims), label = p.text, size=7)
+    annotate("text", x = 1.5, y = plot_ylims[2] + 0.01*diff(plot_ylims), label = p.text, size=5.5)
+  
+  plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
+  plot_ylims[[2]] <- plot_ylims[2] + 0.01*diff(plot_ylims)
+  
+  if(is.na(current_ylim)) {
+    current_plot <- current_plot + coord_cartesian(ylim = plot_ylims)
+  }
 
   list("plot" = current_plot,
        "test_result" = current_signed_rank_test,
@@ -128,8 +152,8 @@ ifng_stratified_output_list <- map2(.x = c(CD4RunNames, CD8RunNames),
                                         NA,
                                         NA,
                                         NA,
-                                        c(0, 0.005),
-                                        c(0, 0.0045),
+                                        NA,
+                                        NA,
                                         NA),
                               .f = plot_ifng_strat)
 names(ifng_stratified_output_list) <- c(CD4RunNames, CD8RunNames)
@@ -159,6 +183,22 @@ for(x in ifng_stratified_plots) {
 
 ifng_stratified_output_list$`8_Spike_2`$data_long %>% dplyr::filter(BgCorr_Prop_Sum > 0.005)
 ifng_stratified_output_list$`8_NCAP`$data_long %>% dplyr::filter(BgCorr_Prop_Sum > 0.0045)
+```
+
+```{r}
+if(save_output) {
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/Fig3B_CD4_IFNg_Pos_vs_Neg_Magnitudes_by_STIM.pdf"), width=7, height=7,
+        onefile = TRUE, bg = "transparent", family = "Arial") # default unit is inches, default font is Helvetica.
+  print((ifng_stratified_output_list$`4_Spike_1`$plot | ifng_stratified_output_list$`4_Spike_2`$plot) /
+    (ifng_stratified_output_list$`4_NCAP`$plot | ifng_stratified_output_list$`4_VEMP`$plot))
+  dev.off()
+  
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/Fig5B_CD8_IFNg_Pos_vs_Neg_Magnitudes_by_STIM.pdf"), width=14, height=3.5,
+        onefile = TRUE, bg = "transparent", family = "Arial") # default unit is inches, default font is Helvetica.
+  print(ifng_stratified_output_list$`8_Spike_1`$plot | ifng_stratified_output_list$`8_Spike_2`$plot |
+    ifng_stratified_output_list$`8_NCAP`$plot | ifng_stratified_output_list$`8_VEMP`$plot)
+  dev.off()
+}
 ```
 
 # Compare magnitudes of selected subsets across stims
@@ -202,11 +242,17 @@ cd4_dat <- gs_pop_get_count_with_meta(gs_cd4, subpopulations = c("4+", tidyselec
   rename("SAMPLE_ID" = "SAMPLE ID") %>% 
   dplyr::filter(!is.na(BgCorrProp))
 
-StimColors <- c("S1" = "#f0027f", "S2" = "#fdc086", "N" = "#beaed4", "E" = "#e6e63c")
+StimColors <- c("S1" = "#f0027fac", "S2" = "#fdc086ac", "N" = "#beaed4ac", "E" = "#e6e63cac")
+StimOutlineColors <- c("S1" = "#f0027fdf", "S2" = "#fdc086df", "N" = "#beaed4df", "E" = "#e6e63cdf")
 plot_subset_vs_stim <- function(current_data, current_subset) {
   current_coreceptor <- sub("(CD[48])_.*", "\\1", current_subset)
-  current_subset_trunc <- paste(grep("NOT_", strsplit(sub("CD[48]_(.*)", "\\1", current_subset), "_AND_")[[1]],
-                                                        value = T, invert = T), collapse = ", ")
+  
+  cytokine_display_text <- c("IFNG" = "IFN-\u03B3", "154" = "CD154", "TNF" = "TNF", 
+                  "IL2" = "IL-2", "IL4513" = "IL-4/5/13", "IL17" = "IL17a", "107a" = "CD107a")
+  current_cytokines_vec <- grep("NOT_", strsplit(sub("CD[48]_(.*)", "\\1", current_subset), "_AND_")[[1]],
+                                                        value = T, invert = T)
+  current_subset_trunc <- paste(paste0(cytokine_display_text[names(cytokine_display_text) %in% current_cytokines_vec], "+"),
+                                collapse = " ")
   
   current_data_for_test <- current_data %>%
     dplyr::filter(Population == current_subset) %>% 
@@ -232,14 +278,17 @@ plot_subset_vs_stim <- function(current_data, current_subset) {
     geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5) +
     geom_violin(aes(fill = STIM), draw_quantiles = c(0.5),
             # All violins have the same maximum width. Overrides default of equal area
-            scale="width") +
+            scale="width", width=0.6) +
     geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
-                scale="width") +
+                scale="width", width=0.6) +
+    geom_violin(aes(color=`STIM`), fill="transparent",
+              scale="width", width=0.6, size=1.1) +
+    geom_quasirandom(size=0.1, width=0.2, varwidth=T, method="quasirandom") +
     theme(axis.title.x = element_blank(),
-            axis.title.y = element_text(size=27),
-            axis.text.y = element_text(color="black", size=26),
-            axis.text.x = element_text(color="black", size=26),
-            plot.title = element_text(hjust = 0.5, size=29),
+            axis.title.y = element_text(size=20),
+            axis.text.y = element_text(color="black", size=17),
+            axis.text.x = element_text(color="black", size=17),
+            plot.title = element_text(hjust = 0.5, size=21),
             panel.grid = element_blank(),
             legend.position = "none",
             plot.margin = margin(0.3, 0.2, 0.1, 0.2, "cm")) +
@@ -247,7 +296,8 @@ plot_subset_vs_stim <- function(current_data, current_subset) {
     scale_x_discrete(expand = c(0.3, 0.3)) +
     labs(y = sprintf("%% Responding %s T cells", current_coreceptor),
          title = current_subset_trunc) +
-    scale_fill_manual(values = StimColors)
+    scale_fill_manual(values = StimColors) +
+    scale_color_manual(values = StimOutlineColors)
 
   list("plot" = current_plot,
        "test_result" = pwt)
@@ -269,7 +319,7 @@ cd4_cd107a_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
                         aes_string(xmin="group1", xmax="group2", annotations="p.text", y_position="y_pos"),
                         tip_length = c(0.005, 0.005),
-                        textsize=5,
+                        textsize=4.5,
                         manual = TRUE))
 
 current_subset <- cd4_booleanSubsets_gate_names[[2]]
@@ -283,7 +333,7 @@ cd4_154_il2_tnf_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
                         aes_string(xmin="group1", xmax="group2", annotations="p.text", y_position="y_pos"),
                         tip_length = c(0.005, 0.005),
-                        textsize=5,
+                        textsize=4.5,
                         manual = TRUE))
 
 current_subset <- cd4_booleanSubsets_gate_names[[3]]
@@ -297,25 +347,30 @@ cd4_ifng_154_il2_tnf_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
                         aes_string(xmin="group1", xmax="group2", annotations="p.text", y_position="y_pos"),
                         tip_length = c(0.005, 0.005),
-                        textsize=5,
-                        manual = TRUE))
+                        textsize=4.5,
+                        manual = TRUE)) +
+  theme(plot.title = element_text(hjust = 0.5, size=18))
 
-# Make the width of all plots the same
-# Help from here https://stackoverflow.com/a/41242871
-gl <- lapply(list(cd4_cd107a_plot, cd4_154_il2_tnf_plot, cd4_ifng_154_il2_tnf_plot), ggplotGrob) 
-wd <- do.call(unit.pmax, lapply(gl, "[[", 'widths')) # Grab the width of the plot which has the largest width
-cd4_freqs_vs_stim_plots <- lapply(gl, function(x) {
-  x[['widths']] = wd
-  x})
-cd4_cd107a_plot <- cd4_freqs_vs_stim_plots[[1]]
-cd4_154_il2_tnf_plot <- cd4_freqs_vs_stim_plots[[2]]
-cd4_ifng_154_il2_tnf_plot <- cd4_freqs_vs_stim_plots[[3]]
+# # Make the width of all plots the same
+# # Help from here https://stackoverflow.com/a/41242871
+# gl <- lapply(list(cd4_cd107a_plot, cd4_154_il2_tnf_plot, cd4_ifng_154_il2_tnf_plot), ggplotGrob) 
+# wd <- do.call(unit.pmax, lapply(gl, "[[", 'widths')) # Grab the width of the plot which has the largest width
+# cd4_freqs_vs_stim_plots <- lapply(gl, function(x) {
+#   x[['widths']] = wd
+#   x})
+# cd4_cd107a_plot <- cd4_freqs_vs_stim_plots[[1]]
+# cd4_154_il2_tnf_plot <- cd4_freqs_vs_stim_plots[[2]]
+# cd4_ifng_154_il2_tnf_plot <- cd4_freqs_vs_stim_plots[[3]]
 ```
 
 ```{r, fig.width=5, fig.height=5}
-grid.arrange(cd4_cd107a_plot)
-grid.arrange(cd4_154_il2_tnf_plot)
-grid.arrange(cd4_ifng_154_il2_tnf_plot)
+# grid.arrange(cd4_cd107a_plot)
+# grid.arrange(cd4_154_il2_tnf_plot)
+# grid.arrange(cd4_ifng_154_il2_tnf_plot)
+
+cd4_cd107a_plot
+cd4_154_il2_tnf_plot
+cd4_ifng_154_il2_tnf_plot
 ```
 
 ## CD8 subsets
@@ -332,7 +387,7 @@ cd8_dat <- gs_pop_get_count_with_meta(gs_cd8, subpopulations = c("8+", cd8_boole
   pivot_wider(names_from = Population, values_from = Count) %>% 
   mutate_at(vars(all_of(cd8_booleanSubset_gate_name)), ~ . / `8+`) %>% 
   dplyr::select(-`8+`) %>% 
-  pivot_longer(cols = cd8_booleanSubset_gate_name, names_to = "Population", values_to = "Prop") %>% 
+  pivot_longer(cols = all_of(cd8_booleanSubset_gate_name), names_to = "Population", values_to = "Prop") %>% 
   pivot_wider(names_from = STIM, values_from = Prop) %>% 
   mutate_at(vars("VEMP", "Spike 1", "Spike 2", "NCAP"), ~ . - DMSO) %>% 
   dplyr::select(-DMSO, -SEB) %>% 
@@ -354,12 +409,26 @@ cd8_107_plot <- cd8_subset_vs_stim_out$plot +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
                         aes_string(xmin="group1", xmax="group2", annotations="p.text", y_position="y_pos"),
                         tip_length = c(0.005, 0.005),
-                        textsize=5,
+                        textsize=4.5,
                         manual = TRUE))
 ```
 
 ```{r, fig.width=5, fig.height=5}
 cd8_107_plot
+```
+
+```{r}
+if(save_output) {
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/Fig3EF_CD4_Select_Magnitudes_vs_STIM.pdf"),
+            width=12, height=4, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(cd4_ifng_154_il2_tnf_plot | cd4_154_il2_tnf_plot | cd4_cd107a_plot)
+  dev.off()
+  
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/Fig5E_CD8_CD107a_Magnitude_vs_STIM.pdf"), width=4, height=4,
+        onefile = TRUE, bg = "transparent", family = "Arial")
+  print(cd8_107_plot)
+  dev.off()
+}
 ```
 
 # Compare magnitudes of selected subsets across hospitalization status
@@ -373,7 +442,9 @@ For S1, S2, and NCAP
 This can be extracted from the output of `make_dotplot_for_COMPASS_run()`. Remember the p-values have already been bonferroni adjusted.   
 
 ```{r}
-CohortColors <- c("Hospitalized" = "#707ed4", "Non-hospitalized" = "#c1ddd7")
+CohortColors <- c("Hospitalized" = "#757bbcb2", "Non-hospitalized" = "#b0d2c8bf")
+CohortOutlineColors <- c("Hospitalized" = "#757bbbff", "Non-hospitalized" = "#b0d1c8ff")
+CohortLabs <- c("Hospitalized" = "H", "Non-hospitalized" = "NH")
 plot_subset_vs_cohort <- function(current_run, current_subset) {
   current_data <- bg_corr_dotplots[[current_run]]$BgCorrMagnitudes %>% dplyr::select(Individual, Cohort, !!as.symbol(current_subset)) %>% 
     mutate(BgCorr_Zeroed = ifelse(!!as.symbol(current_subset) < 0, 0, !!as.symbol(current_subset)),
@@ -381,36 +452,47 @@ plot_subset_vs_cohort <- function(current_run, current_subset) {
   current_test_result <- bg_corr_dotplots[[current_run]]$Test_Results %>% dplyr::filter(BooleanSubset == current_subset)
   current_coreceptor <- paste0("CD", sub("([48])_.*", "\\1", current_run))
   current_stim <- c("Spike_1"="S1", "Spike_2"="S2", "NCAP" = "NCAP", "VEMP" = "VEMP")[[sub("[48]_(.*)", "\\1", current_run)]]
-  current_subset_trunc <- as.data.frame(t(current_test_result[,c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4/5/13", "IL17a")])) %>%
+  
+  cytokine_display_text <- c("IFNg" = "IFN-γ", "CD154" = "CD154", "TNFa" = "TNF", 
+                "IL2" = "IL-2", "IL4/5/13" = "IL-4/5/13", "IL17a" = "IL17a", "CD107a" = "CD107a")
+  current_cytokines_vec <- as.data.frame(t(current_test_result[,c("IFNg", "IL2", "TNFa", "CD154", "CD107a", "IL4/5/13", "IL17a")])) %>%
     rownames_to_column("Cyt") %>%
     dplyr::filter(V1 == 1) %>%
-    dplyr::pull(Cyt) %>%
-    paste(collapse = ", ")
+    dplyr::pull(Cyt) 
+  current_subset_trunc <- paste(paste0(cytokine_display_text[names(cytokine_display_text) %in% current_cytokines_vec], "+"),
+                                collapse = " ")
   
   current_plot <- ggplot(current_data, aes(Cohort, BgCorr_Zeroed)) +
     theme_bw(base_size = 22) +
       geom_hline(yintercept = 0, linetype="dashed", alpha = 0.5) +
       geom_violin(aes(fill = Cohort), draw_quantiles = c(0.5),
               # All violins have the same maximum width. Overrides default of equal area
-              scale="width") +
+              scale="width", width=0.6) +
       geom_violin(fill="transparent", draw_quantiles = c(0.25, 0.75), linetype = "dashed",
-                  scale="width") +
+                  scale="width", width=0.6) +
+      geom_violin(aes(color=Cohort), fill="transparent",
+                scale="width", width=0.6, size=1.1) +
+      geom_quasirandom(size=0.1, width=0.2, varwidth=T, method="quasirandom") +
       theme(axis.title.x = element_blank(),
-              axis.title.y = element_text(size=27),
-              axis.text.y = element_text(color="black", size=26),
-              axis.text.x = element_text(color="black", size=26),
-              plot.title = element_text(hjust = 0.5, size=25),
+              axis.title.y = element_text(size=20),
+              axis.text.y = element_text(color="black", size=17),
+              axis.text.x = element_text(color="black", size=20),
+              plot.title = element_text(hjust = 0.5, size=21),
+              plot.subtitle = element_text(hjust = 0.5, size=18),
               panel.grid = element_blank(),
               legend.position = "none",
               plot.margin = margin(0.3, 0.2, 0.1, 0.2, "cm")) +
       scale_y_continuous(labels = function(x) paste0(x*100)) + 
-      scale_x_discrete(labels=c("Hospitalized" = "H", "Non-hospitalized" = "NH"), expand = c(0.3, 0.3)) +
+      scale_x_discrete(labels=CohortLabs, expand = c(0.3, 0.3)) +
       labs(y = sprintf("%% Responding %s T cells", current_coreceptor),
-           title = sprintf("%s\n%s", current_stim, current_subset_trunc)) +
-      scale_fill_manual(values = CohortColors)
+           title = current_stim,
+           subtitle = current_subset_trunc) +
+      scale_fill_manual(values = CohortColors) +
+      scale_color_manual(values = CohortOutlineColors)
+  
   plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
   current_plot <- current_plot + 
-    annotate("text", x = 1.5, y = plot_ylims[1] + 0.85*diff(plot_ylims), label = current_test_result[,"p.adj.text"], size=7)
+    annotate("text", x = 1.5, y = plot_ylims[2] + 0.01*diff(plot_ylims), label = current_test_result[,"p.adj.text"], size=5.5)
   current_plot
 }
 ```
@@ -424,26 +506,44 @@ cd4_s1_3func_vs_cohort <- plot_subset_vs_cohort("4_Spike_1", "IL2&!IL4/5/13&!IFN
 cd4_s2_3func_vs_cohort <-plot_subset_vs_cohort("4_Spike_2", "IL2&!IL4/5/13&!IFNg&TNFa&!IL17a&CD154&!CD107a")
 cd4_n_3func_vs_cohort <- plot_subset_vs_cohort("4_NCAP", "IL2&!IL4/5/13&!IFNg&TNFa&!IL17a&CD154&!CD107a")
 
-# Make the width of all plots the same
-# Help from here https://stackoverflow.com/a/41242871
-gl <- lapply(list(cd4_s1_4func_vs_cohort, cd4_s2_4func_vs_cohort, cd4_n_4func_vs_cohort,
-                  cd4_s1_3func_vs_cohort, cd4_s2_3func_vs_cohort, cd4_n_3func_vs_cohort),
-             ggplotGrob) 
-wd <- do.call(unit.pmax, lapply(gl, "[[", 'widths')) # Grab the width of the plot which has the largest width
-cd4_selected_magnitude_vs_cohort_plots <- lapply(gl, function(x) {
-  x[['widths']] = wd
-  x})
-cd4_s1_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[1]]
-cd4_s2_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[2]]
-cd4_n_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[3]]
-cd4_s1_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[4]]
-cd4_s2_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[5]]
-cd4_n_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[6]]
+# # Make the width of all plots the same
+# # Help from here https://stackoverflow.com/a/41242871
+# gl <- lapply(list(cd4_s1_4func_vs_cohort, cd4_s2_4func_vs_cohort, cd4_n_4func_vs_cohort,
+#                   cd4_s1_3func_vs_cohort, cd4_s2_3func_vs_cohort, cd4_n_3func_vs_cohort),
+#              ggplotGrob) 
+# wd <- do.call(unit.pmax, lapply(gl, "[[", 'widths')) # Grab the width of the plot which has the largest width
+# cd4_selected_magnitude_vs_cohort_plots <- lapply(gl, function(x) {
+#   x[['widths']] = wd
+#   x})
+# cd4_s1_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[1]]
+# cd4_s2_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[2]]
+# cd4_n_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[3]]
+# cd4_s1_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[4]]
+# cd4_s2_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[5]]
+# cd4_n_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[6]]
+# 
+# grid.arrange(cd4_s1_4func_vs_cohort)
+# grid.arrange(cd4_s2_4func_vs_cohort)
+# grid.arrange(cd4_n_4func_vs_cohort)
+# grid.arrange(cd4_s1_3func_vs_cohort)
+# grid.arrange(cd4_s2_3func_vs_cohort)
+# grid.arrange(cd4_n_3func_vs_cohort)
 
-grid.arrange(cd4_s1_4func_vs_cohort)
-grid.arrange(cd4_s2_4func_vs_cohort)
-grid.arrange(cd4_n_4func_vs_cohort)
-grid.arrange(cd4_s1_3func_vs_cohort)
-grid.arrange(cd4_s2_3func_vs_cohort)
-grid.arrange(cd4_n_3func_vs_cohort)
+cd4_s1_4func_vs_cohort
+cd4_s2_4func_vs_cohort
+cd4_n_4func_vs_cohort
+cd4_s1_3func_vs_cohort
+cd4_s2_3func_vs_cohort
+cd4_n_3func_vs_cohort
+```
+
+```{r}
+if(save_output) {
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/Fig4G_CD4_Select_Magnitudes_vs_Cohort.pdf"), width=8, height=12.5,
+        onefile = TRUE, bg = "transparent", family = "Arial")
+  print((cd4_s1_4func_vs_cohort | cd4_s1_3func_vs_cohort) /
+    (cd4_s2_4func_vs_cohort | cd4_s2_3func_vs_cohort) /
+    (cd4_n_4func_vs_cohort | cd4_n_3func_vs_cohort))
+  dev.off()
+}
 ```
