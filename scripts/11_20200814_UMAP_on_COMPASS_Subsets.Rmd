@@ -52,7 +52,7 @@ source(here::here("scripts/20200604_Helper_Functions.R")) # for distributeEvents
 
 ```{r}
 date <- 20200815
-save_output <- TRUE
+save_output <- FALSE
 rerun_dimred <- FALSE
 
 gs <- load_gs(here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets"))
@@ -345,9 +345,9 @@ nonhosp_contour_plot <- gg_themes +
 
 ```{r}
 # Scaled mfi expression plots for memory, activation, and cytokine markers 
-mfi_col_text_4plot <- c("TNFa" = "TNF", "CD107a" = "CD107", 
-                  "CD154" = "CD154", "IL2" = "IL-2", "IL17a" = "IL17a", 
-                  "IL4/5/13" = "IL-4/5/13", "IFNg" = "IFN-γ", 
+mfi_col_text_4plot <- c("TNFa" = "TNF", "CD107a" = "CD107a", 
+                  "CD154" = "CD154", "IL2" = "IL-2", "IL17a" = "IL-17a", 
+                  "IL4/5/13" = "IL-4/5/13", "IFNg" = "IFN-\u03B3", 
                   "CCR7" = "CCR7", "CD45RA" = "CD45RA",
                   "CD38" = "CD38", "HLADR" = "HLA-DR")
 plot_scaled_mfi_v2 <- function(currentColumn) {
@@ -536,11 +536,50 @@ if(save_output) {
   print(bool_legend)
   dev.off()
   
-  # cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP.cairo.pdf",
-  #                             date)),
-  #     width=12, height=9, onefile = TRUE, bg = "transparent", family = "Arial")
-  # print(x)
-  # dev.off()
+  # PDFs
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP.pdf",
+                              date)),
+      width=18, height=9, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(
+      # Top row
+      (hosp_contour_plot | nonhosp_contour_plot | plot_spacer() |
+      stim_plots$`Spike 1` | stim_plots$`Spike 2` | plot_spacer() |
+      polyf_plot_unstrat | plot_spacer() | mfi_plots_unstrat$IFNg) /
+      # Second row
+      (mem_plot_colored_by_gate | plot_spacer() | plot_spacer() |
+      stim_plots$NCAP | stim_plots$VEMP | plot_spacer() |
+      mfi_plots_unstrat$TNFa | mfi_plots_unstrat$IL2 | mfi_plots_unstrat$`IL4/5/13`) /
+      # Third row
+      (hladr_bool_plot | cd38_bool_plot | plot_spacer() |
+      stim_plots$DMSO | plot_spacer() | plot_spacer() |
+      mfi_plots_unstrat$IL17a | mfi_plots_unstrat$CD107a | mfi_plots_unstrat$CD154 )
+    )
+  dev.off()
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_MFI_Legend.pdf",
+                            date)),
+    width=3, height=1.5, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(mfi_legend)
+  dev.off()
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_PolyF_Legend.pdf",
+                            date)),
+    width=3, height=1.5, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(polyf_legend)
+  dev.off()
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_Memory_Legend.pdf",
+                            date)),
+    width=2, height=3, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(mem_legend)
+  dev.off()
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_GateMembership_Legend.pdf",
+                          date)),
+  width=2, height=3, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(bool_legend)
+  dev.off()
 }
 ```
 
@@ -833,9 +872,9 @@ nonhosp_contour_plot <- gg_themes +
 
 ```{r}
 # Scaled mfi expression plots for memory, activation, and cytokine markers 
-mfi_col_text_4plot <- c("TNFa" = "TNF", "CD107a" = "CD107", 
-                  "CD154" = "CD154", "IL2" = "IL-2", "IL17a" = "IL17a", 
-                  "IL4/5/13" = "IL-4/5/13", "IFNg" = "IFN-γ", 
+mfi_col_text_4plot <- c("TNFa" = "TNF", "CD107a" = "CD107a", 
+                  "CD154" = "CD154", "IL2" = "IL-2", "IL17a" = "IL-17a", 
+                  "IL4/5/13" = "IL-4/5/13", "IFNg" = "IFN-\u03B3", 
                   "CCR7" = "CCR7", "CD45RA" = "CD45RA",
                   "CD38" = "CD38", "HLADR" = "HLA-DR")
 plot_scaled_mfi_v2 <- function(currentColumn) {
@@ -1020,10 +1059,25 @@ if(save_output) {
   print(bool_legend)
   dev.off()
   
-  # cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD8_COMPASS_Subsets_UMAP.cairo.pdf",
-  #                             date)),
-  #     width=12, height=9, onefile = TRUE, bg = "transparent", family = "Arial")
-  # print(x)
-  # dev.off()
+  # PDFs
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD8_COMPASS_Subsets_UMAP.pdf",
+                            date)),
+    width=18, height=9, onefile = TRUE, bg = "transparent", family = "Arial")
+    print(
+      # Top row
+      (hosp_contour_plot | nonhosp_contour_plot | plot_spacer() |
+      stim_plots$`Spike 1` | stim_plots$`Spike 2` | plot_spacer() |
+      polyf_plot_unstrat | plot_spacer() | mfi_plots_unstrat$IFNg) /
+      # Second row
+      (mem_plot_colored_by_gate | plot_spacer() | plot_spacer() |
+      stim_plots$NCAP | stim_plots$VEMP | plot_spacer() |
+      mfi_plots_unstrat$TNFa | mfi_plots_unstrat$IL2 | mfi_plots_unstrat$`IL4/5/13`) /
+      # Third row
+      (hladr_bool_plot | cd38_bool_plot | plot_spacer() |
+      stim_plots$DMSO | plot_spacer() | plot_spacer() |
+      mfi_plots_unstrat$IL17a | mfi_plots_unstrat$CD107a | mfi_plots_unstrat$CD154 )
+    )
+  dev.off()
 }
 ```
