@@ -47,6 +47,7 @@ library(RColorBrewer)
 library(ggrepel)
 library(ggpubr)
 library(tidyselect)
+library(ggrastr)
 source(here::here("scripts/20200604_Helper_Functions.R")) # for distributeEvents() and sampleGatingHierarchy()
 ```
 
@@ -226,7 +227,7 @@ base_dimred_plot <- function(currentColumn, pointSize = 0.02, colorScheme = NA) 
                                          } else {
                                            as.logical(!!as.name(currentColumn))
                                            })) +
-    geom_point(shape=20, alpha=0.8, size=pointSize) +
+    geom_point_rast(shape=20, alpha=0.8, size=pointSize) +
     facet_grid(Cohort ~ STIM, switch="y",
                labeller = labeller(Cohort = cohort_labs, STIM = stim_labs)) +
     theme_bw() +
@@ -288,7 +289,7 @@ sc <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 6))
 currentColumn <- "cytokine_degree"
 pointSize <- 0.02
 ggplot(cd4_compass_subsets_w_umap, aes(x=x.umap, y=y.umap, colour=!!as.name(currentColumn))) +
-  geom_point(shape=20, alpha=0.8, size=pointSize) +
+  geom_point_rast(shape=20, alpha=0.8, size=pointSize) +
   facet_grid(Cohort ~ STIM, switch="y",
              labeller = labeller(Cohort = cohort_labs, STIM = stim_labs)) +
   labs(colour="Cytokine\nDegree",
@@ -331,13 +332,13 @@ gg_themes <- ggplot(cd4_compass_subsets_w_umap, aes(x=x.umap, y=y.umap)) +
 ```{r}
 # Hospitalization status contour plots
 hosp_contour_plot <- gg_themes +
-  geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+  geom_point_rast(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
   geom_density_2d(data=cd4_compass_subsets_w_umap %>% dplyr::filter(Cohort == "Hospitalized"),
                   colour="#363636", bins=12) + # "red"
   ggtitle("Hosp")
 
 nonhosp_contour_plot <- gg_themes +
-  geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+  geom_point_rast(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
   geom_density_2d(data=cd4_compass_subsets_w_umap %>% dplyr::filter(Cohort == "Non-hospitalized"),
                   colour="#363636", bins=12) + # "blue"
   ggtitle("Not-Hosp")
@@ -354,7 +355,7 @@ plot_scaled_mfi_v2 <- function(currentColumn) {
   myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
   sc_mfi <- scale_colour_gradientn(colours = myPalette(100), oob=squish, limits=c(-2.5, 2.5))
   gg_themes +
-    geom_point(aes(colour=cd4_compass_subsets_w_umap[,paste0(currentColumn, ".scaled")]),
+    geom_point_rast(aes(colour=cd4_compass_subsets_w_umap[,paste0(currentColumn, ".scaled")]),
                shape=20, alpha=0.8, size=pointSize) + # !!as.name(paste0(currentColumn, ".scaled")) doesn't work
     sc_mfi +
     ggtitle(mfi_col_text_4plot[[currentColumn]])
@@ -393,7 +394,7 @@ myPalette(4)
 scales::show_col(myPalette(4))
 memColorScheme <- c("TEM" = "#9E0142", "TEMRA" = "#BEE4A0", "TCM" = "#5E4FA2", "Naive" = "#FDBE6F")
 mem_plot_colored_by_gate <- gg_themes +
-  geom_point(aes(colour=cd4_compass_subsets_w_umap[,"MemoryCategory"]),
+  geom_point_rast(aes(colour=cd4_compass_subsets_w_umap[,"MemoryCategory"]),
                shape=20, alpha=0.8, size=pointSize) +
   ggtitle("Memory") +
   scale_color_manual(values = memColorScheme)
@@ -406,12 +407,12 @@ mem_plot_colored_by_gate
 # Activation plots: color by gate membership, one plot per marker
 boolColorScheme <- c("0" = "#E2E2E2", "1" = "#363636")
 hladr_bool_plot <- gg_themes +
-  geom_point(aes(colour=factor(cd4_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/HLADR+"], levels = c(1, 0))),
+  geom_point_rast(aes(colour=factor(cd4_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/HLADR+"], levels = c(1, 0))),
                shape=20, alpha=0.8, size=pointSize) +
   scale_color_manual(values = boolColorScheme, labels=c("1"="Expressed", "0"="Not Expressed")) +
   ggtitle("HLA-DR")
 cd38_bool_plot <- gg_themes +
-  geom_point(aes(colour=factor(cd4_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/CD38+"], levels = c(1, 0))),
+  geom_point_rast(aes(colour=factor(cd4_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/CD38+"], levels = c(1, 0))),
                shape=20, alpha=0.8, size=pointSize) +
   scale_color_manual(values = boolColorScheme, labels=c("1"="Expressed", "0"="Not Expressed")) +
   ggtitle("CD38")
@@ -427,7 +428,7 @@ stim_abbreviations = c("Spike 1" = "S1", "Spike 2" = "S2", "NCAP" = "NCAP", "VEM
 
 plot_stim_contour_plot <- function(currentStim) {
   gg_themes +
-    geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+    geom_point_rast(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
     geom_density_2d(data=cd4_compass_subsets_w_umap %>% dplyr::filter(STIM == currentStim),
                     colour="#363636", bins=12) + # stim_colors[[currentStim]]
     ggtitle(stim_abbreviations[[currentStim]])
@@ -443,7 +444,7 @@ names(stim_plots) <- stims
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 sc_polyf <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 6))
 polyf_plot_unstrat <- gg_themes +
-  geom_point(aes(colour=cd4_compass_subsets_w_umap[,"cytokine_degree"]), shape=20, alpha=0.8, size=pointSize) +
+  geom_point_rast(aes(colour=cd4_compass_subsets_w_umap[,"cytokine_degree"]), shape=20, alpha=0.8, size=pointSize) +
   sc_polyf +
   ggtitle("PolyF")
 ```
@@ -538,7 +539,7 @@ if(save_output) {
   
   # PDFs
   
-  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP.pdf",
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_rast.pdf",
                               date)),
       width=18, height=9, onefile = TRUE, bg = "transparent", family = "Arial")
   print(
@@ -753,7 +754,7 @@ base_dimred_plot <- function(currentColumn, pointSize = 0.02, colorScheme = NA) 
                                          } else {
                                            as.logical(!!as.name(currentColumn))
                                            })) +
-    geom_point(shape=20, alpha=0.8, size=pointSize) +
+    geom_point_rast(shape=20, alpha=0.8, size=pointSize) +
     facet_grid(Cohort ~ STIM, switch="y",
                labeller = labeller(Cohort = cohort_labs, STIM = stim_labs)) +
     theme_bw() +
@@ -815,7 +816,7 @@ sc <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 6))
 currentColumn <- "cytokine_degree"
 pointSize <- 0.02
 ggplot(cd8_compass_subsets_w_umap, aes(x=x.umap, y=y.umap, colour=!!as.name(currentColumn))) +
-  geom_point(shape=20, alpha=0.8, size=pointSize) +
+  geom_point_rast(shape=20, alpha=0.8, size=pointSize) +
   facet_grid(Cohort ~ STIM, switch="y",
              labeller = labeller(Cohort = cohort_labs, STIM = stim_labs)) +
   labs(colour="Cytokine\nDegree",
@@ -858,13 +859,13 @@ gg_themes <- ggplot(cd8_compass_subsets_w_umap, aes(x=x.umap, y=y.umap)) +
 ```{r}
 # Hospitalization status contour plots
 hosp_contour_plot <- gg_themes +
-  geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+  geom_point_rast(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
   geom_density_2d(data=cd8_compass_subsets_w_umap %>% dplyr::filter(Cohort == "Hospitalized"),
                   colour="#363636", bins=12) + # "red"
   ggtitle("Hosp")
 
 nonhosp_contour_plot <- gg_themes +
-  geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+  geom_point_rast(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
   geom_density_2d(data=cd8_compass_subsets_w_umap %>% dplyr::filter(Cohort == "Non-hospitalized"),
                   colour="#363636", bins=12) + # "blue"
   ggtitle("Not-Hosp")
@@ -881,7 +882,7 @@ plot_scaled_mfi_v2 <- function(currentColumn) {
   myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
   sc_mfi <- scale_colour_gradientn(colours = myPalette(100), oob=squish, limits=c(-2.5, 2.5))
   gg_themes +
-    geom_point(aes(colour=cd8_compass_subsets_w_umap[,paste0(currentColumn, ".scaled")]),
+    geom_point_rast(aes(colour=cd8_compass_subsets_w_umap[,paste0(currentColumn, ".scaled")]),
                shape=20, alpha=0.8, size=pointSize) + # !!as.name(paste0(currentColumn, ".scaled")) doesn't work
     sc_mfi +
     ggtitle(mfi_col_text_4plot[[currentColumn]])
@@ -918,7 +919,7 @@ cd8_compass_subsets_w_umap$MemoryCategory <- pmap_chr(.l = list(cd8_compass_subs
 
 memColorScheme <- c("TEM" = "#9E0142", "TEMRA" = "#BEE4A0", "TCM" = "#5E4FA2", "Naive" = "#FDBE6F")
 mem_plot_colored_by_gate <- gg_themes +
-  geom_point(aes(colour=cd8_compass_subsets_w_umap[,"MemoryCategory"]),
+  geom_point_rast(aes(colour=cd8_compass_subsets_w_umap[,"MemoryCategory"]),
                shape=20, alpha=0.8, size=pointSize) +
   ggtitle("Memory") +
   scale_color_manual(values = memColorScheme)
@@ -929,12 +930,12 @@ mem_plot_colored_by_gate <- gg_themes +
 # Activation plots: color by gate membership, one plot per marker
 boolColorScheme <- c("0" = "#E2E2E2", "1" = "#363636")
 hladr_bool_plot <- gg_themes +
-  geom_point(aes(colour=factor(cd8_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/HLADR+"], levels = c(1, 0))),
+  geom_point_rast(aes(colour=factor(cd8_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/HLADR+"], levels = c(1, 0))),
                shape=20, alpha=0.8, size=pointSize) +
   scale_color_manual(values = boolColorScheme, labels=c("1"="Expressed", "0"="Not Expressed")) +
   ggtitle("HLA-DR")
 cd38_bool_plot <- gg_themes +
-  geom_point(aes(colour=factor(cd8_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/CD38+"], levels = c(1, 0))),
+  geom_point_rast(aes(colour=factor(cd8_compass_subsets_w_umap[,"/Time/LD-3+/1419-3+/S/Lymph/CD38+"], levels = c(1, 0))),
                shape=20, alpha=0.8, size=pointSize) +
   scale_color_manual(values = boolColorScheme, labels=c("1"="Expressed", "0"="Not Expressed")) +
   ggtitle("CD38")
@@ -950,7 +951,7 @@ stim_abbreviations = c("Spike 1" = "S1", "Spike 2" = "S2", "NCAP" = "NCAP", "VEM
 
 plot_stim_contour_plot <- function(currentStim) {
   gg_themes +
-    geom_point(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
+    geom_point_rast(shape=20, alpha=0.8, size=pointSize, colour="#E2E2E2") +
     geom_density_2d(data=cd8_compass_subsets_w_umap %>% dplyr::filter(STIM == currentStim),
                     colour="#363636", bins=12) + # stim_colors[[currentStim]]
     ggtitle(stim_abbreviations[[currentStim]])
@@ -966,7 +967,7 @@ names(stim_plots) <- stims
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 sc_polyf <- scale_colour_gradientn(colours = myPalette(100), limits=c(1, 6))
 polyf_plot_unstrat <- gg_themes +
-  geom_point(aes(colour=cd8_compass_subsets_w_umap[,"cytokine_degree"]), shape=20, alpha=0.8, size=pointSize) +
+  geom_point_rast(aes(colour=cd8_compass_subsets_w_umap[,"cytokine_degree"]), shape=20, alpha=0.8, size=pointSize) +
   sc_polyf +
   ggtitle("PolyF")
 ```
@@ -1061,7 +1062,7 @@ if(save_output) {
   
   # PDFs
   
-  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD8_COMPASS_Subsets_UMAP.pdf",
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD8_COMPASS_Subsets_UMAP_rast.pdf",
                             date)),
     width=18, height=9, onefile = TRUE, bg = "transparent", family = "Arial")
     print(
