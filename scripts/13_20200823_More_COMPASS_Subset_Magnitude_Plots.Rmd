@@ -264,7 +264,7 @@ plot_subset_vs_stim <- function(current_data, current_subset) {
     # mutate(STIM = factor(STIM, levels = c("S1", "S2", "N", "E"))) %>% 
     # It should already be in order, but make sure the SAMPLE_IDs are in the same order for each STIM
     arrange(SAMPLE_ID, STIM)
-  pwt <- pairwise.wilcox.test(current_data_for_test$BgCorrProp, current_data_for_test$STIM, p.adjust.method = "bonferroni")
+  pwt <- pairwise.wilcox.test(current_data_for_test$BgCorrProp, current_data_for_test$STIM, p.adjust.method = "bonferroni", paired = TRUE)
   
   # For the plot, don't filter out individuals who don't have data for all 4 stims
   # This may result in inconsistency between the test results and the plot, but it should be pretty similar
@@ -340,10 +340,10 @@ current_subset <- cd4_booleanSubsets_gate_names[[3]]
 ggplot_build(subset_vs_stim_output_list[[current_subset]]$plot)$layout$panel_params[[1]]$y.range
 annotation_df <- broom::tidy(subset_vs_stim_output_list[[current_subset]]$test_result) %>%
   dplyr::filter(p.value < 0.05) %>% 
-  mutate(y_pos = c(0.002, 0.0076, 0.007),
+  mutate(y_pos = c(0.002, 0.0094, 0.0078, 0.0086, 0.007),
          p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
 cd4_ifng_154_il2_tnf_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
-  coord_cartesian(ylim = c(NA, 0.0079)) +
+  coord_cartesian(ylim = c(NA, 0.0097)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
                         aes_string(xmin="group1", xmax="group2", annotations="p.text", y_position="y_pos"),
                         tip_length = c(0.005, 0.005),
