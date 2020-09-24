@@ -959,3 +959,55 @@ if(save_output) {
   #  read.csv(here::here("processed_data/20200813_HAARVI_Signif_COMPASS_Subsets_Background_Corrected_Percents_pt1.csv"), stringsAsFactors = F, check.names = F))
 }
 ```
+
+### Re-make magnitude plots as boxplot with heatmap categories legend
+
+```{r}
+# Note p-values are bonferroni adjusted in dotplots
+bg_corr_boxplots <- pmap(.l = list(CD4RunNames,
+                                   c("CD4+", "CD4+", "CD4+", "CD4+"),
+                                   list(c(0, 0.004), c(0, 0.0061), NULL, NULL), # list(c(0, 0.0041), c(0, 0.0062), c(0, 0.0048), c(0, 0.028)),
+                                   c(5, 5, 5, 5),
+                                   c(1.3, 1.3, 1.3, -3.5),
+                                   list("IFNg", "IFNg", "IFNg", NULL),
+                                   c("Spike 1", "Spike 2", "NCAP", "VEMP")),
+                         .f = function(n, p, y, p_text_size, left_cats_heatmap_padding, dichotomize_by_cytokine, main_title) {
+                           # "staircase effect" for categories df heatmap gets done automatically, unlike in heatmap
+                           # Returned plot is gtable
+                           make_boxplot_for_COMPASS_run(crList.no_healthy[[n]], n, parentSubset = p, add_legend = T,
+                                                        current_ylim = y, include_0_line=T, 
+                                                        cytokine_order_for_annotation=cytokine_order_for_annotation,
+                                                        p_text_size=p_text_size,
+                                                        group_by_order=c("Hospitalized", "Non-hospitalized"),
+                                                        group_by_colors=CohortColors,
+                                                        group_by_labels = c("Conv Hosp", "Conv Non-Hosp"),
+                                                        zeroed_BgCorr_stats = FALSE, zeroed_BgCorr_plot = TRUE,
+                                                        dichotomize_by_cytokine = dichotomize_by_cytokine, dichotomize_by_cytokine_color="#999999",
+                                                        cats_heatmap_left_padding=left_cats_heatmap_padding, main_title = main_title)
+                         })
+names(bg_corr_boxplots) <- CD4RunNames
+```
+
+```{r}
+if(save_output) {
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5A_CD4_S1_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=12, height=7.2,
+    onefile = TRUE, bg = "transparent", family = "Arial")
+  grid.draw(bg_corr_boxplots[["4_Spike_1"]]$Plot)
+  dev.off()
+  
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5B_CD4_S2_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=11.5, height=7.2,
+    onefile = TRUE, bg = "transparent", family = "Arial")
+  grid.draw(bg_corr_boxplots[["4_Spike_2"]]$Plot)
+  dev.off()
+  
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5C_CD4_N_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=14, height=7.2,
+    onefile = TRUE, bg = "transparent", family = "Arial")
+  grid.draw(bg_corr_boxplots[["4_NCAP"]]$Plot)
+  dev.off()
+  
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5D_CD4_E_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=3, height=7.2,
+    onefile = TRUE, bg = "transparent", family = "Arial")
+  grid.draw(bg_corr_boxplots[["4_VEMP"]]$Plot)
+  dev.off()
+}
+```
