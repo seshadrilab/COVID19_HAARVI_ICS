@@ -471,6 +471,20 @@ bool_legend <- as_ggplot(get_legend(hladr_bool_plot +
                                            legend.title.align = 0.5) +
                                      guides(colour = guide_legend(override.aes = list(size=9))) +
                                      labs(colour="Gate Membership")))
+
+
+mfi_legend_vertical <- as_ggplot(get_legend(mfi_plots_unstrat$TNFa +
+                                     theme(legend.position="right",
+                                           legend.title.align = 0.5,
+                                           legend.title = element_text(angle = 90)) +
+                                     labs(colour="Scaled Expression") +
+                                     guides(colour=guide_colorbar(title.position = "left"))))
+polyf_legend_vertical <- as_ggplot(get_legend(polyf_plot_unstrat +
+                                       theme(legend.position="right",
+                                             legend.title.align = 0.5,
+                                             legend.title = element_text(angle = 90)) +
+                                       labs(colour="PolyF") +
+                                       guides(colour=guide_colorbar(title.position = "left"))))
 ```
 
 Put it all together
@@ -580,6 +594,18 @@ if(save_output) {
                           date)),
   width=2, height=3, onefile = TRUE, bg = "transparent", family = "Arial")
   print(bool_legend)
+  dev.off()
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_MFI_Legend_Vertical.pdf",
+                            date)),
+    width=1.5, height=3, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(mfi_legend_vertical)
+  dev.off()
+  
+  cairo_pdf(file=here::here(sprintf("out/UMAP/%s_CD4_COMPASS_Subsets_UMAP_PolyF_Legend_Vertical.pdf",
+                            date)),
+    width=1.5, height=3, onefile = TRUE, bg = "transparent", family = "Arial")
+  print(polyf_legend_vertical)
   dev.off()
 }
 ```

@@ -90,8 +90,8 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
            BgCorr_Prop_Sum_zeroed = ifelse(BgCorr_Prop_Sum > 0, BgCorr_Prop_Sum, 0))
   
   current_signed_rank_test <- wilcox.test(current_dat_wide$IFNg_Neg, current_dat_wide$IFNg_Pos, paired=T)
-  p.text <- if(current_signed_rank_test$p.value < 0.001) { "p<.001"} else {
-    paste0("p=", sub("0.", ".", round(current_signed_rank_test$p.value, 3))) }
+  p.text <- if(current_signed_rank_test$p.value < 0.001) { "p<0.001"} else {
+    paste0("p=", round(current_signed_rank_test$p.value, 3)) }
    
   current_coreceptor <- paste0("CD", sub("([0-9])_.*", "\\1", current_run))
   current_stim <- stim_labels[[sub("[0-9]_(.*)", "\\1", current_run)]]
@@ -125,20 +125,20 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
     scale_fill_manual(values = StimIFNgColors[[current_stim]]) +
     scale_color_manual(values = StimIFNgOutlineColors[[current_stim]])
   
-  suppressWarnings(if(!is.na(current_ylim)) {
-    current_plot <- current_plot + coord_cartesian(ylim = current_ylim)
-  })
-  
-  plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
-  
-  current_plot <- current_plot + 
-    annotate("text", x = 1.5, y = plot_ylims[2] + 0.01*diff(plot_ylims), label = p.text, size=5.5)
-  
-  plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
-  plot_ylims[[2]] <- plot_ylims[2] + 0.01*diff(plot_ylims)
-  
   if(is.na(current_ylim)) {
+    plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
+    
+    current_plot <- current_plot + 
+      annotate("text", x = 1.5, y = plot_ylims[2] + 0.01*diff(plot_ylims), label = p.text, size=5.5)
+    
+    plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
+    plot_ylims[[2]] <- plot_ylims[2] + 0.01*diff(plot_ylims)
+    
     current_plot <- current_plot + coord_cartesian(ylim = plot_ylims)
+  } else {
+    current_plot <- current_plot + 
+      coord_cartesian(ylim = current_ylim) +
+      annotate("text", x = 1.5, y = current_ylim[2] - 0.05*diff(current_ylim), label = p.text, size=5.5)
   }
 
   list("plot" = current_plot,
@@ -146,15 +146,25 @@ plot_ifng_strat <- function(current_run, current_ylim=NA) {
        "data_long" = current_dat_long)
 }
 
+# There are a couple really high outliers. Exclude them:
+
+# Patient 13 has high IFNg_Neg CD8 Spike 2 response, at 0.0199
+# Next highest is 0.00427
+bg_corr_dotplots$`8_Spike_2`$BgCorrMagnitudes %>% 
+    mutate(IFNg_Neg = rowSums(.[grep("[!]IFNg", names(.))]),
+           IFNg_Pos = rowSums(.[grep("[&]IFNg", names(.))])) %>% 
+    dplyr::select(Individual, IFNg_Neg, IFNg_Pos) %>% arrange(-IFNg_Neg) %>% head()
+
+# Patient 15530 has high IFNg_Pos CD8 NCAP response, at 0.0361
+# Next highest is 0.00479
+bg_corr_dotplots$`8_NCAP`$BgCorrMagnitudes %>% 
+    mutate(IFNg_Neg = rowSums(.[grep("[!]IFNg", names(.))]),
+           IFNg_Pos = rowSums(.[grep("[&]IFNg", names(.))])) %>% 
+    dplyr::select(Individual, IFNg_Neg, IFNg_Pos) %>% arrange(-IFNg_Pos) %>% head()
+
 ifng_stratified_output_list <- map2(.x = c(CD4RunNames, CD8RunNames),
-                              .y = list(NA,
-                                        NA,
-                                        NA,
-                                        NA,
-                                        NA,
-                                        NA,
-                                        NA,
-                                        NA),
+                              .y = list(NA,NA,NA,NA,
+                                        NA,c(0,0.0043),c(0,0.0049),NA),
                               .f = plot_ifng_strat)
 names(ifng_stratified_output_list) <- c(CD4RunNames, CD8RunNames)
 
@@ -164,7 +174,7 @@ data.frame(run = names(ifng_stratified_output_list),
            }))) %>% 
   mutate(CoReceptor = ifelse(grepl("^4", run), "CD4", "CD8")) %>% 
   mutate(p_signif = p.unadj < 0.05,
-         p.text = if_else(p.unadj < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.unadj, 3)))))
+         p.text = if_else(p.unadj < 0.001, "p<0.001", paste0("p=", round(p.unadj, 3))))
 ```
 
 ```{r, fig.width=5.5, fig.height=4}
@@ -313,7 +323,7 @@ ggplot_build(subset_vs_stim_output_list[[current_subset]]$plot)$layout$panel_par
 annotation_df <- broom::tidy(subset_vs_stim_output_list[[current_subset]]$test_result) %>%
   dplyr::filter(p.value < 0.05) %>% 
   mutate(y_pos = c(0.0283, 0.0333, 0.0085, 0.0308, 0.006, 0.0035),
-         p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
+         p.text = if_else(p.value < 0.001, "p<0.001", paste0("p=", round(p.value, 3))))
 cd4_cd107a_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
   coord_cartesian(ylim = c(NA, 0.035)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
@@ -327,7 +337,7 @@ ggplot_build(subset_vs_stim_output_list[[current_subset]]$plot)$layout$panel_par
 annotation_df <- broom::tidy(subset_vs_stim_output_list[[current_subset]]$test_result) %>%
   dplyr::filter(p.value < 0.05) %>% 
   mutate(y_pos = c(0.0046, 0.0092, 0.0066),
-         p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
+         p.text = if_else(p.value < 0.001, "p<0.001", paste0("p=", round(p.value, 3))))
 cd4_154_il2_tnf_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
   coord_cartesian(ylim = c(NA, 0.01)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
@@ -341,7 +351,7 @@ ggplot_build(subset_vs_stim_output_list[[current_subset]]$plot)$layout$panel_par
 annotation_df <- broom::tidy(subset_vs_stim_output_list[[current_subset]]$test_result) %>%
   dplyr::filter(p.value < 0.05) %>% 
   mutate(y_pos = c(0.002, 0.0094, 0.0078, 0.0086, 0.007),
-         p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
+         p.text = if_else(p.value < 0.001, "p<0.001", paste0("p=", round(p.value, 3))))
 cd4_ifng_154_il2_tnf_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
   coord_cartesian(ylim = c(NA, 0.0097)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
@@ -350,24 +360,9 @@ cd4_ifng_154_il2_tnf_plot <- subset_vs_stim_output_list[[current_subset]]$plot +
                         textsize=4.5,
                         manual = TRUE)) +
   theme(plot.title = element_text(hjust = 0.5, size=18))
-
-# # Make the width of all plots the same
-# # Help from here https://stackoverflow.com/a/41242871
-# gl <- lapply(list(cd4_cd107a_plot, cd4_154_il2_tnf_plot, cd4_ifng_154_il2_tnf_plot), ggplotGrob) 
-# wd <- do.call(unit.pmax, lapply(gl, "[[", 'widths')) # Grab the width of the plot which has the largest width
-# cd4_freqs_vs_stim_plots <- lapply(gl, function(x) {
-#   x[['widths']] = wd
-#   x})
-# cd4_cd107a_plot <- cd4_freqs_vs_stim_plots[[1]]
-# cd4_154_il2_tnf_plot <- cd4_freqs_vs_stim_plots[[2]]
-# cd4_ifng_154_il2_tnf_plot <- cd4_freqs_vs_stim_plots[[3]]
 ```
 
 ```{r, fig.width=5, fig.height=5}
-# grid.arrange(cd4_cd107a_plot)
-# grid.arrange(cd4_154_il2_tnf_plot)
-# grid.arrange(cd4_ifng_154_il2_tnf_plot)
-
 cd4_cd107a_plot
 cd4_154_il2_tnf_plot
 cd4_ifng_154_il2_tnf_plot
@@ -403,7 +398,7 @@ ggplot_build(cd8_subset_vs_stim_out$plot)$layout$panel_params[[1]]$y.range
 annotation_df <- broom::tidy(cd8_subset_vs_stim_out$test_result) %>%
   dplyr::filter(p.value < 0.05) %>% 
   mutate(y_pos = c(0.0281, 0.0339, 0.0092, 0.031, 0.0063, 0.0034),
-         p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
+         p.text = if_else(p.value < 0.001, "p<0.001", paste0("p=", round(p.value, 3))))
 cd8_107_plot <- cd8_subset_vs_stim_out$plot +
   coord_cartesian(ylim = c(NA, 0.035)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
@@ -474,11 +469,11 @@ plot_subset_vs_cohort <- function(current_run, current_subset) {
                 scale="width", width=0.6, size=1.1) +
       geom_quasirandom(size=0.1, width=0.2, varwidth=T, method="quasirandom") +
       theme(axis.title.x = element_blank(),
-              axis.title.y = element_text(size=20),
+              axis.title.y = element_text(size=15),
               axis.text.y = element_text(color="black", size=17),
               axis.text.x = element_text(color="black", size=20),
               plot.title = element_text(hjust = 0.5, size=21),
-              plot.subtitle = element_text(hjust = 0.5, size=18),
+              plot.subtitle = element_text(hjust = 0.5, size=13),
               panel.grid = element_blank(),
               legend.position = "none",
               plot.margin = margin(0.3, 0.2, 0.1, 0.2, "cm")) +
@@ -492,7 +487,9 @@ plot_subset_vs_cohort <- function(current_run, current_subset) {
   
   plot_ylims <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
   current_plot <- current_plot + 
-    annotate("text", x = 1.5, y = plot_ylims[2] + 0.01*diff(plot_ylims), label = current_test_result[,"p.adj.text"], size=5.5)
+    annotate("text", x = 1.5, y = plot_ylims[2] + 0.01*diff(plot_ylims),
+             label = current_test_result[,"p.adj.text"], size=5.5) +
+     coord_cartesian(ylim = c(plot_ylims[[1]], plot_ylims[[2]] + 0.09*diff(plot_ylims)))
   current_plot
 }
 ```
@@ -506,29 +503,6 @@ cd4_s1_3func_vs_cohort <- plot_subset_vs_cohort("4_Spike_1", "IL2&!IL4/5/13&!IFN
 cd4_s2_3func_vs_cohort <-plot_subset_vs_cohort("4_Spike_2", "IL2&!IL4/5/13&!IFNg&TNFa&!IL17a&CD154&!CD107a")
 cd4_n_3func_vs_cohort <- plot_subset_vs_cohort("4_NCAP", "IL2&!IL4/5/13&!IFNg&TNFa&!IL17a&CD154&!CD107a")
 
-# # Make the width of all plots the same
-# # Help from here https://stackoverflow.com/a/41242871
-# gl <- lapply(list(cd4_s1_4func_vs_cohort, cd4_s2_4func_vs_cohort, cd4_n_4func_vs_cohort,
-#                   cd4_s1_3func_vs_cohort, cd4_s2_3func_vs_cohort, cd4_n_3func_vs_cohort),
-#              ggplotGrob) 
-# wd <- do.call(unit.pmax, lapply(gl, "[[", 'widths')) # Grab the width of the plot which has the largest width
-# cd4_selected_magnitude_vs_cohort_plots <- lapply(gl, function(x) {
-#   x[['widths']] = wd
-#   x})
-# cd4_s1_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[1]]
-# cd4_s2_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[2]]
-# cd4_n_4func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[3]]
-# cd4_s1_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[4]]
-# cd4_s2_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[5]]
-# cd4_n_3func_vs_cohort <- cd4_selected_magnitude_vs_cohort_plots[[6]]
-# 
-# grid.arrange(cd4_s1_4func_vs_cohort)
-# grid.arrange(cd4_s2_4func_vs_cohort)
-# grid.arrange(cd4_n_4func_vs_cohort)
-# grid.arrange(cd4_s1_3func_vs_cohort)
-# grid.arrange(cd4_s2_3func_vs_cohort)
-# grid.arrange(cd4_n_3func_vs_cohort)
-
 cd4_s1_4func_vs_cohort
 cd4_s2_4func_vs_cohort
 cd4_n_4func_vs_cohort
@@ -539,11 +513,11 @@ cd4_n_3func_vs_cohort
 
 ```{r}
 if(save_output) {
-  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/Fig4G_CD4_Select_Magnitudes_vs_Cohort.pdf"), width=8, height=12.5,
+  cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/Fig4G_CD4_Select_Magnitudes_vs_Cohort.pdf"), width=6, height=9,
         onefile = TRUE, bg = "transparent", family = "Arial")
-  print((cd4_s1_4func_vs_cohort | cd4_s1_3func_vs_cohort) /
-    (cd4_s2_4func_vs_cohort | cd4_s2_3func_vs_cohort) /
-    (cd4_n_4func_vs_cohort | cd4_n_3func_vs_cohort))
+  print(((cd4_s1_4func_vs_cohort + theme(axis.title.y = element_blank())) | (cd4_s1_3func_vs_cohort) + theme(axis.title.y = element_blank())) /
+    (cd4_s2_4func_vs_cohort | (cd4_s2_3func_vs_cohort + theme(axis.title.y = element_blank()))) /
+    ((cd4_n_4func_vs_cohort + theme(axis.title.y = element_blank())) | (cd4_n_3func_vs_cohort) + theme(axis.title.y = element_blank())))
   dev.off()
 }
 ```
