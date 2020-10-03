@@ -193,7 +193,7 @@ names(crList.no_healthy) <- names(crList2)
 
 ```{r}
 # Read in the patient manifest with complete data (though it's also in the COMPASSResult object)
-data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
+data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_02Oct2020.csv"), check.names = F, stringsAsFactors = F)
 
 # Remember 116C and 37C didn't get run through COMPASS
 # 75C was not run at all
@@ -299,7 +299,7 @@ ggplot_build(cd4_fs_vs_stim_out$plot)$layout$panel_params[[1]]$y.range
 annotation_df <- broom::tidy(cd4_fs_vs_stim_out$wilcox_test) %>%
   dplyr::filter(p.value < 0.05) %>% 
   mutate(y_pos = c(0.118, 0.158, 0.145, 0.132, 0.114, 0.1),
-         p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
+         p.text = if_else(p.value < 0.001, "p<0.001", paste0("p=", round(p.value, 3))))
 cd4_fs_vs_stim_plot <- cd4_fs_vs_stim_out$plot +
   coord_cartesian(ylim = c(NA, 0.164)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
@@ -315,7 +315,7 @@ ggplot_build(cd8_fs_vs_stim_out$plot)$layout$panel_params[[1]]$y.range
 annotation_df <- broom::tidy(cd8_fs_vs_stim_out$wilcox_test) %>%
   dplyr::filter(p.value < 0.05) %>% 
   mutate(y_pos = c(0.069, 0.061, 0.053, 0.045),
-         p.text = if_else(p.value < 0.001, "p<.001", paste0("p=", sub("0.", ".", round(p.value, 3)))))
+         p.text = if_else(p.value < 0.001, "p<0.001", paste0("p=", round(p.value, 3))))
 cd8_fs_vs_stim_plot <- cd8_fs_vs_stim_out$plot +
   coord_cartesian(ylim = c(NA, 0.073)) +
   suppressWarnings(ggsignif::geom_signif(inherit.aes=F,data=annotation_df,
@@ -645,9 +645,9 @@ fs_vs_x_plot_categorical <- function(current_parent, current_stim, xaxis="Sex",
   
   wilcox_result <- wilcox.test(as.formula(sprintf("FS ~ %s", xaxis)), data = current_data)
   p.text <- if(wilcox_result$p.value < 0.001) {
-    "p<.001"
+    "p<0.001"
   } else { 
-    paste0("p=", sub("0.", ".", round(wilcox_result$p.value, 3)))
+    paste0("p=", round(wilcox_result$p.value, 3))
   }
   y_range <- ggplot_build(current_plot)$layout$panel_params[[1]]$y.range
   current_plot <- current_plot +
@@ -669,6 +669,54 @@ fs_vs_sex_plot_list
 ```
 
 In many of the boxplots above, Males are shifted slightly higher on the FS/PFS axis compared to Females, but none of the comparisons are significant.
+  
+## FS vs Comorbidities
+  
+```{r, fig.width=4, fig.height=4}
+supp_tbl_1 <- read.csv(here::here("data/T-cell Supplemental Table 1_20201002_MS.csv"), check.names = F, stringsAsFactors = F)
+
+fs_pfs_df_with_manifest <- fs_pfs_df_with_manifest %>% 
+  full_join(supp_tbl_1 %>%
+              mutate(Comorbidities_Bool = factor(ifelse(Comorbidities %in% c("None of the above", "N/A"), "Absent", "Present"),
+                                                 levels = c("Present", "Absent"))) %>% 
+              dplyr::select("Study ID", "Comorbidities_Bool"),
+            by = c("SAMPLE ID" = "Study ID"))
+# We don't have COMPASS data on all individuals, so this is not the official table:
+fs_pfs_df_with_manifest %>% 
+  dplyr::select("SAMPLE ID", Cohort, Comorbidities_Bool) %>% 
+  unique() %>% 
+  dplyr::select(-"SAMPLE ID") %>% 
+  table()
+
+# supp_tbl_1_w_FS <- supp_tbl_1 %>% 
+#   mutate(Comorbidities_Bool = ifelse(Comorbidities %in% c("None of the above", "N/A"), "Absent", "Present")) %>% 
+#   full_join(fs_pfs_df_wide, by = c("Study ID" = "SAMPLE ID")) %>%
+#   mutate(Cohort_int = recode(Cohort, "Non-hospitalized" = 0, "Hospitalized" = 1)) %>% 
+#   dplyr::select("Study ID", "Cohort", "Cohort_int", "Comorbidities_Bool", "FS_S1_4", "FS_S2_4", "FS_N_4")
+
+StimComorbidColors <- list("S1" = c("Present" = "#bd0264ac", "Absent" = "#fd2898ac"),
+                      "S2" = c("Present" = "#fca654ac", "Absent" = "#fedab8ac"),
+                      "N" = c("Present" = "#a38dc2ac", "Absent" = "#d9cfe6ac"),
+                      "E" = c("Present" = "#d4d41bac", "Absent" = "#ecec69ac"))
+StimComorbidOutlineColors <- list("S1" = c("Present" = "#bd0264ff", "Absent" = "#fd2898ff"),
+                      "S2" = c("Present" = "#fca654ff", "Absent" = "#fedab8ff"),
+                      "N" = c("Present" = "#a38dc2ff", "Absent" = "#d9cfe6ff"),
+                      "E" = c("Present" = "#d4d41bff", "Absent" = "#ecec69ff"))
+
+parents_vec <- rep(c("4", "8"), each = 4)
+stim_vec <- rep(c("S1", "S2", "N", "E"), times = 2)
+fs_vs_comorbid_plot_list <- map2(parents_vec, stim_vec,
+                                 function(current_parent, current_stim) {
+                                   fs_vs_x_plot_categorical(current_parent, current_stim,
+                                                            xaxis = "Comorbidities_Bool", current_fill_colors = StimComorbidColors[[current_stim]],
+                                                            current_outline_colors = StimComorbidOutlineColors[[current_stim]]) +
+                                     labs(x="Comorbidities") + theme(axis.text.x = element_text(color="black", size=17),
+                                                                     axis.title.x = element_text(color="black", size=17))
+                                 })
+names(fs_vs_comorbid_plot_list) <- paste0(stim_vec, "_", parents_vec)
+
+fs_vs_comorbid_plot_list
+```
   
 # Hosp vs Non-Hosp
 
@@ -849,6 +897,24 @@ if(save_output) {
   (fs_vs_age_plot_list$S1_8 | fs_vs_age_plot_list$S2_8 | fs_vs_age_plot_list$N_8 | fs_vs_age_plot_list$E_8)  /
     (fs_vs_sex_plot_list$S1_8 | fs_vs_sex_plot_list$S2_8 | fs_vs_sex_plot_list$N_8 | fs_vs_sex_plot_list$E_8) /
     (fs_vs_days_plot_list$S1_8 | fs_vs_days_plot_list$S2_8 | fs_vs_days_plot_list$N_8 | fs_vs_days_plot_list$E_8) /
+    (fs_vs_cohort_plot_list$S1_8 | fs_vs_cohort_plot_list$S2_8 | fs_vs_cohort_plot_list$N_8 | fs_vs_cohort_plot_list$E_8)
+  dev.off()  
+  
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4CDEFG_CD4_FS_vs_Demographics_v2.pdf"), width=14, height=17.5,
+      onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  (fs_vs_age_plot_list$S1_4 | fs_vs_age_plot_list$S2_4 | fs_vs_age_plot_list$N_4 | fs_vs_age_plot_list$E_4)  /
+    (fs_vs_sex_plot_list$S1_4 | fs_vs_sex_plot_list$S2_4 | fs_vs_sex_plot_list$N_4 | fs_vs_sex_plot_list$E_4) /
+    (fs_vs_days_plot_list$S1_4 | fs_vs_days_plot_list$S2_4 | fs_vs_days_plot_list$N_4 | fs_vs_days_plot_list$E_4) /
+    (fs_vs_comorbid_plot_list$S1_4 | fs_vs_comorbid_plot_list$S2_4 | fs_vs_comorbid_plot_list$N_4 | fs_vs_comorbid_plot_list$E_4) /
+    (fs_vs_cohort_plot_list$S1_4 | fs_vs_cohort_plot_list$S2_4 | fs_vs_cohort_plot_list$N_4 | fs_vs_cohort_plot_list$E_4)
+  dev.off()  
+  
+  pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5HIJKL_CD8_FS_vs_Demographics_v2.pdf"), width=14, height=17.5,
+    onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
+  (fs_vs_age_plot_list$S1_8 | fs_vs_age_plot_list$S2_8 | fs_vs_age_plot_list$N_8 | fs_vs_age_plot_list$E_8)  /
+    (fs_vs_sex_plot_list$S1_8 | fs_vs_sex_plot_list$S2_8 | fs_vs_sex_plot_list$N_8 | fs_vs_sex_plot_list$E_8) /
+    (fs_vs_days_plot_list$S1_8 | fs_vs_days_plot_list$S2_8 | fs_vs_days_plot_list$N_8 | fs_vs_days_plot_list$E_8) /
+    (fs_vs_comorbid_plot_list$S1_8 | fs_vs_comorbid_plot_list$S2_8 | fs_vs_comorbid_plot_list$N_8 | fs_vs_comorbid_plot_list$E_8) /
     (fs_vs_cohort_plot_list$S1_8 | fs_vs_cohort_plot_list$S2_8 | fs_vs_cohort_plot_list$N_8 | fs_vs_cohort_plot_list$E_8)
   dev.off()  
 }

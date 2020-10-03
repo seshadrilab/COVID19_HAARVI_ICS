@@ -56,7 +56,7 @@ pData(gs_b1)$`SAMPLE ID` == pData(gs_b1)$`PATIENT ID`
 # So, just use the SAMPLE ID moving forward
 
 # Read in the patient manifest
-manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
+manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_02Oct2020.csv"), check.names = F, stringsAsFactors = F)
 # Add metadata to pData
 pData_tmp <- pData(gs_b1) %>% 
   mutate(`SAMPLE ID` = toupper(`SAMPLE ID`)) %>% 

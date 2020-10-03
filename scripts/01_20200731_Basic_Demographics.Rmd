@@ -31,7 +31,7 @@ Check if basic demographics are balanced between the hospitalized and non-hospit
 
 ```{r read in data}
 # Read in the patient manifest
-data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
+data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_02Oct2020.csv"), check.names = F, stringsAsFactors = F)
 unique(data_manifest$Cohort)
 ```
 
@@ -87,6 +87,23 @@ race_table <- data_manifest %>%
   table()
 race_table
 fisher.test(race_table)
+
+# Again, but just White vs Non-white
+data_manifest <- data_manifest %>% 
+  mutate(Race_v3 = ifelse(Race_v2 == "White", "White", "Not White"))
+data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  ggplot(aes(x=Cohort, fill=Race_v3)) +
+  theme_grey(base_size=18) +
+  geom_bar(position="fill", stat="count")
+race_table_2 <- data_manifest %>% 
+  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
+  mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
+  dplyr::select(Cohort, Race_v3) %>% 
+  table()
+race_table_2
+fisher.test(race_table_2)
 ```
 
 ```{r, fig.width=5.5, fig.height=4}
@@ -95,7 +112,7 @@ data_manifest %>%
   dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% 
   mutate(Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) %>% 
   mutate(`Days symptom onset to visit 1` = as.numeric(`Days symptom onset to visit 1`)) %>% 
-  ggboxplot(x="Cohort", y="`Days symptom onset to visit 1`", color="Cohort", add="jitter") +
+  ggboxplot(x="Cohort", y="Days symptom onset to visit 1", color="Cohort", add="jitter") +
   theme_grey(base_size=18) +
   stat_compare_means() +
   theme(legend.position = "none")

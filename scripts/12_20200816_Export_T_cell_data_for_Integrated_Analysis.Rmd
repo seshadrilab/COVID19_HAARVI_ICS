@@ -32,7 +32,7 @@ save_output <- TRUE
 
 ```{r merge T cell data}
 # Read in the patient manifest with complete data
-data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
+data_manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_02Oct2020.csv"), check.names = F, stringsAsFactors = F)
 
 # Include the DURT panel data
 durt_dat <- read.csv(here::here("data/20200812_HAARVI_DURT_Cell_Population_Percents.csv"), stringsAsFactors = F, colClasses = "character")

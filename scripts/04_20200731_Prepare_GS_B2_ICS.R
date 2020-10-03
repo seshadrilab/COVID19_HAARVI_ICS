@@ -35,7 +35,7 @@ pData(gs_b2)$rowname <- rownames(pData(gs_b2))
 pData(gs_b2)
 
 # Read in the patient manifest
-manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_11June2020.csv"), check.names = F, stringsAsFactors = F)
+manifest <- read.csv(here::here("data/Seshadri_HAARVI_PBMC_manifest_merged_02Oct2020.csv"), check.names = F, stringsAsFactors = F)
 # Add metadata to pData
 pData_tmp <- pData(gs_b2) %>% 
   # GatingSet SAMPLE ID 07B is Record ID 551432 in the manifest. Use 551432 from here on out
