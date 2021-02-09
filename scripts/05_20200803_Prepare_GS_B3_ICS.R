@@ -13,6 +13,13 @@ date <- 20200803
 
 xml_path_b3 <- here::here("data/20200605_COVID_ICS-B3_KY3.xml")
 fcs_subfolder_b3 <- here::here("data/20200605_COVID_ICS-B3/")
+ics_file_map <- read.table(here::here("data/ICS_ImmPort_FCS_FileMap.tsv"), sep = "\t", header = T,
+                           colClasses = c("character", "character", "character", "character", "numeric", "numeric"))
+ics_b3_gs_filemap <- ics_file_map %>% 
+  dplyr::filter(!is.na(flowJo_xml_sampleID) & Batch == 3) %>% 
+  rename(sampleID = flowJo_xml_sampleID) %>% 
+  mutate(file = here::here(Destination_Folder_Path, Original_File_Name)) %>% 
+  dplyr::select(sampleID, file)
 
 ws_b3 <- open_flowjo_xml(xml_path_b3)
 merge(fj_ws_get_sample_groups(ws_b3), fj_ws_get_samples(ws_b3), by = "sampleID")
@@ -22,7 +29,7 @@ keywords2import <- c("EXPERIMENT NAME", "$DATE", "SAMPLE ID", "PATIENT ID", "STI
 
 sampleGroup <- "Samples"
 gs_b3 <- flowjo_to_gatingset(ws_b3, name=sampleGroup, keywords=keywords2import,
-                             path=fcs_subfolder_b3, extend_val=-10000)
+                             path=ics_b3_gs_filemap, extend_val=-10000)
 
 # All samples have the same gating tree
 pop_lists <- lapply(gs_b3, gh_get_pop_paths)

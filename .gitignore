@@ -37,7 +37,6 @@ rsconnect/
 .Rproj.user
 
 *.Rproj
-data*
 out/GatingSets/*
 out/20200716_For_*
 scripts/20200611_Create_Final_Manifest.R
@@ -58,3 +57,12 @@ scripts/20200909_Generate_Ab_Plots.html
 scripts/20200922_Merge_Table1_with_CT_information.R
 scripts/20201019_Generate_Data_For_ImmPort.R
 scripts/tmp.R
+scripts/20210208_Create_ICS_ImmPort_FCS_FileMap.R
+
+data/untracked
+data/20200528_COVID_ICS-B1/*
+data/20200603_COVID_ICS-B2/*
+data/20200605_COVID_ICS-B3/*
+
+renv/*
+!renv/activate.R

@@ -1,0 +1,462 @@
+"Original_File_Name"	"ImmPort_File_Name"	"Destination_Folder_Path"	"ImmPort_Subfolder"	"Batch"	"flowJo_xml_sampleID"
+"Comps_CCR7 BV711_G06_284.fcs"	"Comps_CCR7 BV711_G06_284.786057.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD107a PE-Cy7_A06_258.fcs"	"Comps_CD107a PE-Cy7_A06_258.786064.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD14 BV605_H02_286.fcs"	"Comps_CD14 BV605_H02_286.786052.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD14 BV785_F02_278.fcs"	"Comps_CD14 BV785_F02_278.786058.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD154 PE-Cy5_B06_264.fcs"	"Comps_CD154 PE-Cy5_B06_264.786048.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD3 ECD_C02_266.fcs"	"Comps_CD3 ECD_C02_266.786049.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD4 APC-H7_D02_270.fcs"	"Comps_CD4 APC-H7_D02_270.786062.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD45RA BUV737_B04_262.fcs"	"Comps_CD45RA BUV737_B04_262.786050.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD8 BB700_E02_274.fcs"	"Comps_CD8 BB700_E02_274.786054.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_CD8 PE_G02_282.fcs"	"Comps_CD8 PE_G02_282.786059.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_GranzymeB Ax700_C06_268.fcs"	"Comps_GranzymeB Ax700_C06_268.786061.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_HLADR APC_A04_256.fcs"	"Comps_HLADR APC_A04_256.786051.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_HLADR BUV395_F06_280.fcs"	"Comps_HLADR BUV395_F06_280.786055.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_IFNg V450_E06_276.fcs"	"Comps_IFNg V450_E06_276.786063.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_L,2f,D_B02_260.fcs"	"Comps_L,2f,D_B02_260.786053.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_TNFa FITC_D06_272.fcs"	"Comps_TNFa FITC_D06_272.786060.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_Unstained,2f,Stimmed_H06_288.fcs"	"Comps_Unstained,2f,Stimmed_H06_288.786056.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"Comps_Unstained_A02_254.fcs"	"Comps_Unstained_A02_254.786065.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_compensation_or_control"	1	NA
+"112C_C10_C10_034.fcs"	"112C_C10_C10_034.786081.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	220
+"112C_C12_C12_036.fcs"	"112C_C12_C12_036.786082.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	218
+"112C_C2_C02_026.fcs"	"112C_C2_C02_026.786077.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	228
+"112C_C4_C04_028.fcs"	"112C_C4_C04_028.786078.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	226
+"112C_C6_C06_030.fcs"	"112C_C6_C06_030.786079.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	224
+"112C_C8_C08_032.fcs"	"112C_C8_C08_032.786080.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	222
+"113C_A10_A10_190.fcs"	"113C_A10_A10_190.786159.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	208
+"113C_A12_A12_192.fcs"	"113C_A12_A12_192.786160.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	206
+"113C_A2_A02_182.fcs"	"113C_A2_A02_182.786155.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	216
+"113C_A4_A04_184.fcs"	"113C_A4_A04_184.786156.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	214
+"113C_A6_A06_186.fcs"	"113C_A6_A06_186.786157.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	212
+"113C_A8_A08_188.fcs"	"113C_A8_A08_188.786158.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	210
+"141C_D10_D10_046.fcs"	"141C_D10_D10_046.786087.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	196
+"141C_D12_D12_048.fcs"	"141C_D12_D12_048.786088.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	194
+"141C_D2_D02_038.fcs"	"141C_D2_D02_038.786083.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	204
+"141C_D4_D04_040.fcs"	"141C_D4_D04_040.786084.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	202
+"141C_D6_D06_042.fcs"	"141C_D6_D06_042.786085.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	200
+"141C_D8_D08_044.fcs"	"141C_D8_D08_044.786086.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	198
+"148C_G10_G10_082.fcs"	"148C_G10_G10_082.786105.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	184
+"148C_G12_G12_084.fcs"	"148C_G12_G12_084.786106.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	182
+"148C_G2_G02_074.fcs"	"148C_G2_G02_074.786101.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	192
+"148C_G4_G04_076.fcs"	"148C_G4_G04_076.786102.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	190
+"148C_G6_G06_078.fcs"	"148C_G6_G06_078.786103.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	188
+"148C_G8_G08_080.fcs"	"148C_G8_G08_080.786104.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	186
+"15514_G10_G10_178.fcs"	"15514_G10_G10_178.786153.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	136
+"15514_G12_G12_180.fcs"	"15514_G12_G12_180.786154.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	134
+"15514_G2_G02_170.fcs"	"15514_G2_G02_170.786149.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	144
+"15514_G4_G04_172.fcs"	"15514_G4_G04_172.786150.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	142
+"15514_G6_G06_174.fcs"	"15514_G6_G06_174.786151.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	140
+"15514_G8_G08_176.fcs"	"15514_G8_G08_176.786152.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	138
+"15545_A10_A10_010.fcs"	"15545_A10_A10_010.786069.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	124
+"15545_A12_A12_012.fcs"	"15545_A12_A12_012.786070.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	122
+"15545_A2_A02_002.fcs"	"15545_A2_A02_002.786047.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	132
+"15545_A4_A04_004.fcs"	"15545_A4_A04_004.786066.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	130
+"15545_A6_A06_006.fcs"	"15545_A6_A06_006.786067.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	128
+"15545_A8_A08_008.fcs"	"15545_A8_A08_008.786068.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	126
+"15548_E10_E10_154.fcs"	"15548_E10_E10_154.786141.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	112
+"15548_E12_E12_156.fcs"	"15548_E12_E12_156.786142.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	110
+"15548_E2_E02_146.fcs"	"15548_E2_E02_146.786137.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	120
+"15548_E4_E04_148.fcs"	"15548_E4_E04_148.786138.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	118
+"15548_E6_E06_150.fcs"	"15548_E6_E06_150.786139.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	116
+"15548_E8_E08_152.fcs"	"15548_E8_E08_152.786140.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	114
+"15575_E10_E10_238.fcs"	"15575_E10_E10_238.786183.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	100
+"15575_E12_E12_240.fcs"	"15575_E12_E12_240.786184.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	98
+"15575_E2_E02_230.fcs"	"15575_E2_E02_230.786179.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	108
+"15575_E4_E04_232.fcs"	"15575_E4_E04_232.786180.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	106
+"15575_E6_E06_234.fcs"	"15575_E6_E06_234.786181.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	104
+"15575_E8_E08_236.fcs"	"15575_E8_E08_236.786182.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	102
+"162C_B10_B10_118.fcs"	"162C_B10_B10_118.786123.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	172
+"162C_B12_B12_120.fcs"	"162C_B12_B12_120.786124.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	170
+"162C_B2_B02_110.fcs"	"162C_B2_B02_110.786119.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	180
+"162C_B4_B04_112.fcs"	"162C_B4_B04_112.786120.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	178
+"162C_B6_B06_114.fcs"	"162C_B6_B06_114.786121.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	176
+"162C_B8_B08_116.fcs"	"162C_B8_B08_116.786122.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	174
+"169C_C10_C10_130.fcs"	"169C_C10_C10_130.786129.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	160
+"169C_C12_C12_132.fcs"	"169C_C12_C12_132.786130.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	158
+"169C_C2_C02_122.fcs"	"169C_C2_C02_122.786125.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	168
+"169C_C4_C04_124.fcs"	"169C_C4_C04_124.786126.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	166
+"169C_C6_C06_126.fcs"	"169C_C6_C06_126.786127.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	164
+"169C_C8_C08_128.fcs"	"169C_C8_C08_128.786128.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	162
+"170C_B10_B10_022.fcs"	"170C_B10_B10_022.786075.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	148
+"170C_B12_B12_024.fcs"	"170C_B12_B12_024.786076.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	146
+"170C_B2_B02_014.fcs"	"170C_B2_B02_014.786071.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	156
+"170C_B4_B04_016.fcs"	"170C_B4_B04_016.786072.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	154
+"170C_B6_B06_018.fcs"	"170C_B6_B06_018.786073.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	152
+"170C_B8_B08_020.fcs"	"170C_B8_B08_020.786074.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	150
+"21C_E10_E10_058.fcs"	"21C_E10_E10_058.786093.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	304
+"21C_E12_E12_060.fcs"	"21C_E12_E12_060.786094.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	302
+"21C_E2_E02_050.fcs"	"21C_E2_E02_050.786089.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	312
+"21C_E4_E04_052.fcs"	"21C_E4_E04_052.786090.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	310
+"21C_E6_E06_054.fcs"	"21C_E6_E06_054.786091.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	308
+"21C_E8_E08_056.fcs"	"21C_E8_E08_056.786092.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	306
+"25C_B10_B10_202.fcs"	"25C_B10_B10_202.786165.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	292
+"25C_B12_B12_204.fcs"	"25C_B12_B12_204.786166.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	290
+"25C_B2_B02_194.fcs"	"25C_B2_B02_194.786161.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	300
+"25C_B4_B04_196.fcs"	"25C_B4_B04_196.786162.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	298
+"25C_B6_B06_198.fcs"	"25C_B6_B06_198.786163.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	296
+"25C_B8_B08_200.fcs"	"25C_B8_B08_200.786164.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	294
+"36C_D10_D10_142.fcs"	"36C_D10_D10_142.786135.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	280
+"36C_D12_D12_144.fcs"	"36C_D12_D12_144.786136.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	278
+"36C_D2_D02_134.fcs"	"36C_D2_D02_134.786131.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	288
+"36C_D4_D04_136.fcs"	"36C_D4_D04_136.786132.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	286
+"36C_D6_D06_138.fcs"	"36C_D6_D06_138.786133.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	284
+"36C_D8_D08_140.fcs"	"36C_D8_D08_140.786134.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	282
+"51C_D10_D10_226.fcs"	"51C_D10_D10_226.786177.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	268
+"51C_D12_D12_228.fcs"	"51C_D12_D12_228.786178.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	266
+"51C_D2_D02_218.fcs"	"51C_D2_D02_218.786173.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	276
+"51C_D4_D04_220.fcs"	"51C_D4_D04_220.786174.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	274
+"51C_D6_D06_222.fcs"	"51C_D6_D06_222.786175.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	272
+"51C_D8_D08_224.fcs"	"51C_D8_D08_224.786176.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	270
+"56C_F10_F10_070.fcs"	"56C_F10_F10_070.786099.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	256
+"56C_F12_F12_072.fcs"	"56C_F12_F12_072.786100.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	254
+"56C_F2_F02_062.fcs"	"56C_F2_F02_062.786095.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	264
+"56C_F4_F04_064.fcs"	"56C_F4_F04_064.786096.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	262
+"56C_F6_F06_066.fcs"	"56C_F6_F06_066.786097.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	260
+"56C_F8_F08_068.fcs"	"56C_F8_F08_068.786098.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	258
+"6C_F10_F10_166.fcs"	"6C_F10_F10_166.786147.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	316
+"6C_F12_F12_168.fcs"	"6C_F12_F12_168.786148.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	314
+"6C_F2_F02_158.fcs"	"6C_F2_F02_158.786143.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	324
+"6C_F4_F04_160.fcs"	"6C_F4_F04_160.786144.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	322
+"6C_F6_F06_162.fcs"	"6C_F6_F06_162.786145.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	320
+"6C_F8_F08_164.fcs"	"6C_F8_F08_164.786146.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	318
+"90C_H10_H10_094.fcs"	"90C_H10_H10_094.786111.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	244
+"90C_H12_H12_096.fcs"	"90C_H12_H12_096.786112.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	242
+"90C_H2_H02_086.fcs"	"90C_H2_H02_086.786107.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	252
+"90C_H4_H04_088.fcs"	"90C_H4_H04_088.786108.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	250
+"90C_H6_H06_090.fcs"	"90C_H6_H06_090.786109.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	248
+"90C_H8_H08_092.fcs"	"90C_H8_H08_092.786110.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	246
+"93C_F10_F10_250.fcs"	"93C_F10_F10_250.786189.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	232
+"93C_F12_F12_252.fcs"	"93C_F12_F12_252.786190.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	230
+"93C_F2_F02_242.fcs"	"93C_F2_F02_242.786185.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	240
+"93C_F4_F04_244.fcs"	"93C_F4_F04_244.786186.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	238
+"93C_F6_F06_246.fcs"	"93C_F6_F06_246.786187.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	236
+"93C_F8_F08_248.fcs"	"93C_F8_F08_248.786188.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	234
+"BWT20_A10_A10_106.fcs"	"BWT20_A10_A10_106.786117.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	88
+"BWT20_A12_A12_108.fcs"	"BWT20_A12_A12_108.786118.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	86
+"BWT20_A2_A02_098.fcs"	"BWT20_A2_A02_098.786113.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	96
+"BWT20_A4_A04_100.fcs"	"BWT20_A4_A04_100.786114.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	94
+"BWT20_A6_A06_102.fcs"	"BWT20_A6_A06_102.786115.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	92
+"BWT20_A8_A08_104.fcs"	"BWT20_A8_A08_104.786116.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	90
+"HS8_C10_C10_214.fcs"	"HS8_C10_C10_214.786171.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	40
+"HS8_C12_C12_216.fcs"	"HS8_C12_C12_216.786172.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	38
+"HS8_C2_C02_206.fcs"	"HS8_C2_C02_206.786167.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	48
+"HS8_C4_C04_208.fcs"	"HS8_C4_C04_208.786168.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	46
+"HS8_C6_C06_210.fcs"	"HS8_C6_C06_210.786169.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	44
+"HS8_C8_C08_212.fcs"	"HS8_C8_C08_212.786170.fcs"	"data/20200528_COVID_ICS-B1/20200528_COVID_ICS-B1"	"Flow_cytometry_result"	1	42
+"Comps_CCR7 BV711_G06_308.fcs"	"Comps_CCR7 BV711_G06_308.786193.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD107a PE-Cy7_A06_282.fcs"	"Comps_CD107a PE-Cy7_A06_282.786201.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD14 BV785_F02_302.fcs"	"Comps_CD14 BV785_F02_302.786198.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD154 PE-Cy5_B06_288.fcs"	"Comps_CD154 PE-Cy5_B06_288.786202.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD3 ECD_C02_290.fcs"	"Comps_CD3 ECD_C02_290.786194.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD38 BV605_H02_310.fcs"	"Comps_CD38 BV605_H02_310.786199.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD4 APC-H7_D02_294.fcs"	"Comps_CD4 APC-H7_D02_294.786195.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD45RA BUV737_B04_286.fcs"	"Comps_CD45RA BUV737_B04_286.786200.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD8 BB700_E02_298.fcs"	"Comps_CD8 BB700_E02_298.786196.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_CD8 PE_G02_306.fcs"	"Comps_CD8 PE_G02_306.786197.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_GranzymeB Ax700_C06_292.fcs"	"Comps_GranzymeB Ax700_C06_292.786203.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_HLADR APC_A04_280.fcs"	"Comps_HLADR APC_A04_280.786204.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_HLADR BUV395_F06_304.fcs"	"Comps_HLADR BUV395_F06_304.786205.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_IFNg V450_E06_300.fcs"	"Comps_IFNg V450_E06_300.786206.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_L,2f,D_B02_284.fcs"	"Comps_L,2f,D_B02_284.786207.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_TNFa FITC_D06_296.fcs"	"Comps_TNFa FITC_D06_296.786208.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_Unstained,2f,Stimmed_H06_312.fcs"	"Comps_Unstained,2f,Stimmed_H06_312.786210.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Comps_Unstained_A02_278.fcs"	"Comps_Unstained_A02_278.786209.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Unstained,2f,Stimmed_UNS,2f,Stim1_G04_313.fcs"	"Unstained,2f,Stimmed_UNS,2f,Stim1_G04_313.786211.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"Unstained,2f,Stimmed_UNS,2f,Stim2_H04_315.fcs"	"Unstained,2f,Stimmed_UNS,2f,Stim2_H04_315.786212.fcs"	"data/20200603_COVID_ICS-B2/comps"	"Flow_cytometry_compensation_or_control"	2	NA
+"07B_G10_G10_082.fcs"	"07B_G10_G10_082.786252.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	22
+"07B_G12_G12_084.fcs"	"07B_G12_G12_084.786253.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	24
+"07B_G2_G02_074.fcs"	"07B_G2_G02_074.786248.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	14
+"07B_G4_G04_076.fcs"	"07B_G4_G04_076.786249.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	16
+"07B_G6_G06_078.fcs"	"07B_G6_G06_078.786250.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	18
+"07B_G8_G08_080.fcs"	"07B_G8_G08_080.786251.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	20
+"102C_F10_F10_070.fcs"	"102C_F10_F10_070.786246.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	118
+"102C_F12_F12_072.fcs"	"102C_F12_F12_072.786247.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	120
+"102C_F2_F02_062.fcs"	"102C_F2_F02_062.786242.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	110
+"102C_F4_F04_064.fcs"	"102C_F4_F04_064.786243.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	112
+"102C_F6_F06_066.fcs"	"102C_F6_F06_066.786244.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	114
+"102C_F8_F08_068.fcs"	"102C_F8_F08_068.786245.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	116
+"106C_C10_C10_130.fcs"	"106C_C10_C10_130.786276.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	130
+"106C_C12_C12_132.fcs"	"106C_C12_C12_132.786277.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	132
+"106C_C2_C02_122.fcs"	"106C_C2_C02_122.786272.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	122
+"106C_C4_C04_124.fcs"	"106C_C4_C04_124.786273.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	124
+"106C_C6_C06_126.fcs"	"106C_C6_C06_126.786274.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	126
+"106C_C8_C08_128.fcs"	"106C_C8_C08_128.786275.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	128
+"109C_C10_C10_226.fcs"	"109C_C10_C10_226.786318.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	142
+"109C_C12_C12_228.fcs"	"109C_C12_C12_228.786319.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	144
+"109C_C2_C02_218.fcs"	"109C_C2_C02_218.786314.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	134
+"109C_C4_C04_220.fcs"	"109C_C4_C04_220.786315.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	136
+"109C_C6_C06_222.fcs"	"109C_C6_C06_222.786316.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	138
+"109C_C8_C08_224.fcs"	"109C_C8_C08_224.786317.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	140
+"122C_C10_C10_034.fcs"	"122C_C10_C10_034.786228.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	154
+"122C_C12_C12_036.fcs"	"122C_C12_C12_036.786229.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	156
+"122C_C2_C02_026.fcs"	"122C_C2_C02_026.786224.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	146
+"122C_C4_C04_028.fcs"	"122C_C4_C04_028.786225.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	148
+"122C_C6_C06_030.fcs"	"122C_C6_C06_030.786226.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	150
+"122C_C8_C08_032.fcs"	"122C_C8_C08_032.786227.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	152
+"128C_D10_D10_142.fcs"	"128C_D10_D10_142.786282.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	166
+"128C_D12_D12_144.fcs"	"128C_D12_D12_144.786283.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	168
+"128C_D2_D02_134.fcs"	"128C_D2_D02_134.786278.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	158
+"128C_D4_D04_136.fcs"	"128C_D4_D04_136.786279.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	160
+"128C_D6_D06_138.fcs"	"128C_D6_D06_138.786280.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	162
+"128C_D8_D08_140.fcs"	"128C_D8_D08_140.786281.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	164
+"139C_D10_D10_238.fcs"	"139C_D10_D10_238.786324.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	178
+"139C_D12_D12_240.fcs"	"139C_D12_D12_240.786325.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	180
+"139C_D2_D02_230.fcs"	"139C_D2_D02_230.786320.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	170
+"139C_D4_D04_232.fcs"	"139C_D4_D04_232.786321.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	172
+"139C_D6_D06_234.fcs"	"139C_D6_D06_234.786322.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	174
+"139C_D8_D08_236.fcs"	"139C_D8_D08_236.786323.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	176
+"13_E10_E10_250.fcs"	"13_E10_E10_250.786330.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	34
+"13_E12_E12_252.fcs"	"13_E12_E12_252.786331.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	36
+"13_E2_E02_242.fcs"	"13_E2_E02_242.786326.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	26
+"13_E4_E04_244.fcs"	"13_E4_E04_244.786327.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	28
+"13_E6_E06_246.fcs"	"13_E6_E06_246.786328.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	30
+"13_E8_E08_248.fcs"	"13_E8_E08_248.786329.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	32
+"15529_H10_H10_190.fcs"	"15529_H10_H10_190.786342.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	226
+"15529_H12_H12_192.fcs"	"15529_H12_H12_192.786343.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	228
+"15529_H2_H02_182.fcs"	"15529_H2_H02_182.786338.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	218
+"15529_H4_H04_184.fcs"	"15529_H4_H04_184.786339.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	220
+"15529_H6_H06_186.fcs"	"15529_H6_H06_186.786340.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	222
+"15529_H8_H08_188.fcs"	"15529_H8_H08_188.786341.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	224
+"15530_H10_H10_094.fcs"	"15530_H10_H10_094.786258.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	238
+"15530_H12_H12_096.fcs"	"15530_H12_H12_096.786259.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	240
+"15530_H2_H02_086.fcs"	"15530_H2_H02_086.786254.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	230
+"15530_H4_H04_088.fcs"	"15530_H4_H04_088.786255.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	232
+"15530_H6_H06_090.fcs"	"15530_H6_H06_090.786256.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	234
+"15530_H8_H08_092.fcs"	"15530_H8_H08_092.786257.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	236
+"15554_F10_F10_262.fcs"	"15554_F10_F10_262.786336.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	250
+"15554_F12_F12_264.fcs"	"15554_F12_F12_264.786337.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	252
+"15554_F2_F02_254.fcs"	"15554_F2_F02_254.786332.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	242
+"15554_F4_F04_256.fcs"	"15554_F4_F04_256.786333.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	244
+"15554_F6_F06_258.fcs"	"15554_F6_F06_258.786334.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	246
+"15554_F8_F08_260.fcs"	"15554_F8_F08_260.786335.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	248
+"157C_D10_D10_046.fcs"	"157C_D10_D10_046.786234.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	190
+"157C_D12_D12_048.fcs"	"157C_D12_D12_048.786235.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	192
+"157C_D2_D02_038.fcs"	"157C_D2_D02_038.786230.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	182
+"157C_D4_D04_040.fcs"	"157C_D4_D04_040.786231.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	184
+"157C_D6_D06_042.fcs"	"157C_D6_D06_042.786232.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	186
+"157C_D8_D08_044.fcs"	"157C_D8_D08_044.786233.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	188
+"159C_E10_E10_154.fcs"	"159C_E10_E10_154.786288.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	202
+"159C_E12_E12_156.fcs"	"159C_E12_E12_156.786289.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	204
+"159C_E2_E02_146.fcs"	"159C_E2_E02_146.786284.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	194
+"159C_E4_E04_148.fcs"	"159C_E4_E04_148.786285.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	196
+"159C_E6_E06_150.fcs"	"159C_E6_E06_150.786286.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	198
+"159C_E8_E08_152.fcs"	"159C_E8_E08_152.786287.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	200
+"161C_E10_E10_058.fcs"	"161C_E10_E10_058.786240.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	214
+"161C_E12_E12_060.fcs"	"161C_E12_E12_060.786241.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	216
+"161C_E2_E02_050.fcs"	"161C_E2_E02_050.786236.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	206
+"161C_E4_E04_052.fcs"	"161C_E4_E04_052.786237.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	208
+"161C_E6_E06_054.fcs"	"161C_E6_E06_054.786238.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	210
+"161C_E8_E08_056.fcs"	"161C_E8_E08_056.786239.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	212
+"1C_F10_F10_166.fcs"	"1C_F10_F10_166.786294.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	10
+"1C_F12_F12_168.fcs"	"1C_F12_F12_168.786295.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	12
+"1C_F2_F02_158.fcs"	"1C_F2_F02_158.786290.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	2
+"1C_F4_F04_160.fcs"	"1C_F4_F04_160.786291.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	4
+"1C_F6_F06_162.fcs"	"1C_F6_F06_162.786292.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	6
+"1C_F8_F08_164.fcs"	"1C_F8_F08_164.786293.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	8
+"29C_A10_A10_106.fcs"	"29C_A10_A10_106.786264.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	46
+"29C_A12_A12_108.fcs"	"29C_A12_A12_108.786265.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	48
+"29C_A2_A02_098.fcs"	"29C_A2_A02_098.786260.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	38
+"29C_A4_A04_100.fcs"	"29C_A4_A04_100.786261.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	40
+"29C_A6_A06_102.fcs"	"29C_A6_A06_102.786262.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	42
+"29C_A8_A08_104.fcs"	"29C_A8_A08_104.786263.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	44
+"37C_A10_A10_202.fcs"	"37C_A10_A10_202.786306.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	58
+"37C_A12_A12_204.fcs"	"37C_A12_A12_204.786307.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	60
+"37C_A2_A02_194.fcs"	"37C_A2_A02_194.786302.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	50
+"37C_A4_A04_196.fcs"	"37C_A4_A04_196.786303.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	52
+"37C_A6_A06_198.fcs"	"37C_A6_A06_198.786304.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	54
+"37C_A8_A08_200.fcs"	"37C_A8_A08_200.786305.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	56
+"59C_A10_A10_010.fcs"	"59C_A10_A10_010.786216.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	70
+"59C_A12_A12_012.fcs"	"59C_A12_A12_012.786217.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	72
+"59C_A2_A02_002.fcs"	"59C_A2_A02_002.786192.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	62
+"59C_A4_A04_004.fcs"	"59C_A4_A04_004.786213.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	64
+"59C_A6_A06_006.fcs"	"59C_A6_A06_006.786214.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	66
+"59C_A8_A08_008.fcs"	"59C_A8_A08_008.786215.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	68
+"69C_B10_B10_214.fcs"	"69C_B10_B10_214.786312.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	82
+"69C_B12_B12_216.fcs"	"69C_B12_B12_216.786313.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	84
+"69C_B2_B02_206.fcs"	"69C_B2_B02_206.786308.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	74
+"69C_B4_B04_208.fcs"	"69C_B4_B04_208.786309.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	76
+"69C_B6_B06_210.fcs"	"69C_B6_B06_210.786310.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	78
+"69C_B8_B08_212.fcs"	"69C_B8_B08_212.786311.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	80
+"76C_B10_B10_118.fcs"	"76C_B10_B10_118.786270.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	94
+"76C_B12_B12_120.fcs"	"76C_B12_B12_120.786271.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	96
+"76C_B2_B02_110.fcs"	"76C_B2_B02_110.786266.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	86
+"76C_B4_B04_112.fcs"	"76C_B4_B04_112.786267.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	88
+"76C_B6_B06_114.fcs"	"76C_B6_B06_114.786268.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	90
+"76C_B8_B08_116.fcs"	"76C_B8_B08_116.786269.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	92
+"80C_B10_B10_022.fcs"	"80C_B10_B10_022.786222.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	106
+"80C_B12_B12_024.fcs"	"80C_B12_B12_024.786223.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	108
+"80C_B2_B02_014.fcs"	"80C_B2_B02_014.786218.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	98
+"80C_B4_B04_016.fcs"	"80C_B4_B04_016.786219.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	100
+"80C_B6_B06_018.fcs"	"80C_B6_B06_018.786220.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	102
+"80C_B8_B08_020.fcs"	"80C_B8_B08_020.786221.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	104
+"BWT23_G10_G10_274.fcs"	"BWT23_G10_G10_274.786348.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	262
+"BWT23_G12_G12_276.fcs"	"BWT23_G12_G12_276.786349.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	264
+"BWT23_G2_G02_266.fcs"	"BWT23_G2_G02_266.786344.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	254
+"BWT23_G4_G04_268.fcs"	"BWT23_G4_G04_268.786345.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	256
+"BWT23_G6_G06_270.fcs"	"BWT23_G6_G06_270.786346.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	258
+"BWT23_G8_G08_272.fcs"	"BWT23_G8_G08_272.786347.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	260
+"CLT1_G10_G10_178.fcs"	"CLT1_G10_G10_178.786300.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	274
+"CLT1_G12_G12_180.fcs"	"CLT1_G12_G12_180.786301.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	276
+"CLT1_G2_G02_170.fcs"	"CLT1_G2_G02_170.786296.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	266
+"CLT1_G4_G04_172.fcs"	"CLT1_G4_G04_172.786297.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	268
+"CLT1_G6_G06_174.fcs"	"CLT1_G6_G06_174.786298.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	270
+"CLT1_G8_G08_176.fcs"	"CLT1_G8_G08_176.786299.fcs"	"data/20200603_COVID_ICS-B2"	"Flow_cytometry_result"	2	272
+"Comps_CCR7 BV711_G06_308.fcs"	"Comps_CCR7 BV711_G06_308.786353.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD107a PE-Cy7_A06_282.fcs"	"Comps_CD107a PE-Cy7_A06_282.786354.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD14 BV785_F02_302.fcs"	"Comps_CD14 BV785_F02_302.786355.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD154 PE-Cy5_B06_288.fcs"	"Comps_CD154 PE-Cy5_B06_288.786356.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD3 ECD_C02_290.fcs"	"Comps_CD3 ECD_C02_290.786357.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD38 BV605_H02_310.fcs"	"Comps_CD38 BV605_H02_310.786358.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD4 APC-H7_D02_294.fcs"	"Comps_CD4 APC-H7_D02_294.786359.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD45RA BUV737_B04_286.fcs"	"Comps_CD45RA BUV737_B04_286.786360.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD8 BB700_E02_298.fcs"	"Comps_CD8 BB700_E02_298.786361.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_CD8 PE_G02_306.fcs"	"Comps_CD8 PE_G02_306.786362.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_GranzymeB Ax700_C06_292.fcs"	"Comps_GranzymeB Ax700_C06_292.786363.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_HLADR APC_A04_280.fcs"	"Comps_HLADR APC_A04_280.786364.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_HLADR BUV395_F06_304.fcs"	"Comps_HLADR BUV395_F06_304.786365.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_IFNg V450_E06_300.fcs"	"Comps_IFNg V450_E06_300.786366.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_L,2f,D_B02_284.fcs"	"Comps_L,2f,D_B02_284.786367.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_TNFa FITC_D06_296.fcs"	"Comps_TNFa FITC_D06_296.786368.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_Unstained,2f,Stimmed_H06_312.fcs"	"Comps_Unstained,2f,Stimmed_H06_312.786370.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Comps_Unstained_A02_278.fcs"	"Comps_Unstained_A02_278.786369.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Unstained,2f,Stimmed_Unstained,2f,Stim1_G04_313.fcs"	"Unstained,2f,Stimmed_Unstained,2f,Stim1_G04_313.786371.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"Unstained,2f,Stimmed_Unstained,2f,Stim2_H04_315.fcs"	"Unstained,2f,Stimmed_Unstained,2f,Stim2_H04_315.786372.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_compensation_or_control"	3	NA
+"103C_D10_D10_046.fcs"	"103C_D10_D10_046.786394.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	110
+"103C_D12_D12_048.fcs"	"103C_D12_D12_048.786395.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	112
+"103C_D2_D02_038.fcs"	"103C_D2_D02_038.786390.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	102
+"103C_D4_D04_040.fcs"	"103C_D4_D04_040.786391.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	104
+"103C_D6_D06_042.fcs"	"103C_D6_D06_042.786392.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	106
+"103C_D8_D08_044.fcs"	"103C_D8_D08_044.786393.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	108
+"116C_A10_A10_106.fcs"	"116C_A10_A10_106.786424.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	122
+"116C_A12_A12_108.fcs"	"116C_A12_A12_108.786425.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	124
+"116C_A2_A02_098.fcs"	"116C_A2_A02_098.786420.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	114
+"116C_A4_A04_100.fcs"	"116C_A4_A04_100.786421.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	116
+"116C_A6_A06_102.fcs"	"116C_A6_A06_102.786422.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	118
+"116C_A8_A08_104.fcs"	"116C_A8_A08_104.786423.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	120
+"117C_F10_F10_070.fcs"	"117C_F10_F10_070.786406.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	134
+"117C_F12_F12_072.fcs"	"117C_F12_F12_072.786407.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	136
+"117C_F2_F02_062.fcs"	"117C_F2_F02_062.786402.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	126
+"117C_F4_F04_064.fcs"	"117C_F4_F04_064.786403.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	128
+"117C_F6_F06_066.fcs"	"117C_F6_F06_066.786404.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	130
+"117C_F8_F08_068.fcs"	"117C_F8_F08_068.786405.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	132
+"121C_E10_E10_154.fcs"	"121C_E10_E10_154.786448.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	146
+"121C_E12_E12_156.fcs"	"121C_E12_E12_156.786449.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	148
+"121C_E2_E02_146.fcs"	"121C_E2_E02_146.786444.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	138
+"121C_E4_E04_148.fcs"	"121C_E4_E04_148.786445.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	140
+"121C_E6_E06_150.fcs"	"121C_E6_E06_150.786446.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	142
+"121C_E8_E08_152.fcs"	"121C_E8_E08_152.786447.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	144
+"127C_H10_H10_094.fcs"	"127C_H10_H10_094.786418.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	158
+"127C_H12_H12_096.fcs"	"127C_H12_H12_096.786419.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	160
+"127C_H2_H02_086.fcs"	"127C_H2_H02_086.786414.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	150
+"127C_H4_H04_088.fcs"	"127C_H4_H04_088.786415.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	152
+"127C_H6_H06_090.fcs"	"127C_H6_H06_090.786416.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	154
+"127C_H8_H08_092.fcs"	"127C_H8_H08_092.786417.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	156
+"12C_C10_C10_034.fcs"	"12C_C10_C10_034.786388.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	50
+"12C_C12_C12_036.fcs"	"12C_C12_C12_036.786389.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	52
+"12C_C2_C02_026.fcs"	"12C_C2_C02_026.786384.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	42
+"12C_C4_C04_028.fcs"	"12C_C4_C04_028.786385.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	44
+"12C_C6_C06_030.fcs"	"12C_C6_C06_030.786386.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	46
+"12C_C8_C08_032.fcs"	"12C_C8_C08_032.786387.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	48
+"130C_A10_A10_202.fcs"	"130C_A10_A10_202.786466.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	170
+"130C_A12_A12_204.fcs"	"130C_A12_A12_204.786467.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	172
+"130C_A2_A02_194.fcs"	"130C_A2_A02_194.786462.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	162
+"130C_A4_A04_196.fcs"	"130C_A4_A04_196.786463.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	164
+"130C_A6_A06_198.fcs"	"130C_A6_A06_198.786464.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	166
+"130C_A8_A08_200.fcs"	"130C_A8_A08_200.786465.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	168
+"131C_F10_F10_166.fcs"	"131C_F10_F10_166.786454.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	182
+"131C_F12_F12_168.fcs"	"131C_F12_F12_168.786455.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	184
+"131C_F2_F02_158.fcs"	"131C_F2_F02_158.786450.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	174
+"131C_F4_F04_160.fcs"	"131C_F4_F04_160.786451.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	176
+"131C_F6_F06_162.fcs"	"131C_F6_F06_162.786452.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	178
+"131C_F8_F08_164.fcs"	"131C_F8_F08_164.786453.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	180
+"133C_C10_C10_226.fcs"	"133C_C10_C10_226.786478.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	194
+"133C_C12_C12_228.fcs"	"133C_C12_C12_228.786479.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	196
+"133C_C2_C02_218.fcs"	"133C_C2_C02_218.786474.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	186
+"133C_C4_C04_220.fcs"	"133C_C4_C04_220.786475.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	188
+"133C_C6_C06_222.fcs"	"133C_C6_C06_222.786476.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	190
+"133C_C8_C08_224.fcs"	"133C_C8_C08_224.786477.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	192
+"136C_A10_A10_010.fcs"	"136C_A10_A10_010.786376.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	206
+"136C_A12_A12_012.fcs"	"136C_A12_A12_012.786377.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	208
+"136C_A2_A02_002.fcs"	"136C_A2_A02_002.786352.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	198
+"136C_A4_A04_004.fcs"	"136C_A4_A04_004.786373.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	200
+"136C_A6_A06_006.fcs"	"136C_A6_A06_006.786374.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	202
+"136C_A8_A08_008.fcs"	"136C_A8_A08_008.786375.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	204
+"142C_F10_F10_262.fcs"	"142C_F10_F10_262.786496.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	218
+"142C_F12_F12_264.fcs"	"142C_F12_F12_264.786497.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	220
+"142C_F2_F02_254.fcs"	"142C_F2_F02_254.786492.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	210
+"142C_F4_F04_256.fcs"	"142C_F4_F04_256.786493.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	212
+"142C_F6_F06_258.fcs"	"142C_F6_F06_258.786494.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	214
+"142C_F8_F08_260.fcs"	"142C_F8_F08_260.786495.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	216
+"143C_B10_B10_214.fcs"	"143C_B10_B10_214.786472.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	230
+"143C_B12_B12_216.fcs"	"143C_B12_B12_216.786473.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	232
+"143C_B2_B02_206.fcs"	"143C_B2_B02_206.786468.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	222
+"143C_B4_B04_208.fcs"	"143C_B4_B04_208.786469.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	224
+"143C_B6_B06_210.fcs"	"143C_B6_B06_210.786470.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	226
+"143C_B8_B08_212.fcs"	"143C_B8_B08_212.786471.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	228
+"147C_D10_D10_142.fcs"	"147C_D10_D10_142.786442.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	242
+"147C_D12_D12_144.fcs"	"147C_D12_D12_144.786443.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	244
+"147C_D2_D02_134.fcs"	"147C_D2_D02_134.786438.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	234
+"147C_D4_D04_136.fcs"	"147C_D4_D04_136.786439.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	236
+"147C_D6_D06_138.fcs"	"147C_D6_D06_138.786440.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	238
+"147C_D8_D08_140.fcs"	"147C_D8_D08_140.786441.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	240
+"150C_D10_D10_238.fcs"	"150C_D10_D10_238.786484.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	254
+"150C_D12_D12_240.fcs"	"150C_D12_D12_240.786485.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	256
+"150C_D2_D02_230.fcs"	"150C_D2_D02_230.786480.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	246
+"150C_D4_D04_232.fcs"	"150C_D4_D04_232.786481.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	248
+"150C_D6_D06_234.fcs"	"150C_D6_D06_234.786482.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	250
+"150C_D8_D08_236.fcs"	"150C_D8_D08_236.786483.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	252
+"15518_G10_G10_274.fcs"	"15518_G10_G10_274.786508.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	278
+"15518_G12_G12_276.fcs"	"15518_G12_G12_276.786509.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	280
+"15518_G2_G02_266.fcs"	"15518_G2_G02_266.786504.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	270
+"15518_G4_G04_268.fcs"	"15518_G4_G04_268.786505.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	272
+"15518_G6_G06_270.fcs"	"15518_G6_G06_270.786506.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	274
+"15518_G8_G08_272.fcs"	"15518_G8_G08_272.786507.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	276
+"164C_G10_G10_082.fcs"	"164C_G10_G10_082.786412.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	266
+"164C_G12_G12_084.fcs"	"164C_G12_G12_084.786413.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	268
+"164C_G2_G02_074.fcs"	"164C_G2_G02_074.786408.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	258
+"164C_G4_G04_076.fcs"	"164C_G4_G04_076.786409.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	260
+"164C_G6_G06_078.fcs"	"164C_G6_G06_078.786410.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	262
+"164C_G8_G08_080.fcs"	"164C_G8_G08_080.786411.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	264
+"23C_G10_G10_178.fcs"	"23C_G10_G10_178.786460.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	62
+"23C_G12_G12_180.fcs"	"23C_G12_G12_180.786461.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	64
+"23C_G2_G02_170.fcs"	"23C_G2_G02_170.786456.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	54
+"23C_G4_G04_172.fcs"	"23C_G4_G04_172.786457.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	56
+"23C_G6_G06_174.fcs"	"23C_G6_G06_174.786458.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	58
+"23C_G8_G08_176.fcs"	"23C_G8_G08_176.786459.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	60
+"25C_E10_E10_250.fcs"	"25C_E10_E10_250.786490.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	74
+"25C_E12_E12_252.fcs"	"25C_E12_E12_252.786491.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	76
+"25C_E2_E02_242.fcs"	"25C_E2_E02_242.786486.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	66
+"25C_E4_E04_244.fcs"	"25C_E4_E04_244.786487.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	68
+"25C_E6_E06_246.fcs"	"25C_E6_E06_246.786488.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	70
+"25C_E8_E08_248.fcs"	"25C_E8_E08_248.786489.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	72
+"38C_B10_B10_118.fcs"	"38C_B10_B10_118.786430.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	86
+"38C_B12_B12_120.fcs"	"38C_B12_B12_120.786431.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	88
+"38C_B2_B02_110.fcs"	"38C_B2_B02_110.786426.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	78
+"38C_B4_B04_112.fcs"	"38C_B4_B04_112.786427.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	80
+"38C_B6_B06_114.fcs"	"38C_B6_B06_114.786428.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	82
+"38C_B8_B08_116.fcs"	"38C_B8_B08_116.786429.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	84
+"96C_C10_C10_130.fcs"	"96C_C10_C10_130.786436.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	98
+"96C_C12_C12_132.fcs"	"96C_C12_C12_132.786437.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	100
+"96C_C2_C02_122.fcs"	"96C_C2_C02_122.786432.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	90
+"96C_C4_C04_124.fcs"	"96C_C4_C04_124.786433.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	92
+"96C_C6_C06_126.fcs"	"96C_C6_C06_126.786434.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	94
+"96C_C8_C08_128.fcs"	"96C_C8_C08_128.786435.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	96
+"BWT22_E10_E10_058.fcs"	"BWT22_E10_E10_058.786400.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	290
+"BWT22_E12_E12_060.fcs"	"BWT22_E12_E12_060.786401.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	292
+"BWT22_E2_E02_050.fcs"	"BWT22_E2_E02_050.786396.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	282
+"BWT22_E4_E04_052.fcs"	"BWT22_E4_E04_052.786397.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	284
+"BWT22_E6_E06_054.fcs"	"BWT22_E6_E06_054.786398.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	286
+"BWT22_E8_E08_056.fcs"	"BWT22_E8_E08_056.786399.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	288
+"HS09_H10_H10_190.fcs"	"HS09_H10_H10_190.786502.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	338
+"HS09_H12_H12_192.fcs"	"HS09_H12_H12_192.786503.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	340
+"HS09_H2_H02_182.fcs"	"HS09_H2_H02_182.786498.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	330
+"HS09_H4_H04_184.fcs"	"HS09_H4_H04_184.786499.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	332
+"HS09_H6_H06_186.fcs"	"HS09_H6_H06_186.786500.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	334
+"HS09_H8_H08_188.fcs"	"HS09_H8_H08_188.786501.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	336
+"HS10_B10_B10_022.fcs"	"HS10_B10_B10_022.786382.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	350
+"HS10_B12_B12_024.fcs"	"HS10_B12_B12_024.786383.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	352
+"HS10_B12_B12_024.fcs"	"HS10_B12_B12_024.786383.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	485
+"HS10_B2_B02_014.fcs"	"HS10_B2_B02_014.786378.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	342
+"HS10_B4_B04_016.fcs"	"HS10_B4_B04_016.786379.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	344
+"HS10_B6_B06_018.fcs"	"HS10_B6_B06_018.786380.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	346
+"HS10_B8_B08_020.fcs"	"HS10_B8_B08_020.786381.fcs"	"data/20200605_COVID_ICS-B3/"	"Flow_cytometry_result"	3	348

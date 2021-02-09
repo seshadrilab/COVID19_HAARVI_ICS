@@ -11,8 +11,16 @@ library(readxl)
 
 date <- 20200803
 
-xml_path_b1 <- here::here("data/20200528_COVID_…S-B1_CS2_KY.xml")
+xml_path_b1 <- here::here("data/20200528_COVID_ICS-B1_CS2_KY.xml")
+# xml_path_b1 <- here::here("data/20200528_COVID_…S-B1_CS2_KY.xml") # original xml filename was causing git commit problems
 fcs_subfolder_b1 <- here::here("data/20200528_COVID_ICS-B1/")
+ics_file_map <- read.table(here::here("data/ICS_ImmPort_FCS_FileMap.tsv"), sep = "\t", header = T,
+                           colClasses = c("character", "character", "character", "character", "numeric", "numeric"))
+ics_b1_gs_filemap <- ics_file_map %>% 
+  dplyr::filter(!is.na(flowJo_xml_sampleID) & Batch == 1) %>% 
+  rename(sampleID = flowJo_xml_sampleID) %>% 
+  mutate(file = here::here(Destination_Folder_Path, Original_File_Name)) %>% 
+  dplyr::select(sampleID, file)
 
 ws_b1 <- open_flowjo_xml(xml_path_b1)
 merge(fj_ws_get_sample_groups(ws_b1), fj_ws_get_samples(ws_b1), by = "sampleID")
@@ -22,7 +30,7 @@ keywords2import <- c("EXPERIMENT NAME", "$DATE", "SAMPLE ID", "PATIENT ID", "STI
 
 sampleGroup <- "Samples"
 gs_b1 <- flowjo_to_gatingset(ws_b1, name=sampleGroup, keywords=keywords2import,
-                             path=fcs_subfolder_b1, extend_val=-10000)
+                             path=ics_b1_gs_filemap, extend_val=-10000)
 # Warning messages:
 #   1: In eval_tidy(args[[j]], mask) :
 #   keyword not found in 112563.fcs_265525: ‘PATIENT ID’
