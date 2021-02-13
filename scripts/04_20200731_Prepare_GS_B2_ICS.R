@@ -112,6 +112,10 @@ png(here::here(sprintf("out/QC/B2_GatingTree_%s.png", date)), width = 7, height 
 (plot(gs_b2, fontsize=15, bool=T))
 dev.off()
 
+if(!dir.exists(here::here("out/GatingSets"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/GatingSets")))
+  dir.create(here::here("out/GatingSets"), recursive = T)
+}
 save_gs(gs_b2, here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B2"))
 
 # 6 samples for each patient

@@ -332,12 +332,12 @@ if(save_output) {
 
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4A_CD4_FS_vs_Stim.pdf"), width=5, height=4,
         onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
-  cd4_fs_vs_stim_plot
+  print(cd4_fs_vs_stim_plot)
   dev.off()
   
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5F_CD8_FS_vs_Stim.pdf"), width=5, height=4,
       onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
-  cd8_fs_vs_stim_plot
+  print(cd8_fs_vs_stim_plot)
   dev.off()
 }
 ```
@@ -509,7 +509,7 @@ cd8_fs_corrplot <- corrplot(cd8_M,
 if(save_output) {
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4B_CD4_FS_corr.pdf"), width=4, height=4,
         onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
-  corrplot(cd4_M,
+  print(corrplot(cd4_M,
          method="color", col=col(200),  
          type="lower", order="original", 
          addCoef.col = "black", # Add coefficient of correlation
@@ -518,12 +518,12 @@ if(save_output) {
          # Combine with significance
          p.mat = p.mat_cd4, sig.level = 0.05, insig = "blank", 
          # hide correlation coefficient on the principal diagonal
-         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n")
+         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n"))
   dev.off()
   
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5G_CD8_FS_corr.pdf"), width=4, height=4,
       onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
-  corrplot(cd8_M,
+  print(corrplot(cd8_M,
          method="color", col=col(200),  
          type="lower", order="original", 
          addCoef.col = "black", # Add coefficient of correlation
@@ -532,7 +532,7 @@ if(save_output) {
          # Combine with significance
          p.mat = p.mat_cd8, sig.level = 0.05, insig = "blank", 
          # hide correlation coefficient on the principal diagonal
-         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n")
+         diag=FALSE, addgrid.col="black", tl.offset = 1, cl.pos="n"))
   dev.off()  
 }
 ```
@@ -838,23 +838,23 @@ cd8_heatmap_by_ifng_gap <- plot.COMPASSResult.ComplexHeatmap(cr = cd8_merged_COM
 if(save_output) {
   pdf(file=here::here("out/PostCompassPlots/20200902_CD4_COMPASS_Heatmap.pdf"), width=9, height=8,
         onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
-  draw(cd4_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T)
+  print(draw(cd4_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T))
   dev.off()
   
   pdf(file=here::here("out/PostCompassPlots/20200902_CD8_COMPASS_Heatmap.pdf"), width=5, height=8,
         onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica
-  draw(cd8_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T)
+  print(draw(cd8_heatmap_by_ifng, gap = unit(0.1, "in"), merge_legends = T))
   dev.off()
   
   # With row gaps
   pdf(file=here::here("out/PostCompassPlots/20200902_CD4_COMPASS_Heatmap_gap.pdf"), width=9, height=9,
       onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica.
-  draw(cd4_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T)
+  print(draw(cd4_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T))
   dev.off()
   
   pdf(file=here::here("out/PostCompassPlots/20200902_CD8_COMPASS_Heatmap_gap.pdf"), width=5, height=9,
         onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial") # default unit is inches, default font is Helvetica
-  draw(cd8_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T)
+  print(draw(cd8_heatmap_by_ifng_gap, gap = unit(0, "in"), merge_legends = T))
   dev.off()
   
   # Later run in linux terminal:
@@ -886,36 +886,36 @@ if(save_output) {
   
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4CDEF_CD4_FS_vs_Demographics.pdf"), width=14, height=14,
       onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  (fs_vs_age_plot_list$S1_4 | fs_vs_age_plot_list$S2_4 | fs_vs_age_plot_list$N_4 | fs_vs_age_plot_list$E_4)  /
+  print((fs_vs_age_plot_list$S1_4 | fs_vs_age_plot_list$S2_4 | fs_vs_age_plot_list$N_4 | fs_vs_age_plot_list$E_4)  /
     (fs_vs_sex_plot_list$S1_4 | fs_vs_sex_plot_list$S2_4 | fs_vs_sex_plot_list$N_4 | fs_vs_sex_plot_list$E_4) /
     (fs_vs_days_plot_list$S1_4 | fs_vs_days_plot_list$S2_4 | fs_vs_days_plot_list$N_4 | fs_vs_days_plot_list$E_4) /
-    (fs_vs_cohort_plot_list$S1_4 | fs_vs_cohort_plot_list$S2_4 | fs_vs_cohort_plot_list$N_4 | fs_vs_cohort_plot_list$E_4)
+    (fs_vs_cohort_plot_list$S1_4 | fs_vs_cohort_plot_list$S2_4 | fs_vs_cohort_plot_list$N_4 | fs_vs_cohort_plot_list$E_4))
   dev.off()  
   
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5HIJK_CD8_FS_vs_Demographics.pdf"), width=14, height=14,
     onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  (fs_vs_age_plot_list$S1_8 | fs_vs_age_plot_list$S2_8 | fs_vs_age_plot_list$N_8 | fs_vs_age_plot_list$E_8)  /
+  print((fs_vs_age_plot_list$S1_8 | fs_vs_age_plot_list$S2_8 | fs_vs_age_plot_list$N_8 | fs_vs_age_plot_list$E_8)  /
     (fs_vs_sex_plot_list$S1_8 | fs_vs_sex_plot_list$S2_8 | fs_vs_sex_plot_list$N_8 | fs_vs_sex_plot_list$E_8) /
     (fs_vs_days_plot_list$S1_8 | fs_vs_days_plot_list$S2_8 | fs_vs_days_plot_list$N_8 | fs_vs_days_plot_list$E_8) /
-    (fs_vs_cohort_plot_list$S1_8 | fs_vs_cohort_plot_list$S2_8 | fs_vs_cohort_plot_list$N_8 | fs_vs_cohort_plot_list$E_8)
+    (fs_vs_cohort_plot_list$S1_8 | fs_vs_cohort_plot_list$S2_8 | fs_vs_cohort_plot_list$N_8 | fs_vs_cohort_plot_list$E_8))
   dev.off()  
   
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig4CDEFG_CD4_FS_vs_Demographics_v2.pdf"), width=14, height=17.5,
       onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  (fs_vs_age_plot_list$S1_4 | fs_vs_age_plot_list$S2_4 | fs_vs_age_plot_list$N_4 | fs_vs_age_plot_list$E_4)  /
+  print((fs_vs_age_plot_list$S1_4 | fs_vs_age_plot_list$S2_4 | fs_vs_age_plot_list$N_4 | fs_vs_age_plot_list$E_4)  /
     (fs_vs_sex_plot_list$S1_4 | fs_vs_sex_plot_list$S2_4 | fs_vs_sex_plot_list$N_4 | fs_vs_sex_plot_list$E_4) /
     (fs_vs_days_plot_list$S1_4 | fs_vs_days_plot_list$S2_4 | fs_vs_days_plot_list$N_4 | fs_vs_days_plot_list$E_4) /
     (fs_vs_comorbid_plot_list$S1_4 | fs_vs_comorbid_plot_list$S2_4 | fs_vs_comorbid_plot_list$N_4 | fs_vs_comorbid_plot_list$E_4) /
-    (fs_vs_cohort_plot_list$S1_4 | fs_vs_cohort_plot_list$S2_4 | fs_vs_cohort_plot_list$N_4 | fs_vs_cohort_plot_list$E_4)
+    (fs_vs_cohort_plot_list$S1_4 | fs_vs_cohort_plot_list$S2_4 | fs_vs_cohort_plot_list$N_4 | fs_vs_cohort_plot_list$E_4))
   dev.off()  
   
   pdf(file=here::here("out/PostCompassPlots/FS_Plots/Fig5HIJKL_CD8_FS_vs_Demographics_v2.pdf"), width=14, height=17.5,
     onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  (fs_vs_age_plot_list$S1_8 | fs_vs_age_plot_list$S2_8 | fs_vs_age_plot_list$N_8 | fs_vs_age_plot_list$E_8)  /
+  print((fs_vs_age_plot_list$S1_8 | fs_vs_age_plot_list$S2_8 | fs_vs_age_plot_list$N_8 | fs_vs_age_plot_list$E_8)  /
     (fs_vs_sex_plot_list$S1_8 | fs_vs_sex_plot_list$S2_8 | fs_vs_sex_plot_list$N_8 | fs_vs_sex_plot_list$E_8) /
     (fs_vs_days_plot_list$S1_8 | fs_vs_days_plot_list$S2_8 | fs_vs_days_plot_list$N_8 | fs_vs_days_plot_list$E_8) /
     (fs_vs_comorbid_plot_list$S1_8 | fs_vs_comorbid_plot_list$S2_8 | fs_vs_comorbid_plot_list$N_8 | fs_vs_comorbid_plot_list$E_8) /
-    (fs_vs_cohort_plot_list$S1_8 | fs_vs_cohort_plot_list$S2_8 | fs_vs_cohort_plot_list$N_8 | fs_vs_cohort_plot_list$E_8)
+    (fs_vs_cohort_plot_list$S1_8 | fs_vs_cohort_plot_list$S2_8 | fs_vs_cohort_plot_list$N_8 | fs_vs_cohort_plot_list$E_8))
   dev.off()  
 }
 ```
@@ -975,22 +975,22 @@ bg_corr_dotplots$`8_NCAP`$BgCorrMagnitudes %>% dplyr::filter_if(is.numeric, any_
 if(save_output) {
   pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5A_CD4_S1_COMPASS_Magnitudes_vs_Cohort.pdf"), width=12, height=7,
     onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  bg_corr_dotplots[["4_Spike_1"]]$Dotplot
+  print(bg_corr_dotplots[["4_Spike_1"]]$Dotplot)
   dev.off()
   
   pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5B_CD4_S2_COMPASS_Magnitudes_vs_Cohort.pdf"), width=11.5, height=7,
     onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  bg_corr_dotplots[["4_Spike_2"]]$Dotplot
+  print(bg_corr_dotplots[["4_Spike_2"]]$Dotplot)
   dev.off()
   
   pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5C_CD4_N_COMPASS_Magnitudes_vs_Cohort.pdf"), width=14, height=7,
     onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  bg_corr_dotplots[["4_NCAP"]]$Dotplot
+  print(bg_corr_dotplots[["4_NCAP"]]$Dotplot)
   dev.off()
   
   pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5D_CD4_E_COMPASS_Magnitudes_vs_Cohort.pdf"), width=3, height=7,
     onefile = TRUE, bg = "transparent", family = "Arial", fonts = "Arial")
-  bg_corr_dotplots[["4_VEMP"]]$Dotplot
+  print(bg_corr_dotplots[["4_VEMP"]]$Dotplot)
   dev.off()
 }
 ```
@@ -1058,22 +1058,22 @@ names(bg_corr_boxplots) <- CD4RunNames
 if(save_output) {
   cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5A_CD4_S1_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=12, height=7.2,
     onefile = TRUE, bg = "transparent", family = "Arial")
-  grid.draw(bg_corr_boxplots[["4_Spike_1"]]$Plot)
+  print(grid.draw(bg_corr_boxplots[["4_Spike_1"]]$Plot))
   dev.off()
   
   cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5B_CD4_S2_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=11.5, height=7.2,
     onefile = TRUE, bg = "transparent", family = "Arial")
-  grid.draw(bg_corr_boxplots[["4_Spike_2"]]$Plot)
+  print(grid.draw(bg_corr_boxplots[["4_Spike_2"]]$Plot))
   dev.off()
   
   cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5C_CD4_N_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=14, height=7.2,
     onefile = TRUE, bg = "transparent", family = "Arial")
-  grid.draw(bg_corr_boxplots[["4_NCAP"]]$Plot)
+  print(grid.draw(bg_corr_boxplots[["4_NCAP"]]$Plot))
   dev.off()
   
   cairo_pdf(file=here::here("out/PostCompassPlots/Magnitude_Plots/FigS5D_CD4_E_COMPASS_Magnitudes_vs_Cohort_Boxplots.pdf"), width=3, height=7.2,
     onefile = TRUE, bg = "transparent", family = "Arial")
-  grid.draw(bg_corr_boxplots[["4_VEMP"]]$Plot)
+  print(grid.draw(bg_corr_boxplots[["4_VEMP"]]$Plot))
   dev.off()
 }
 ```

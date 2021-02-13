@@ -19,7 +19,9 @@ ics_b3_gs_filemap <- ics_file_map %>%
   dplyr::filter(!is.na(flowJo_xml_sampleID) & Batch == 3) %>% 
   rename(sampleID = flowJo_xml_sampleID) %>% 
   mutate(file = here::here(Destination_Folder_Path, Original_File_Name)) %>% 
-  dplyr::select(sampleID, file)
+  dplyr::select(sampleID, file) %>% 
+  # filter out the extra entry for HS10_B12_B12_024.fcs
+  dplyr::filter(sampleID != 352)
 
 ws_b3 <- open_flowjo_xml(xml_path_b3)
 merge(fj_ws_get_sample_groups(ws_b3), fj_ws_get_samples(ws_b3), by = "sampleID")
@@ -110,6 +112,10 @@ png(here::here(sprintf("out/QC/B3_GatingTree_%s.png", date)), width = 7, height 
 (plot(gs_b3, fontsize=15, bool=T))
 dev.off()
 
+if(!dir.exists(here::here("out/GatingSets"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/GatingSets")))
+  dir.create(here::here("out/GatingSets"), recursive = T)
+}
 save_gs(gs_b3, here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3"))
 
 # 6 samples for each patient
