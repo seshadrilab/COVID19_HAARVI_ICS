@@ -1,0 +1,61 @@
+"Study ID","Cohort","Age","Race/ethnicity","Insurance Status","Sex","Date of Symptom Onset","PBMC Collection Date","Days Since Symptom Onset to PBMC Collection Date","Test Date","ct.unformated","CT","platform","Comorbidities","Diabetes","COPD","Asthma","Hypertension","Cancer","hyperlipidemia","Heart Problems","Lung Problems","Cardiovascular disease","Severity"
+"13","Hospitalized",54,"Asian","Private","M","2020-02-24","2020-04-29",65,"2020-03-02",NA,"  N/A",NA,"Diabetes, COPD, Asthma","Yes","Yes","Yes","No","No","No","No","No","No",2
+"23","Hospitalized",56,"American Indian or Alaska Native","Government","M","2020-03-14","2020-04-15",32,"2020-03-14","28.2558; 28.3227","28.26","ABI7500","Hypertension, Cancer","No","No","No","Yes","Yes","No","No","No","No",3
+"25","Hospitalized",31,"Asian","Private","F","2020-03-15","2020-04-29",45,"2020-03-17","34.5973; 33.4108","34.6","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",2
+"15514","Hospitalized",64,"White","N/A","M","2020-03-01","2020-04-07",37,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",NA
+"15518","Hospitalized",68,"White","N/A","F","2020-02-22","2020-04-14",52,NA,NA,"N/A",NA,"Cancer, hyperlipidemia","No","No","No","No","Yes","Yes","No","No","No",NA
+"15529","Hospitalized",50,"Asian","N/A","M","2020-03-13","2020-04-22",40,NA,NA,"N/A",NA,"Cancer","No","No","No","No","Yes","No","No","No","No",2
+"15530","Hospitalized",68,"White","N/A","M","2020-02-26","2020-04-22",56,NA,NA,"N/A",NA,"Heart Problems","No","No","No","No","No","No","Yes","No","No",NA
+"15545","Hospitalized",63,"Asian","N/A","F","2020-03-08","2020-04-24",47,NA,NA,"N/A",NA,"Lung Problems","No","No","No","No","No","No","No","Yes","No",NA
+"15548","Hospitalized",58,"White","N/A","F","2020-03-12","2020-04-27",46,NA,NA,"N/A",NA,"Cancer","No","No","No","No","Yes","No","No","No","No",NA
+"15554","Hospitalized",63,"White","N/A","M","2020-02-18","2020-04-28",70,NA,NA,"N/A",NA,"Diabetes","Yes","No","No","No","No","No","No","No","No",2
+"15575","Hospitalized",43,"White","N/A","F","2020-03-03","2020-05-01",59,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",NA
+"1C","Hospitalized",35,"Asian","Private","M","2020-01-15","2020-03-20",65,NA,NA,"N/A",NA,"N/A","No","No","No","No","No","No","No","No","No",4
+"6C","Hospitalized",63,"White","Private","F","2020-02-29","2020-04-02",33,"2020-03-05","not found","N/A","unknown","None of the above","No","No","No","No","No","No","No","No","No",3
+"102C","Hospitalized",68,"White","Private, Government","F","2020-02-23","2020-05-04",71,NA,NA,"N/A",NA,"Hypertension, Cardiovascular disease","No","No","No","Yes","No","No","No","No","Yes",4
+"121C","Hospitalized",74,"White","Private, Government","M","2020-03-14","2020-05-06",53,NA,NA,"N/A",NA,"Hypertension","No","No","No","Yes","No","No","No","No","No",7
+"131C","Hospitalized",58,"White","Private, Other","M","2020-04-04","2020-05-08",34,"2020-04-07","18.399999999999999","18.4","panther","Hypertension, Diabetes","Yes","No","No","Yes","No","No","No","No","No",7
+"133C","Hospitalized",28,"White, Hispanic/Latino","Government","F","2020-03-10","2020-05-08",59,"2020-04-06","32.7563;33.9307","32.76","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",7
+"143C","Hospitalized",54,"White","Government","M","2020-03-10","2020-05-12",63,"2020-03-11","16.6951;14.8019","16.7","ABI7500","Diabetes","Yes","No","No","No","No","No","No","No","No",2
+"159C","Hospitalized",66,"White","Government","M","2020-03-10","2020-05-14",65,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",4
+"170C","Hospitalized",60,"White","Private","M","2020-03-19","2020-05-18",60,NA,NA,"N/A",NA,"Diabetes","Yes","No","No","No","No","No","No","No","No",4
+"12C","Non-hospitalized",68,"White","Government","M","2020-02-06","2020-04-07",61,"2020-03-08","30.29; 35.68","30.29","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",7
+"21C","Non-hospitalized",36,"White, Hispanic/Latino","Private","F","2020-03-15","2020-04-10",26,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"25C","Non-hospitalized",52,"White","Private","F","2020-02-25","2020-04-13",48,"2020-03-13","29.3691;29.8367","39.37","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",7
+"29C","Non-hospitalized",41,"White","Private","F","2020-03-18","2020-04-14",27,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"36C","Non-hospitalized",55,"White","Private","M","2020-03-03","2020-04-15",43,NA,NA,"N/A",NA,"Hypertension","No","No","No","Yes","No","No","No","No","No",7
+"37C","Non-hospitalized",57,"White","Private","F","2020-03-08","2020-04-15",38,"2020-03-17","20.1829;19.7527","20.18","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",7
+"38C","Non-hospitalized",60,"White","Private","F","2020-03-13","2020-04-15",33,"2020-03-17","17.9853;16.5016","17.99","ABI7500","Hypertension","No","No","No","Yes","No","No","No","No","No",7
+"51C","Non-hospitalized",58,"White","None","M","2020-02-27","2020-04-21",54,"2020-03-12","35.971;35.7454","35.97","ABI7500","Hypertension","No","No","No","Yes","No","No","No","No","No",7
+"56C","Non-hospitalized",51,"White","Private","M","2020-03-11","2020-04-22",42,"2020-03-20","24.1605;23.9055","24.16","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",7
+"59C","Non-hospitalized",51,"White","Private","M","2020-03-20","2020-04-23",34,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"69C","Non-hospitalized",66,"White","Government","F","2020-03-08","2020-04-24",47,NA,NA,"N/A",NA,"Hypertension","No","No","No","Yes","No","No","No","No","No",7
+"75C","Non-hospitalized",45,"White","Private","M","2020-03-02","2020-04-28",57,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"76C","Non-hospitalized",62,"White","Private","F","2020-03-28","2020-04-28",31,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"80C","Non-hospitalized",60,"White","Private","M","2020-03-28","2020-04-29",32,"2020-03-31","16.8164;15.9491","16.82","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",7
+"90C","Non-hospitalized",33,"White","Private","M","2020-03-01","2020-05-01",61,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"93C","Non-hospitalized",59,"White","Private","M","2020-03-10","2020-05-01",52,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"96C","Non-hospitalized",62,"White","Private","M","2020-03-10","2020-05-04",55,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"103C","Non-hospitalized",71,"White","Private, Government","M","2020-03-07","2020-05-04",58,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",8
+"106C","Non-hospitalized",61,"White","Private","F","2020-03-07","2020-05-05",59,NA,NA,"N/A",NA,"Cancer","No","No","No","No","Yes","No","No","No","No",7
+"109C","Non-hospitalized",53,"White","Private","F","2020-04-01","2020-05-05",34,"2020-04-01","14.8301;14.262","14.83","ABI7500","None of the above","No","No","No","No","No","No","No","No","No",7
+"112C","Non-hospitalized",23,"Asian","Private","F","2020-03-25","2020-05-05",41,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"113C","Non-hospitalized",79,"White","Government","F","2020-02-21","2020-05-05",74,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",8
+"116C","Non-hospitalized",68,"American Indian or Alaska Native, White","Private","M","2020-03-12","2020-05-06",55,NA,NA,"N/A",NA,"Hypertension, Diabetes","Yes","No","No","Yes","No","No","No","No","No",7
+"117C","Non-hospitalized",68,"American Indian or Alaska Native","Government","F","2020-03-25","2020-05-06",42,"2020-04-03","35.634549087357598","35.63","panther","None of the above","No","No","No","No","No","No","No","No","No",8
+"122C","Non-hospitalized",40,"White","Private","F","2020-03-23","2020-05-06",44,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"127C","Non-hospitalized",31,"White","Private","M","2020-03-23","2020-05-07",45,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"128C","Non-hospitalized",58,"White","Government","F","2020-04-04","2020-05-07",33,"2020-04-09","22.49;23.21","22.49","Cobas","None of the above","No","No","No","No","No","No","No","No","No",7
+"130C","Non-hospitalized",55,"White","Private","M","2020-03-01","2020-05-08",68,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"136C","Non-hospitalized",58,"White","Private","F","2020-03-18","2020-05-08",51,"2020-04-10","36","36","panther","None of the above","No","No","No","No","No","No","No","No","No",7
+"139C","Non-hospitalized",53,"White","Private","F","2020-03-11","2020-05-11",61,"2020-04-14","35.23;37.37","35.23","Cobas","N/A","No","No","No","No","No","No","No","No","No",7
+"141C","Non-hospitalized",67,"White","Private","F","2020-03-21","2020-05-12",52,"2020-04-06","34.1375;37.4324","34.14","ABI7500","Hypertension","No","No","No","Yes","No","No","No","No","No",7
+"142C","Non-hospitalized",41,"White","Private","M","2020-03-01","2020-05-12",72,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"147C","Non-hospitalized",51,"White","Private","M","2020-03-07","2020-05-13",67,NA,NA,"N/A",NA,"N/A","No","No","No","No","No","No","No","No","No",7
+"148C","Non-hospitalized",56,"White","Private","M","2020-03-02","2020-05-13",72,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"150C","Non-hospitalized",44,"White","Private","F","2020-03-09","2020-05-13",65,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"157C","Non-hospitalized",51,"Asian","Private","F","2020-03-30","2020-05-14",45,"2020-04-02","33.873695029202601","33.87","panther","None of the above","No","No","No","No","No","No","No","No","No",7
+"161C","Non-hospitalized",58,"White","Private","F","2020-04-06","2020-05-14",38,"2020-04-09","21","21","panther","None of the above","No","No","No","No","No","No","No","No","No",7
+"162C","Non-hospitalized",59,"White","Private","M","2020-03-10","2020-05-15",66,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7
+"164C","Non-hospitalized",65,"Asian","Other","M","2020-03-31","2020-05-15",45,"2020-04-09","27.98;28.56","27.98","Cobas","Diabetes","Yes","No","No","No","No","No","No","No","No",7
+"169C","Non-hospitalized",43,"White","Private","M","2020-03-17","2020-05-18",62,NA,NA,"N/A",NA,"None of the above","No","No","No","No","No","No","No","No","No",7

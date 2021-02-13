@@ -5,7 +5,7 @@ library(flowWorkspace)
 # The counts for the COMPASS subsets are only stored in COMPASSResult objects if they were discovered by COMPASS for that stim,
 # so we have to manually add boolean gates for each subset to the GatingSets and then extract the count data later.
 
-gsPath <- here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches")
+gsPath <- here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches_R4.0.3")
 gs <- load_gs(gsPath)
 
 ##################################################
@@ -172,4 +172,4 @@ plot(gs, bool = T, fontsize = 10)
 # One last thing before saving: Fix the Batch typo
 pData(gs)$Batch <- ifelse(pData(gs)$`EXPERIMENT NAME` == "20200605_COVID_ICS-B3", 3, pData(gs)$Batch)
 
-save_gs(gs, here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets"), cdf = "symlink") 
+save_gs(gs, here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets_R4.0.3"), backend_opt = "symlink") 

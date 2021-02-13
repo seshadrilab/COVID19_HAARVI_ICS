@@ -33,9 +33,9 @@ Boxplots?
 
 ```{r, message=F}
 library(openCyto)
-library(CytoML) # 1.12.0
-library(flowCore) # required for description()
-library(flowWorkspace) # required for gh_pop_get_data()
+library(CytoML)
+library(flowCore)
+library(flowWorkspace)
 library(here)
 library(tidyverse)
 library(uwot)
@@ -56,7 +56,7 @@ date <- 20200815
 save_output <- FALSE
 rerun_dimred <- FALSE
 
-gs <- load_gs(here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets"))
+gs <- load_gs(here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets_R4.0.3"))
 
 gs2 <- subset(gs, !(`SAMPLE ID` %in% c("37C", "BWT23", "116C", "BWT22")) &
                 !(`SAMPLE ID` == "551432" & STIM == "Spike 2"))

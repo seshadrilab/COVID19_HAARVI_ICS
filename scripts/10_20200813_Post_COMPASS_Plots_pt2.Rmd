@@ -29,7 +29,9 @@ library(gsubfn)
 ```
 
 ```{r}
-save_output <- FALSE
+R.version
+
+save_output <- TRUE
 ```
 
 Compare background-corrected magnitudes from COMPASS subsets across the stims.
@@ -37,7 +39,7 @@ Compare background-corrected magnitudes from COMPASS subsets across the stims.
 # Read in data
 
 ```{r read in data}
-gsPath <- here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets")
+gsPath <- here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets_R4.0.3")
 gs <- load_gs(gsPath)
 
 merged_cd4_compass_data <- readRDS(here::here("processed_data/20200815_Merged_CD4_COMPASS_Data.rds"))
@@ -97,7 +99,11 @@ cd4_cats_forplot = cd4_cats_forplot[order(ckr),]
 ## Extract counts & calulate magnitudes
 
 ```{r}
-cd4_dat <- gs_pop_get_count_with_meta(gs2, subpopulations = c("4+", cd4_booleanSubsets_gate_names)) %>% 
+# cd4_dat <- gs_pop_get_count_with_meta(gs2, subpopulations = c("4+", cd4_booleanSubsets_gate_names)) %>% 
+#   dplyr::select(`SAMPLE ID`, STIM, Batch, Population, Count) %>% 
+cd4_dat <- gs_pop_get_count_fast(gs2, subpopulations = c("4+", cd4_booleanSubsets_gate_names)) %>% 
+  left_join(pData(gs2) %>%
+              dplyr::select(rowname, `SAMPLE ID`, STIM, Batch), by = c("name" = "rowname")) %>% 
   dplyr::select(`SAMPLE ID`, STIM, Batch, Population, Count) %>% 
   pivot_wider(names_from = Population, values_from = Count) %>% 
   mutate_at(vars(cd4_booleanSubsets_gate_names), ~ . / `4+`) %>% 
@@ -369,8 +375,12 @@ cd8_cats_forplot = cd8_cats_forplot[order(ckr),]
 ## Extract counts & calulate magnitudes
 
 ```{r}
-cd8_dat <- gs_pop_get_count_with_meta(gs3, subpopulations = c("8+", cd8_booleanSubsets_gate_names)) %>%
-  dplyr::select(`SAMPLE ID`, STIM, Batch, Population, Count) %>%
+# cd8_dat <- gs_pop_get_count_with_meta(gs3, subpopulations = c("8+", cd8_booleanSubsets_gate_names)) %>%
+#   dplyr::select(`SAMPLE ID`, STIM, Batch, Population, Count) %>%
+cd8_dat <- gs_pop_get_count_fast(gs3, subpopulations = c("8+", cd8_booleanSubsets_gate_names)) %>% 
+  left_join(pData(gs3) %>%
+              dplyr::select(rowname, `SAMPLE ID`, STIM, Batch), by = c("name" = "rowname")) %>% 
+  dplyr::select(`SAMPLE ID`, STIM, Batch, Population, Count) %>% 
   pivot_wider(names_from = Population, values_from = Count) %>%
   mutate_at(vars(cd8_booleanSubsets_gate_names), ~ . / `8+`) %>%
   dplyr::select(-`8+`) %>%
@@ -606,91 +616,115 @@ dotplot_with_cats_v2
 dotplot_with_cats_v3
 ```
 
-# Memory & Activation status of COMPASS subsets
+<!-- # Memory & Activation status of COMPASS subsets -->
 
-Take this opportunity to look at the memory and activation status of COMPASS Subset+ events  
-(note the data here is not subset down to just the samples which made it through COMPASS)  
+<!-- Take this opportunity to look at the memory and activation status of COMPASS Subset+ events   -->
+<!-- (note the data here is not subset down to just the samples which made it through COMPASS)   -->
 
-```{r, fig.width=7, fig.height=7}
-pop_paths_of_interest <- c("/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets",
-                           "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/Naive", "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TCM",
-                           "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TEMRA", "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TEM",
-                           "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/Naive", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TCM",
-                           "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TEMRA", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TEM",
-                           "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/HLADR+CD38+", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/HLADR+CD38+")
-new_names_pop_paths_of_interest <- c("CD4_COMPASS_Pos", "CD8_COMPASS_Pos",
-                                     "CD4_COMPASS_Naive", "CD4_COMPASS_TCM",
-                                     "CD4_COMPASS_TEMRA", "CD4_COMPASS_TEM",
-                                     "CD8_COMPASS_Naive", "CD8_COMPASS_TCM",
-                                     "CD8_COMPASS_TEMRA", "CD8_COMPASS_TEM",
-                                     "CD4_COMPASS_Activated", "CD8_COMPASS_Activated")
-compass_mem_activation_dat <- gs_pop_get_count_with_meta(gs,
-                                      subpopulations = pop_paths_of_interest) %>% 
-  dplyr::select(Population, Count, "SAMPLE ID", "STIM", "Cohort", "Age", "Sex", "Race_v2", "Hispanic?", 
-                "Days symptom onset to visit 1", "Batch") %>% 
-  pivot_wider(names_from = Population, values_from = Count) %>% 
-  rename_at(vars(all_of(pop_paths_of_interest)),
-            ~ new_names_pop_paths_of_interest) %>% 
-  mutate(Naive_div_CD4_COMPASS = CD4_COMPASS_Naive / CD4_COMPASS_Pos,
-         TCM_div_CD4_COMPASS = CD4_COMPASS_TCM / CD4_COMPASS_Pos,
-         TEM_div_CD4_COMPASS = CD4_COMPASS_TEM / CD4_COMPASS_Pos,
-         TEMRA_div_CD4_COMPASS = CD4_COMPASS_TEMRA / CD4_COMPASS_Pos,
-         Naive_div_CD8_COMPASS = CD8_COMPASS_Naive / CD8_COMPASS_Pos,
-         TCM_div_CD8_COMPASS = CD8_COMPASS_TCM / CD8_COMPASS_Pos,
-         TEM_div_CD8_COMPASS = CD8_COMPASS_TEM / CD8_COMPASS_Pos,
-         TEMRA_div_CD8_COMPASS = CD8_COMPASS_TEMRA / CD8_COMPASS_Pos,
-         HLADR_CD38_div_CD4_COMPASS = CD4_COMPASS_Activated / CD4_COMPASS_Pos,
-         HLADR_CD38_div_CD8_COMPASS = CD8_COMPASS_Activated / CD8_COMPASS_Pos)
-compass_mem_activation_dat_sub <- compass_mem_activation_dat %>%
-  dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>%
-  rename(Days_Symptom_Onset_to_Visit_1 = `Days symptom onset to visit 1`) %>%
-  mutate(Days_Symptom_Onset_to_Visit_1 = as.numeric(Days_Symptom_Onset_to_Visit_1),
-         Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized")))
+<!-- ```{r, fig.width=7, fig.height=7} -->
+<!-- gc() -->
+<!-- pop_paths_of_interest <- c("/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets", -->
+<!--                            "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/Naive", "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TCM", -->
+<!--                            "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TEMRA", "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/TEM", -->
+<!--                            "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/Naive", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TCM", -->
+<!--                            "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TEMRA", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/TEM", -->
+<!--                            "/Time/LD-3+/1419-3+/S/Lymph/4+/CD4_COMPASS_Subsets/HLADR+CD38+", "/Time/LD-3+/1419-3+/S/Lymph/8+/CD8_COMPASS_Subsets/HLADR+CD38+") -->
+<!-- new_names_pop_paths_of_interest <- c("CD4_COMPASS_Pos", "CD8_COMPASS_Pos", -->
+<!--                                      "CD4_COMPASS_Naive", "CD4_COMPASS_TCM", -->
+<!--                                      "CD4_COMPASS_TEMRA", "CD4_COMPASS_TEM", -->
+<!--                                      "CD8_COMPASS_Naive", "CD8_COMPASS_TCM", -->
+<!--                                      "CD8_COMPASS_TEMRA", "CD8_COMPASS_TEM", -->
+<!--                                      "CD4_COMPASS_Activated", "CD8_COMPASS_Activated") -->
+<!-- # I get a weird Rcpp error when I run gs_pop_get_count_with_meta(gs, subpopulations = pop_paths_of_interest): -->
+<!-- # Warning: stack imbalance in '<-', 2 then -1 -->
+<!-- # and RStudio will crash sometimes, including when knitting the Rmd, so use gs_pop_get_count_fast instead -->
+<!-- # Although I'm still getting weird errors sometimes -->
+<!-- compass_mem_activation_dat_tmp <- gs_pop_get_count_fast(gs, subpopulations = pop_paths_of_interest) %>%  -->
+<!--   left_join(pData(gs) %>% -->
+<!--               dplyr::select(rowname, "SAMPLE ID", "STIM", "Cohort", "Age", "Sex", "Race_v2", "Hispanic?", -->
+<!--                             "Days symptom onset to visit 1", "Batch"), by = c("name" = "rowname")) %>%  -->
+<!--   dplyr::select(Population, Count, "SAMPLE ID", "STIM", "Cohort", "Age", "Sex", "Race_v2", "Hispanic?",  -->
+<!--                 "Days symptom onset to visit 1", "Batch") %>%  -->
+<!--   pivot_wider(names_from = Population, values_from = Count) %>%  -->
+<!--   rename_at(vars(all_of(pop_paths_of_interest)), -->
+<!--             ~ new_names_pop_paths_of_interest) # %>%  -->
+<!--   # dplyr::filter(CD4_COMPASS_Pos != 0 & CD8_COMPASS_Pos != 0) # BWT23 and BWT22 have CD8_COMPASS_Pos = 0 -->
 
-ggplot(compass_mem_activation_dat_sub, aes(Cohort, Naive_div_CD4_COMPASS)) +
-  geom_boxplot(outlier.shape = NA) +
-  theme_bw(base_size = 18) +
-  geom_jitter(width=0.15) +
-  facet_wrap(. ~ STIM) +
-  labs(title="% Naive of CD4+ COMPASS Subset+ events",
-       y = "% Naive") +
-  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
-                   expand = c(0.2,0.2)) +
-  scale_y_continuous(labels = function(x) paste0(x*100))
+<!-- # Can I write out compass_mem_activation_dat_tmp to file and read it in to see if that gets rid of problems? -->
+<!-- if(save_output) { -->
+<!--   write.csv(compass_mem_activation_dat_tmp, here::here("processed_data/compass_mem_activation_dat_tmp.csv"), row.names = F) -->
+<!--   # compass_mem_activation_dat_tmp_2 <- read.csv(here::here("processed_data/compass_mem_activation_dat_tmp.csv"), check.names = F) -->
+<!--   # all.equal(compass_mem_activation_dat_tmp, compass_mem_activation_dat_tmp_2) -->
+<!-- } -->
+<!-- compass_mem_activation_dat_tmp_2 <- read.csv(here::here("processed_data/compass_mem_activation_dat_tmp.csv"), check.names = F) -->
 
-ggplot(compass_mem_activation_dat_sub, aes(Cohort, Naive_div_CD8_COMPASS)) +
-  geom_boxplot(outlier.shape = NA) +
-  theme_bw(base_size = 18) +
-  geom_jitter(width=0.15) +
-  facet_wrap(. ~ STIM) +
-  labs(title="% Naive of CD8+ COMPASS Subset+ events",
-       y = "% Naive") +
-  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
-                   expand = c(0.2,0.2)) +
-  scale_y_continuous(labels = function(x) paste0(x*100))
+<!-- # knitr::kable(compass_mem_activation_dat_tmp[1:6,]) -->
+<!-- # gc() -->
+<!-- # compass_mem_activation_dat_tmp %>%  -->
+<!-- #   dplyr::filter(CD4_COMPASS_Pos == 0 | CD8_COMPASS_Pos == 0) %>%  -->
+<!-- #   dplyr::select(`SAMPLE ID`, STIM, Cohort, CD4_COMPASS_Pos, CD8_COMPASS_Pos) -->
 
-ggplot(compass_mem_activation_dat_sub, aes(Cohort, HLADR_CD38_div_CD4_COMPASS)) +
-  geom_boxplot(outlier.shape = NA) +
-  theme_bw(base_size = 18) +
-  geom_jitter(width=0.15) +
-  facet_wrap(. ~ STIM, scales = "free") +
-  labs(title="% Activated of CD4+ COMPASS Subset+ events",
-       y = "% HLA-DR+CD38+") +
-  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
-                   expand = c(0.2,0.2)) +
-  scale_y_continuous(labels = function(x) paste0(x*100))
+<!-- compass_mem_activation_dat <- compass_mem_activation_dat_tmp_2 %>% -->
+<!--   mutate(Naive_div_CD4_COMPASS = CD4_COMPASS_Naive / CD4_COMPASS_Pos, -->
+<!--          TCM_div_CD4_COMPASS = CD4_COMPASS_TCM / CD4_COMPASS_Pos, -->
+<!--          TEM_div_CD4_COMPASS = CD4_COMPASS_TEM / CD4_COMPASS_Pos, -->
+<!--          TEMRA_div_CD4_COMPASS = CD4_COMPASS_TEMRA / CD4_COMPASS_Pos, -->
+<!--          Naive_div_CD8_COMPASS = CD8_COMPASS_Naive / CD8_COMPASS_Pos, -->
+<!--          TCM_div_CD8_COMPASS = CD8_COMPASS_TCM / CD8_COMPASS_Pos, -->
+<!--          TEM_div_CD8_COMPASS = CD8_COMPASS_TEM / CD8_COMPASS_Pos, -->
+<!--          TEMRA_div_CD8_COMPASS = CD8_COMPASS_TEMRA / CD8_COMPASS_Pos, -->
+<!--          HLADR_CD38_div_CD4_COMPASS = CD4_COMPASS_Activated / CD4_COMPASS_Pos, -->
+<!--          HLADR_CD38_div_CD8_COMPASS = CD8_COMPASS_Activated / CD8_COMPASS_Pos) -->
+<!-- compass_mem_activation_dat_sub <- compass_mem_activation_dat %>% -->
+<!--   dplyr::filter(Cohort %in% c("Non-hospitalized", "Hospitalized")) %>% -->
+<!--   rename(Days_Symptom_Onset_to_Visit_1 = `Days symptom onset to visit 1`) %>% -->
+<!--   mutate(Days_Symptom_Onset_to_Visit_1 = as.numeric(Days_Symptom_Onset_to_Visit_1), -->
+<!--          Cohort = factor(Cohort, levels = c("Non-hospitalized", "Hospitalized"))) -->
 
-ggplot(compass_mem_activation_dat_sub, aes(Cohort, HLADR_CD38_div_CD8_COMPASS)) +
-  geom_boxplot(outlier.shape = NA) +
-  theme_bw(base_size = 18) +
-  geom_jitter(width=0.15) +
-  facet_wrap(. ~ STIM, scales = "free") +
-  labs(title="% Activated of CD8+ COMPASS Subset+ events",
-       y = "% HLA-DR+CD38+") +
-  scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"),
-                   expand = c(0.2,0.2)) +
-  scale_y_continuous(labels = function(x) paste0(x*100))
-```
+<!-- ggplot(compass_mem_activation_dat_sub, aes(Cohort, Naive_div_CD4_COMPASS)) + -->
+<!--   geom_boxplot(outlier.shape = NA) + -->
+<!--   theme_bw(base_size = 18) + -->
+<!--   geom_jitter(width=0.15) + -->
+<!--   facet_wrap(. ~ STIM) + -->
+<!--   labs(title="% Naive of CD4+ COMPASS Subset+ events", -->
+<!--        y = "% Naive") + -->
+<!--   scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"), -->
+<!--                    expand = c(0.2,0.2)) + -->
+<!--   scale_y_continuous(labels = function(x) paste0(x*100)) -->
+
+<!-- ggplot(compass_mem_activation_dat_sub, aes(Cohort, Naive_div_CD8_COMPASS)) + -->
+<!--   geom_boxplot(outlier.shape = NA) + -->
+<!--   theme_bw(base_size = 18) + -->
+<!--   geom_jitter(width=0.15) + -->
+<!--   facet_wrap(. ~ STIM) + -->
+<!--   labs(title="% Naive of CD8+ COMPASS Subset+ events", -->
+<!--        y = "% Naive") + -->
+<!--   scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"), -->
+<!--                    expand = c(0.2,0.2)) + -->
+<!--   scale_y_continuous(labels = function(x) paste0(x*100)) -->
+
+<!-- ggplot(compass_mem_activation_dat_sub, aes(Cohort, HLADR_CD38_div_CD4_COMPASS)) + -->
+<!--   geom_boxplot(outlier.shape = NA) + -->
+<!--   theme_bw(base_size = 18) + -->
+<!--   geom_jitter(width=0.15) + -->
+<!--   facet_wrap(. ~ STIM, scales = "free") + -->
+<!--   labs(title="% Activated of CD4+ COMPASS Subset+ events", -->
+<!--        y = "% HLA-DR+CD38+") + -->
+<!--   scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"), -->
+<!--                    expand = c(0.2,0.2)) + -->
+<!--   scale_y_continuous(labels = function(x) paste0(x*100)) -->
+
+<!-- ggplot(compass_mem_activation_dat_sub, aes(Cohort, HLADR_CD38_div_CD8_COMPASS)) + -->
+<!--   geom_boxplot(outlier.shape = NA) + -->
+<!--   theme_bw(base_size = 18) + -->
+<!--   geom_jitter(width=0.15) + -->
+<!--   facet_wrap(. ~ STIM, scales = "free") + -->
+<!--   labs(title="% Activated of CD8+ COMPASS Subset+ events", -->
+<!--        y = "% HLA-DR+CD38+") + -->
+<!--   scale_x_discrete(labels=c("Non-hospitalized" = "Conv\nNon-Hosp", "Hospitalized" = "Conv\nHosp"), -->
+<!--                    expand = c(0.2,0.2)) + -->
+<!--   scale_y_continuous(labels = function(x) paste0(x*100)) -->
+<!-- ``` -->
 
 # Export data for integrated analysis
 

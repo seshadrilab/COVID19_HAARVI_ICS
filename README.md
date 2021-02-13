@@ -8,8 +8,7 @@ This repository contains code to perform COMPASS analysis on Intracellular Cytok
     - Check the `ResultFiles` box  
     - Click Download. Aspera will be launched. Files for ICS and Surface Marker experiments will be downloaded at the same time. Download will take some time (total of 18.3 GB, which took 2 hrs and 42 min to download)  
     - These steps for downloading from ImmPort are current as of Feb 8, 2021.
-2. Clone or download this repository. The code depends on the current directory structure. Create an R project in this top-level folder. Open it using RStudio. `renv` should launch automatically (see next step).    
-3. Install dependencies. Analysis was completed using R version 3.6.3 on a computer running Ubuntu 18.04. Dependencies are listed in the `renv.lock` file. Suggested workflow is to install `renv` and then run `renv::restore()` to install dependencies into this project's `renv` subfolder (see [Collaborating with renv](https://rstudio.github.io/renv/articles/collaborating.html)), though you can install dependencies however way you prefer.  
-    - TODO: Test `renv` workflow and upgrade repo for R 4.0  
+2. Clone or download this repository. The code depends on the current directory structure. Create an R project in this top-level folder. Open it using RStudio.  
+3. Install dependencies. The code on this branch was tested using R version 4.0.3 and uses `openCyto` 2.2.0, `CytoML` 2.2.1, `flowCore` 2.2.0, and `flowWorkspace` 4.2.0. Dependencies are listed in the `renv.lock` file. Suggested workflow is to install `renv` and then run `renv::activate()` and `renv::restore()` to install dependencies into this project's `renv` subfolder (see [Collaborating with renv](https://rstudio.github.io/renv/articles/collaborating.html)), though you can install dependencies however way you prefer.  
 4. Run `scripts/00_20210208_Copy_and_Rename_ICS_ImmPort_FCS_Files.R` after modifying the variable `ImmPort_dl_path`.  
 5. Run the rest of the R and Rmd scripts in numerical order. Output will get placed into the `out` and `processed_data` subfolders (you may want to copy the current output folders somewhere to have an original copy).   

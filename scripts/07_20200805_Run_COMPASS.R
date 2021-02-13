@@ -30,7 +30,7 @@ seeds_for_compass_runs <- as.list(date:(date + length(stims_for_compass_runs)*le
 stims_for_compass_runs_rep <- rep(stims_for_compass_runs, each = length(parent_nodes_for_compass_runs))
 parent_nodes_for_compass_runs_rep <- rep(parent_nodes_for_compass_runs, times = length(stims_for_compass_runs))
 
-gsPath <- here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches/")
+gsPath <- here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches_R4.0.3/")
 gs <- load_gs(gsPath)
 gs2 <- subset(gs, !(`SAMPLE ID` %in% c("37C", "BWT23", "116C", "BWT22")) &
                 !(`SAMPLE ID` == "551432" & STIM == "Spike 2"))

@@ -1,8 +1,8 @@
-library(openCyto) # 1.24.0
-library(CytoML) # 1.12.0
-library(flowCore) # required for description()
-library(flowWorkspace) # required for gh_pop_get_data()
-library(ggcyto) # devtools::install_github("RGLab/ggcyto", ref="ggplot3.3") for update_theme()
+library(openCyto)
+library(CytoML)
+library(flowCore)
+library(flowWorkspace)
+library(ggcyto)
 library(here)
 library(tidyverse)
 library(readxl)
@@ -28,15 +28,32 @@ names(fj_ws_get_keywords(ws_b3, 46))
 keywords2import <- c("EXPERIMENT NAME", "$DATE", "SAMPLE ID", "PATIENT ID", "STIM", "WELL ID", "PLATE NAME")
 
 sampleGroup <- "Samples"
-gs_b3 <- flowjo_to_gatingset(ws_b3, name=sampleGroup, keywords=keywords2import,
-                             path=ics_b3_gs_filemap, extend_val=-10000)
+
+# For some reason, there are two entries in ics_file_map for HS10_B12_B12_024.fcs (114570.fcs), sampleID 352 and 485.
+# sampleID 485 seems to be the sample in the Samples group of the FlowJo workspace, so keep that one.
+
+cs <- cytoset()
+quietly(pmap(ics_file_map %>%
+               dplyr::filter(Batch == 3 & !is.na(flowJo_xml_sampleID) &
+                               flowJo_xml_sampleID != 352) %>% 
+               dplyr::select(Destination_Folder_Path, Original_File_Name, flowJo_xml_sampleID),
+             function(Destination_Folder_Path, Original_File_Name, flowJo_xml_sampleID) {
+               cat(sprintf("Loading %s for sampleID %s\n", Original_File_Name, flowJo_xml_sampleID))
+               cf_tmp <- load_cytoframe_from_fcs(here::here(Destination_Folder_Path, Original_File_Name))
+               flowJo_xml_sample_name <- fj_ws_get_samples(ws_b3) %>% dplyr::filter(sampleID == flowJo_xml_sampleID) %>% dplyr::pull(name)
+               # below, flowjo_to_gatingset will use the name stored in flowJo_xml_sample_name to match the cytoframe to the flowjo workspace entry
+               cs_add_cytoframe(cs = cs, sn = flowJo_xml_sample_name, cf = cf_tmp)  
+             }))
+gs_b3 <- flowjo_to_gatingset(ws_b3, name = sampleGroup, cytoset = cs,
+                             keywords=keywords2import, extend_val=-10000)
+gs_b3
 
 # All samples have the same gating tree
 pop_lists <- lapply(gs_b3, gh_get_pop_paths)
 unique(pop_lists)
 
 pData(gs_b3)$filename <- sapply(rownames(pData(gs_b3)), function(x) {
-  gsub("/.+/", "", description(gh_pop_get_data(gs_b3[[x]]))$FILENAME)
+  gsub("/.+/", "", keyword(gh_pop_get_data(gs_b3[[x]]))$FILENAME)
 }, USE.NAMES = F)
 pData(gs_b3)$rowname <- rownames(pData(gs_b3))
 pData(gs_b3)
@@ -110,7 +127,11 @@ png(here::here(sprintf("out/QC/B3_GatingTree_%s.png", date)), width = 7, height 
 (plot(gs_b3, fontsize=15, bool=T))
 dev.off()
 
-save_gs(gs_b3, here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3"))
+if(!dir.exists(here::here("out/GatingSets"))) {
+  cat(sprintf("Creating folder %s\n", here::here("out/GatingSets")))
+  dir.create(here::here("out/GatingSets"), recursive = T)
+}
+save_gs(gs_b3, here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3_R4.0.3"))
 
 # 6 samples for each patient
 table(pData(gs_b3)$`SAMPLE ID`)
@@ -119,7 +140,7 @@ length(unique(pData(gs_b3)$`SAMPLE ID`))
 
 #####################################################################
 
-# gs_b3 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3"))
+# gs_b3 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3_R4.0.3"))
 
 dput(gh_get_pop_paths(gs_b3))
 
@@ -355,7 +376,7 @@ for(currentGates in list(cd4_mem_gates, notcd4_mem_gates, cd8_mem_gates)) {
 # library(here)
 # library(tidyverse)
 # 
-# gs_b3 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3"))
+# gs_b3 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3_R4.0.3"))
 # pData(gs_b3)$STIM <- factor(pData(gs_b3)$STIM, levels = c("DMSO", "VEMP", "Spike 1", "Spike 2", "NCAP", "SEB"))
 
 # Activation gates on CD3-CD19+

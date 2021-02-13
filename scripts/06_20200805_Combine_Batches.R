@@ -1,7 +1,7 @@
-library(openCyto) # 1.24.0
-library(CytoML) # 1.12.0
-library(flowCore) # required for description()
-library(flowWorkspace) # required for gh_pop_get_data()
+library(openCyto) 
+library(CytoML) 
+library(flowCore)
+library(flowWorkspace)
 library(here)
 library(tidyverse)
 
@@ -10,9 +10,9 @@ library(tidyverse)
 # Open /etc/R/Renviron and add a line TMP = 'path/to/large/space'
 tempdir() # And make sure it's where you want it to be
 
-gs1 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B1/"))
-gs2 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B2/"))
-gs3 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3"))
+gs1 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B1_R4.0.3/"))
+gs2 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B2_R4.0.3/"))
+gs3 <- load_gs(here::here("out/GatingSets/20200803_HAARVI_ICS_GatingSet_B3_R4.0.3/"))
 
 # Make sure nodes and markers are consistent between the three batches
 setdiff(sort(gh_get_pop_paths(gs1)), sort(gh_get_pop_paths(gs2)))
@@ -21,16 +21,41 @@ all(sort(gh_get_pop_paths(gs1)) == sort(gh_get_pop_paths(gs2)))
 all(sort(gh_get_pop_paths(gs1)) == sort(gh_get_pop_paths(gs3)))
 all(colnames(pData(gs1)) == colnames(pData(gs2)))
 all(colnames(pData(gs1)) == colnames(pData(gs3)))
+all(colnames(pData(gs2)) == colnames(pData(gs3)))
+setdiff(colnames(pData(gs1)), colnames(pData(gs2)))
+setdiff(colnames(pData(gs2)), colnames(pData(gs1)))
+setdiff(colnames(pData(gs1)), colnames(pData(gs3)))
+setdiff(colnames(pData(gs3)), colnames(pData(gs1)))
+# "PATIENT ID" not in gs1. remove from gs2 and gs3. 
+# Also different orders
+# Use gs1 as a template
+gs2_pData_tmp <- pData(gs2) %>% 
+  dplyr::select(colnames(pData(gs1)))
+rownames(gs2_pData_tmp) <- rownames(pData(gs2))
+pData(gs2) <- gs2_pData_tmp
+gs3_pData_tmp <- pData(gs3) %>% 
+  dplyr::select(colnames(pData(gs1)))
+rownames(gs3_pData_tmp) <- rownames(pData(gs3))
+pData(gs3) <- gs3_pData_tmp
+# Also need to change gs1 because the column orders seem to get modified upon assign
+gs1_pData_tmp <- pData(gs1) %>% 
+  dplyr::select(colnames(pData(gs1)))
+rownames(gs1_pData_tmp) <- rownames(pData(gs1))
+pData(gs1) <- gs1_pData_tmp
+# Now the pData colnames should all be consistent
+all(colnames(pData(gs1)) == colnames(pData(gs2)))
+all(colnames(pData(gs1)) == colnames(pData(gs3)))
+
 all(markernames(gs1) == markernames(gs2))
 all(markernames(gs1) == markernames(gs3))
 
 pData(parameters(gh_pop_get_data(gs1[[1]])))[,c(1, 2)]
 
 # Combining into a single GatingSet necessary if running t-SNE (we will be running both COMPASS and t-SNE on this dataset)
-gs <- gslist_to_gs(GatingSetList(list(gs1, gs2, gs3))) # This takes a while
+gs <- merge_list_to_gs(list(gs1, gs2, gs3))
 
-save_gs(gs, here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches"))
-# gs <- load_gs(here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches"))
+save_gs(gs, here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches_R4.0.3"))
+# gs <- load_gs(here::here("out/GatingSets/20200805_HAARVI_ICS_GatingSet_AllBatches_R4.0.3"))
 
 #######################################################
 
@@ -61,10 +86,10 @@ pop_dat <- gs_pop_get_count_with_meta(gs_sub,
   pivot_wider(names_from = Population, values_from = Count) %>% 
   rename_at(vars(all_of(pop_paths_of_interest)),
             ~ pops_of_interest_short) %>% 
-  mutate(Cohort = ifelse(is.na(Cohort) | Cohort == "Healthy control 2017-2018", "Healthy control", Cohort),
+  mutate(Cohort = ifelse(is.na(Cohort) | Cohort == "NA" | Cohort == "Healthy control 2017-2018", "Healthy control", Cohort),
          Cohort = factor(Cohort, levels = c("Healthy control", "Non-hospitalized", "Hospitalized")))
 
-pop_dat %>% dplyr::filter(Cohort == "Healthy control") %>% dplyr::pull(`SAMPLE ID`) # two TRIMAs remaining
+pop_dat %>% dplyr::filter(Cohort == "Healthy control") %>% dplyr::pull(`SAMPLE ID`)
 
 plot_pop <- function(pop) {
   parent <- sub("(.*)\\/.*", "\\1", pop)

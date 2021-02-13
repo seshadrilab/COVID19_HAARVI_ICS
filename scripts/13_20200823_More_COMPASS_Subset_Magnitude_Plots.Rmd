@@ -56,7 +56,7 @@ CD4RunNames <- c("4_Spike_1", "4_Spike_2", "4_NCAP", "4_VEMP")
 CD8RunNames <- c("8_Spike_1", "8_Spike_2", "8_NCAP", "8_VEMP")
 
 # And load the GatingSet. We can extract the data for the rest ofthe ploots from this.
-gsPath <- here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets")
+gsPath <- here::here("out/GatingSets/20200815_HAARVI_ICS_GatingSet_AllBatches_with_COMPASS_Subsets_R4.0.3")
 gs <- load_gs(gsPath)
 ```
 
